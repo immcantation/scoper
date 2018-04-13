@@ -1,0 +1,40 @@
+Package: scope
+Title: Immcantation R cookbook
+Version: 0.1.0
+Date: 2018-04-17
+Authors@R: c(person("Jason", "Vander Heiden", role=c("aut", "cre"), 
+                    email="jason.vanderheiden@yale.edu"),
+             person("Susanna", "Marquez", role=c("aut"), 
+                    email="susanna.marquez@yale.edu"),
+             person("Steven", "Kleinstein", role=c("aut", "cph"), 
+                    email="steven.kleinstein@yale.edu"))
+Description: A collection of convenience functions, plotting routines, and 
+    general examples for the alakazam, shazam and tigger R packages.
+URL: https://bitbucket.org/kleinstein/grimoire
+BugReports: https://bitbucket.org/kleinstein/grimoire/issues
+LazyData: true
+BuildVignettes: true
+VignetteBuilder: knitr
+Depends:
+    R (>= 3.1.2),
+    ggplot2 (>= 2.0.0)
+Imports:  
+    alakazam,
+    doParallel,
+    plyr,
+    dplyr,
+    foreach,
+    iterators,
+    parallel,
+    RColorBrewer,
+    reshape2,
+    scales,
+    seqinr,
+    stringi,
+    stringr,
+    tidyr
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat
+RoxygenNote: 6.0.1
