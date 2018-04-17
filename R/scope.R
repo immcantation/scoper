@@ -7,7 +7,9 @@
 #'
 #' @name        scope
 #' @docType     package
-#' @import alakazam
+#' @importFrom alakazam   getGene
+#' @importFrom shazam     checkColumns allValidChars toupperColumns
+#'                        progressBar intersectPoint
 #' @import dplyr
 #' @import foreach
 #' @import ggplot2
@@ -17,4 +19,6 @@
 #' @import stringi
 #' @import stringr
 #' @import seqinr
+#' @import doParallel
+#' @import methods
 NULL
