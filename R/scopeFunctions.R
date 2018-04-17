@@ -648,7 +648,7 @@ calculateInterVsIntera <- function(db,
     db_dff <- data.frame(keyName=names(vec_ff), VALUE=vec_ff, row.names=NULL)
     db_dff$LABEL <- "inter"
     db_dff$LABEL[grepl("intera", db_dff$keyName)] <- "intera"
-    db_dff <- cbind(str_split_fixed(db_dff$keyName, "_", n=3), db_dff)
+    db_dff <- cbind(stringr::str_split_fixed(db_dff$keyName, "_", n=3), db_dff)
     db_dff$keyName <- NULL
     db_dff$`3` <- NULL
     db_dff <- db_dff %>%
