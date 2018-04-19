@@ -1,24 +1,19 @@
 # Project documentation and imports
 
-#' SCOPe
+#' scope
 #'
 #' A collection of convenience functions, plotting routines, and
 #' general examples for the alakazam, shazam and tigger R packages.
 #'
 #' @name        scope
 #' @docType     package
-#' @importFrom alakazam   getGene
-#' @importFrom shazam     checkColumns allValidChars toupperColumns
-#'                        progressBar intersectPoint
-#' @import dplyr
-#' @import foreach
-#' @import ggplot2
-#' @import igraph
-#' @import reshape2
-#' @import scales
-#' @import stringi
-#' @import stringr
-#' @import seqinr
-#' @import doParallel
-#' @import methods
+#' @import      alakazam
+#' @import      shazam
+#' @import      doParallel
+#' @import      foreach
+#' @import      dplyr
+#' @import      ggplot2
+#' @import      stringi
+#' @import      stringr
+#' @import      methods
 NULL

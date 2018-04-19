@@ -18,7 +18,7 @@ VignetteBuilder: knitr
 Depends:
     R (>= 3.1.2),
     ggplot2 (>= 2.0.0)
-Imports:  
+Imports: 
     alakazam,
     doParallel,
     plyr,
@@ -38,3 +38,6 @@ Suggests:
     rmarkdown,
     testthat
 RoxygenNote: 6.0.1
+Collate: 
+    'scope.R'
+    'scopeFunctions.R'
