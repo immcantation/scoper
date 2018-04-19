@@ -1,11 +1,11 @@
-setClass("InterVsInteraResult",
-         slots = c(interVsIntera="list",
+setClass("InterVsIntraResult",
+         slots = c(interVsIntra="list",
                    threshold="numeric"))
 
 setClass("clonalAnalysisResult",
          slots = c(threshold="numeric",
-                   interVsIntera="list",
-                   plotInterVsIntera="list",
+                   interVsIntra="list",
+                   plotInterVsIntra="list",
                    neighborhoods="numeric",
                    plotNeighborhoods="list"))
 
@@ -181,43 +181,37 @@ Parse_VJ <- function(db,
 # main cloning functions
 #################################
 #' @export
-defineCloneSpectral <- function(db,
-                                junction = "JUNCTION",
-                                v_call = "V_CALL",
-                                j_call = "J_CALL",
-                                first = TRUE,
-                                cdr3 = FALSE,
-                                mod3 = FALSE,
-                                iter_max = 1000,
-                                nstart = 25,
-                                nproc = 1,
-                                progress = FALSE,
-                                save_summary = FALSE,
-                                save_cloned = FALSE,
-                                out_dir = ".",
-                                out_name = "db") {
+defineClonesScope <- function(db,
+                              junction = "JUNCTION",
+                              v_call = "V_CALL",
+                              j_call = "J_CALL",
+                              first = FALSE,
+                              cdr3 = FALSE,
+                              mod3 = FALSE,
+                              iter_max = 1000,
+                              nstart = 25,
+                              nproc = 1,
+                              progress = FALSE,
+                              out_dir = ".",
+                              out_name = NULL) {
 
-    # set Seed for reproducibility
-    set.seed(12345)
-
-    # number of enteries
-    rec_count <- nrow(db)
-
-    # number of fails
-    fail_count <- 0
 
     # Initial checks
     if (!is.data.frame(db)) {
         stop("Must submit a data frame")
     }
-    if ("CLONE" %in% colnames(db)) {
-        stop("Column 'CLONE' already exist.")
-    }
 
-    if (save_summary | save_cloned) {
-        if (is.null(out_dir)) stop("out_dir must be specified.")
-        if (!dir.exists(out_dir)) stop("out_dir", out_dir, "does not exist.")
-        if (is.null(out_name)) stop("'out_name' must be specified.")
+    # number of enteries
+    rec_count <- nrow(db)
+
+    # temp columns
+    temp_cols <- c("V", "J", "L", "JUNC_temp", "NUMBRE_OF_N", "NUMBRE_OF_DOT", "V1", "J1", "ID","CLONE_temp")
+
+    # check for invalid columns
+    invalid_cols <- c("CLONE", temp_cols)
+    if (any(invalid_cols %in% colnames(db))) {
+        stop("Column(s) '", paste(invalid_cols[invalid_cols %in% colnames(db)], collapse = "', '"), "' already exist.",
+             "\n Invalid column names are: '", paste(invalid_cols, collapse = "', '"), "'.")
     }
 
     # Check for valid columns
@@ -234,6 +228,12 @@ defineCloneSpectral <- function(db,
                 length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  colnames(getDNAMatrix(gap=0)), "'")
     }
 
+    # chaeck outputs
+    if (!is.null(out_name)) {
+        if (is.null(out_dir)) stop("out_dir must be specified.")
+        if (!dir.exists(out_dir)) stop("out_dir", out_dir, "does not exist.")
+    }
+
     # neighborhood <- match.arg(neighborhood)
     neighborhood <- "infer"
     similarity <- NULL
@@ -242,29 +242,33 @@ defineCloneSpectral <- function(db,
     # }
     # if (neighborhood == "assign" & is.null(similarity)) stop("similarity needs to be assigned.")
 
-
     # Convert sequence columns to uppercase
     db <- shazam:::toupperColumns(db, junction)
 
-    # add junction temp column
+    # add temporary junction column
     db$JUNC_temp <- db[[junction]]
 
     # add junction length column
     db$L <- stringi::stri_length(db$JUNC_temp)
 
     # check for mod3
+    # filter mod 3 junction lengths
     if (mod3) {
         nIint <- nrow(db)
         db <- filter(db, L%%3 == 0)
         nFin <- nrow(db)
         cat("MOD3 FILTER> ", "\n")
-        cat(nIint-nFin, " invalid junction lengths in the ", junction, " column. ", "\n")
+        cat(nIint-nFin, " invalid junction length(s) not mod3 in the ", junction, " column. ", "\n")
     }
 
     # check for cdr3
+    # filter junctions with length >6
     if (cdr3) {
-        # filter junctions with length >6
+        nIint <- nrow(db)
         db <- filter(db, L > 6)
+        nFin <- nrow(db)
+        cat("CDR3 FILTER> ", "\n")
+        cat(nIint-nFin, " invalid junction length(s) < 7 in the ", junction, " column. ", "\n")
         # add cdr3 temp column
         db$JUNC_temp <- substr(db$JUNC_temp, 4, db$L-3)
         # update cdr3 length column
@@ -307,6 +311,10 @@ defineCloneSpectral <- function(db,
         cat("CLONING> ", "\n")
         pb <- shazam:::progressBar(n_groups)
     }
+
+    # set seed for reproducibility
+    set.seed(12345)
+
     # cloning
     db_cloned <- foreach(i=1:n_groups,
                          .combine="rbind",
@@ -350,7 +358,7 @@ defineCloneSpectral <- function(db,
     db_cloned$CLONE <- as.character(db_cloned$CLONE)
 
     # print into saveSummary
-    if (save_summary) {
+    if (!is.null(out_name)) {
         if (progress) cat("SAVING SUMMARY> ", "\n")
         db_summ <- db_cloned %>%
             dplyr::group_by_at(vars(one_of(groupBy))) %>%
@@ -366,10 +374,10 @@ defineCloneSpectral <- function(db,
     }
 
     # remove extra columns
-    db_cloned <- db_cloned[, !(names(db_cloned) %in% c("V", "J", "L", "JUNC_temp", "NUMBRE_OF_N", "NUMBRE_OF_DOT", "V1", "J1", "ID","CLONE_temp"))]
+    db_cloned <- db_cloned[, !(names(db_cloned) %in% temp_cols)]
 
     # save cloned db
-    if (save_cloned) {
+    if (!is.null(out_name)) {
         if (progress) cat("SAVING DB> ", "\n")
         fileName <- paste(out_name, "clone-pass.tsv", sep="_")
         writeChangeoDb(db_cloned, file = file.path(out_dir, fileName))
@@ -528,23 +536,28 @@ plotEigenValuesSpectrum <- function(db,
 }
 
 #################################
-# inter-clone-distance vs intera-clone-distance
+# inter-clone-distance vs intra-clone-distance
 #################################
-calculateInterVsIntera <- function(db,
-                                   junction = "JUNCTION",
-                                   v_call = "V_CALL",
-                                   j_call = "J_CALL",
-                                   first = TRUE,
-                                   cdr3 = FALSE,
-                                   nproc = 1,
-                                   progress = FALSE) {
+calculateInterVsIntra <- function(db,
+                                  junction = "JUNCTION",
+                                  v_call = "V_CALL",
+                                  j_call = "J_CALL",
+                                  clone = "CLONE",
+                                  first = TRUE,
+                                  cdr3 = FALSE,
+                                  nproc = 1,
+                                  progress = FALSE) {
+
+    # make temproary clone column
+    db$CLOE_temp <- as.character(db[[clone]])
+
     # groups to use
     groupBy <- c("V", "J", "L")
 
     # find unique groups of sequences with same vgene, jgene, and junction length
     uniqueGroups <- db %>%
         dplyr::group_by(V, J, L) %>%
-        dplyr::summarise(CLONE=paste(unique(CLONE), collapse=","))
+        dplyr::summarise(CLOE_temp=paste(unique(CLOE_temp), collapse=","))
     n_groups <- nrow(uniqueGroups)
 
     # Create cluster of nproc size and export namespaces
@@ -561,7 +574,7 @@ calculateInterVsIntera <- function(db,
 
     # check the progressbar
     if (progress) {
-        cat("INTER AND INTERA DISTANCES ANALYSIS> ", "\n")
+        cat("INTER AND INTRA DISTANCES ANALYSIS> ", "\n")
         pb <- shazam:::progressBar(n_groups)
     }
 
@@ -570,11 +583,11 @@ calculateInterVsIntera <- function(db,
                       .combine="c",
                       .packages = c("dplyr"),
                       .errorhandling='stop') %dopar% {
-                          clones <- strsplit(uniqueGroups$CLONE[k], split=",")[[1]]
+                          clones <- strsplit(uniqueGroups$CLOE_temp[k], split=",")[[1]]
                           l <- uniqueGroups$L[k]
                           n_clones <- length(clones)
-                          seqs <- db$JUNC_temp[db$CLONE %in% clones]
-                          names(seqs) <- db$CLONE[db$CLONE %in% clones]
+                          seqs <- db$JUNC_temp[db$CLOE_temp %in% clones]
+                          names(seqs) <- db$CLOE_temp[db$CLOE_temp %in% clones]
                           # cat("group=", k, "/", n_groups, ", number of clones=", n_clones, ", number of sequences=", length(seqs), "\n", sep="")
                           seqs_db <- data_frame(value = seqs, name = names(seqs)) %>%
                               group_by(name, value) %>% # alternatively: group_by(name) if name value pair is always unique
@@ -608,7 +621,7 @@ calculateInterVsIntera <- function(db,
                                       if (length(xy) != 0) {
                                           n <- n+1
                                           vec_f[n] <- min(xy)/l
-                                          names(vec_f)[n] <- paste(clones[i], clones[j], "intera", sep="_")
+                                          names(vec_f)[n] <- paste(clones[i], clones[j], "intra", sep="_")
                                       }
                                   }
                               }
@@ -633,7 +646,7 @@ calculateInterVsIntera <- function(db,
     # convert to a data.frame
     db_dff <- data.frame(keyName=names(vec_ff), VALUE=vec_ff, row.names=NULL)
     db_dff$LABEL <- "inter"
-    db_dff$LABEL[grepl("intera", db_dff$keyName)] <- "intera"
+    db_dff$LABEL[grepl("intra", db_dff$keyName)] <- "intra"
     db_dff <- cbind(stringr::str_split_fixed(db_dff$keyName, "_", n=3), db_dff)
     db_dff$keyName <- NULL
     db_dff$`3` <- NULL
@@ -641,8 +654,8 @@ calculateInterVsIntera <- function(db,
         dplyr::rename(CLONE_X=`1`,
                       CLONE_Y=`2`)
     db_dff$CLONE_Y[grepl("inter", db_dff$CLONE_Y)] <- NA
-    interVsIntera <- list()
-    interVsIntera[[length(interVsIntera)+1]] <- db_dff
+    interVsIntra <- list()
+    interVsIntra[[length(interVsIntra)+1]] <- db_dff
 
     # find threshold
     db.summ <- db_dff %>%
@@ -651,8 +664,8 @@ calculateInterVsIntera <- function(db,
                          SD=sd(VALUE, na.rm = TRUE))
     func1.1 <- db.summ$MEAN[db.summ$LABEL == "inter"]
     func1.2 <- db.summ$SD[db.summ$LABEL == "inter"]
-    func2.1 <- db.summ$MEAN[db.summ$LABEL == "intera"]
-    func2.2 <- db.summ$SD[db.summ$LABEL == "intera"]
+    func2.1 <- db.summ$MEAN[db.summ$LABEL == "intra"]
+    func2.2 <- db.summ$SD[db.summ$LABEL == "intra"]
     minInt <- 0
     maxInt <- 1
     intxn <- uniroot(shazam:::intersectPoint, interval = c(minInt, maxInt), tol=1e-8, extendInt="yes",
@@ -661,16 +674,16 @@ calculateInterVsIntera <- function(db,
                      func2.0=1, func2.1=func2.1, func2.2=func2.2)
     threshold <- round(intxn$root, 2)
 
-    InterVsInteraResult <- new("InterVsInteraResult",
-                               interVsIntera=interVsIntera,
+    InterVsIntraResult <- new("InterVsIntraResult",
+                               interVsIntra=interVsIntra,
                                threshold=threshold)
-    return(InterVsInteraResult)
+    return(InterVsIntraResult)
 }
 
 #################################
-# plot inter-clone-distance vs intera-clone-distance
+# plot inter-clone-distance vs intra-clone-distance
 #################################
-plotInterVsIntera <- function(db, threshold) {
+plotInterVsIntra <- function(db, threshold) {
 
     # Check for valid columns
     columns <- c("VALUE", "LABEL")
@@ -695,7 +708,7 @@ plotInterVsIntera <- function(db, threshold) {
     pdat$dens_norm <- ifelse(pdat$LABEL == 'inter', pdat$dens_norm*(-1), pdat$dens_norm)
     # fill color
     fill_manual <- c("inter"="grey30",
-                     "intera"="grey60")
+                     "intra"="grey60")
     # labels
     # mg <- "Mean \u00b1 SD"
     # Encoding(mg) <- "UTF-8"
@@ -704,7 +717,7 @@ plotInterVsIntera <- function(db, threshold) {
     # mg1_txt <- data.frame(X=-0.9, Y=threshold-0.025, LAB=paste(mg))
     # db1_txt <- data.frame(X=-0.9, Y=threshold-0.05, LAB=paste(meanInter, pm, sdInter))
     # mg2_txt <- data.frame(X=0.9, Y=threshold+0.05, LAB=paste(mg))
-    # db2_txt <- data.frame(X=0.9,  Y=threshold+0.025, LAB=paste(meanIntera, pm, sdIntera))
+    # db2_txt <- data.frame(X=0.9,  Y=threshold+0.025, LAB=paste(meanIntra, pm, sdIntra))
 
     hline_size <- 1.0
     txt_size <- 5.0
@@ -721,7 +734,7 @@ plotInterVsIntera <- function(db, threshold) {
         scale_fill_manual(name="",
                           values=fill_manual,
                           labels = c("inter"="maximum-distance\nwithin clones  ",
-                                     "intera"="minimum-distance\nbetween clones  ")) +
+                                     "intra"="minimum-distance\nbetween clones  ")) +
         geom_polygon(aes(x=dens_norm, y=loc, fill=LABEL)) +
         geom_hline(yintercept=threshold, color="grey30", linetype=2, size=hline_size) #+
         # geom_text(data=mg1_txt, aes(x=X, y=Y, label=LAB), size=txt_size, inherit.aes = FALSE) +
@@ -824,18 +837,18 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 # clonal analysis
 #################################
 #' @export
-clonalAnalysis <- function(db,
+clonesAnalysis <- function(db,
                            junction = "JUNCTION",
                            v_call = "V_CALL",
                            j_call = "J_CALL",
-                           first = TRUE,
+                           clone = "CLONE",
+                           first = FALSE,
                            cdr3 = FALSE,
                            nproc = 1,
                            progress = FALSE) {
 
     # Initial checks
     # Check for valid columns
-    clone <- "CLONE"
     columns <- c(junction, v_call, j_call, clone)
     columns <- columns[!is.null(columns)]
     check <- shazam:::checkColumns(db, columns)
@@ -861,25 +874,26 @@ clonalAnalysis <- function(db,
                    j_call=j_call,
                    first=first)
 
-    # calculate inter and intera distances
-    results <- calculateInterVsIntera(db,
-                                      junction = junction,
-                                      v_call = v_call,
-                                      j_call = j_call,
-                                      first = first,
-                                      cdr3 = cdr3,
-                                      nproc = nproc,
-                                      progress = progress)
+    # calculate inter and intra distances
+    results <- calculateInterVsIntra(db,
+                                     junction = junction,
+                                     v_call = v_call,
+                                     j_call = j_call,
+                                     clone = clone,
+                                     first = first,
+                                     cdr3 = cdr3,
+                                     nproc = nproc,
+                                     progress = progress)
 
     # revoke the results
-    df <- results@interVsIntera[[1]]
+    df <- results@interVsIntra[[1]]
     threshold <- results@threshold
-    interVsIntera <- list()
-    interVsIntera[[length(interVsIntera)+1]] <- df
+    interVsIntra <- list()
+    interVsIntra[[length(interVsIntra)+1]] <- df
 
-    # plot inter and intera distances
+    # plot inter and intra distances
     p1 <- list()
-    p <- plotInterVsIntera(df,
+    p <- plotInterVsIntra(df,
                            threshold=threshold)
     p1[[length(p1)+1]] <- p
 
@@ -905,8 +919,8 @@ clonalAnalysis <- function(db,
     # return all
     clonalAnalysisResult<-new("clonalAnalysisResult",
                               threshold=threshold,
-                              interVsIntera=interVsIntera,
-                              plotInterVsIntera=p1,
+                              interVsIntra=interVsIntra,
+                              plotInterVsIntra=p1,
                               neighborhoods=neighborhoods,
                               plotNeighborhoods=p2)
     return(clonalAnalysisResult)
