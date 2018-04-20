@@ -1,17 +1,17 @@
 Package: scope
-Title: Immcantation R cookbook
+Type: Package
 Version: 0.1.0
 Date: 2018-04-17
-Authors@R: c(person("Jason", "Vander Heiden", role=c("aut", "cre"), 
-                    email="jason.vanderheiden@yale.edu"),
-             person("Susanna", "Marquez", role=c("aut"), 
-                    email="susanna.marquez@yale.edu"),
+Authors@R: c(person("Nima", "Nouri", role=c("aut", "cre"), 
+                    email="nima.nouri@yale.edu"),
              person("Steven", "Kleinstein", role=c("aut", "cph"), 
                     email="steven.kleinstein@yale.edu"))
+Title: Spectral clustering-based method for BCR clones identification
 Description: A collection of convenience functions, plotting routines, and 
     general examples for the alakazam, shazam and tigger R packages.
-URL: https://bitbucket.org/kleinstein/grimoire
-BugReports: https://bitbucket.org/kleinstein/grimoire/issues
+License: CC BY-SA 4.0
+URL: https://bitbucket.org/kleinstein/scope
+BugReports: https://bitbucket.org/kleinstein/scope/issues
 LazyData: true
 BuildVignettes: true
 VignetteBuilder: knitr
@@ -39,5 +39,6 @@ Suggests:
     testthat
 RoxygenNote: 6.0.1
 Collate: 
+    'Data.R'
     'scope.R'
     'scopeFunctions.R'

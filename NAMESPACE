@@ -2,6 +2,7 @@
 
 export(clonesAnalysis)
 export(defineClonesScope)
+exportClasses(clonesAnalysisResult)
 import(alakazam)
 import(doParallel)
 import(dplyr)
