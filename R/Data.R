@@ -48,4 +48,15 @@
 #'            vaccine-induced immune responses.
 #'            Proc Natl Acad Sci USA. 2014 111:4928-33.
 #' }
-NULL
+"ExampleDb"
+
+
+#' Cloned example data
+#'
+#' Includes the \code{CLONE} column.
+#'
+#' @name ExampleDb
+#' @rdname ExampleDb
+"ClonedExampleDb"
+
+

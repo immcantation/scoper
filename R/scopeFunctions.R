@@ -13,7 +13,7 @@ setClass("InterVsIntraResult",
 
 #' Output of the clonesAnalysis function
 #'
-#' \code{clonesAnalysisResult} contains output from the \link{clonesAnalysis} function.
+#' \code{ClonesAnalysisResult} contains output from the \link{clonesAnalysis} function.
 #' It includes infromation to interpret clonal assignment performance.
 #'
 #' @slot   threshold              cut-off separating the inter (within) and intra (between)
@@ -28,11 +28,11 @@ setClass("InterVsIntraResult",
 #'
 #' @seealso      \link{clonesAnalysis}
 #'
-#' @name         clonesAnalysisResult-class
-#' @rdname       clonesAnalysisResult-class
-#' @aliases      clonesAnalysisResult
-#' @exportClass  clonesAnalysisResult
-setClass("clonesAnalysisResult",
+#' @name         ClonesAnalysisResult-class
+#' @rdname       ClonesAnalysisResult-class
+#' @aliases      ClonesAnalysisResult
+#' @exportClass  ClonesAnalysisResult
+setClass("ClonesAnalysisResult",
          slots = c(threshold="numeric",
                    interVsIntra="list",
                    plotInterVsIntra="list",
@@ -257,76 +257,76 @@ kMeanClustering <- function (entry,
 }
 
 # plot eigenvalues function
-plotEigenValuesSpectrum <- function(db,
-                                    vGene, jGene, junctionLength,
-                                    first = TRUE,
-                                    cdr3 = FALSE) {
-
-    # add junction length column
-    db$L <- stringi::stri_length(db$JUNCTION)
-
-    # Parse V and J columns to get gene
-    db <- Parse_VJ(db,
-                   v_call="V_CALL",
-                   j_call="J_CALL",
-                   first=first)
-
-    # filter group
-    db_group <- db %>%
-        dplyr::filter(V == vGene, J == jGene, L == junctionLength)
-    entrySeq <- db_group$JUNCTION
-    # constants
-    nSeq <- length(entrySeq)
-    uniqueSeq <- unique(entrySeq)
-    nUniqueSeq <- length(uniqueSeq)
-    if (nUniqueSeq == 1) {
-        message(paste("number of unique sequences = 1"))
-        return(NULL)
-    }
-    l <- unique(nchar(uniqueSeq))
-    # cdr3
-    if (cdr3) uniqueSeq <- substr(uniqueSeq, 4, nchar(uniqueSeq)-3)
-    # scale parameteres
-    # neighborhood <- match.arg(neighborhood)
-    neighborhood <- "infer"
-    similarity <- NULL
-    if (neighborhood == "assign") {
-        if (is.null(similarity)) stop("similarity needs to be assigned.")
-        d <- round((1-similarity)*l)
-    } else if (neighborhood == "infer") {
-        d <- NULL
-    }
-    # calculate distance matrix
-    dist_mtx <- pairwiseDist(seq=uniqueSeq, dist_mat=getDNAMatrix(gap=0))
-    # calculate kernel matrix
-    krnl_mtx <- krnlMtxGenerator(mtx=dist_mtx, neighborhood=neighborhood, d=d)
-    # calculate affinity matrix. n.neighboors could be ceiling(sqrt(nUniqueSeq))
-    aff_mtx <- makeAffinity(mtx=round(krnl_mtx, 5), n.neighboors=nUniqueSeq)
-    n <- nrow(aff_mtx)
-    if (all(aff_mtx[!diag(nrow(aff_mtx))] == 0)) {
-        k <- n
-        message(paste("Affinity matrix is diagonal. Unique sequences belong to separate clones. nClone=", k))
-        return(list(k, "no eigenvalue", db_group))
-    } else {
-        L <- laplacian_mtx(aff_mtx)
-        evL <- eigen(L, symmetric=TRUE)
-        eigenVecs <- round(evL$vectors, 5)
-        eigenVals <- floor_dec(evL$values, 3)
-        egvRev <- rev(eigenVals)
-        nonZero.ID <- which(egvRev > 0)
-        k <- min(nonZero.ID)-1
-        # k <- which.max(diff(egvRev))   # slope: forward differencing
-        df <- data.frame(id=c(1:n), egv=egvRev)
-        p <- ggplot(df, aes(x=id, y=egv)) +
-            theme_bw() +
-            ggtitle(paste0("nClone=", k)) +
-            xlab("Number of Cluster") +
-            ylab("EigenValue") +
-            geom_point(shape=1, size=1.0) +
-            geom_vline(xintercept=k, color="red", linetype=2)
-        return(list(p, rev(eigenVals), db_group))
-    }
-}
+# plotEigenValuesSpectrum <- function(db,
+#                                     vGene, jGene, junctionLength,
+#                                     first = TRUE,
+#                                     cdr3 = FALSE) {
+#
+#     # add junction length column
+#     db$L <- stringi::stri_length(db$JUNCTION)
+#
+#     # Parse V and J columns to get gene
+#     db <- Parse_VJ(db,
+#                    v_call="V_CALL",
+#                    j_call="J_CALL",
+#                    first=first)
+#
+#     # filter group
+#     db_group <- db %>%
+#         dplyr::filter(V == vGene, J == jGene, L == junctionLength)
+#     entrySeq <- db_group$JUNCTION
+#     # constants
+#     nSeq <- length(entrySeq)
+#     uniqueSeq <- unique(entrySeq)
+#     nUniqueSeq <- length(uniqueSeq)
+#     if (nUniqueSeq == 1) {
+#         message(paste("number of unique sequences = 1"))
+#         return(NULL)
+#     }
+#     l <- unique(nchar(uniqueSeq))
+#     # cdr3
+#     if (cdr3) uniqueSeq <- substr(uniqueSeq, 4, nchar(uniqueSeq)-3)
+#     # scale parameteres
+#     # neighborhood <- match.arg(neighborhood)
+#     neighborhood <- "infer"
+#     similarity <- NULL
+#     if (neighborhood == "assign") {
+#         if (is.null(similarity)) stop("similarity needs to be assigned.")
+#         d <- round((1-similarity)*l)
+#     } else if (neighborhood == "infer") {
+#         d <- NULL
+#     }
+#     # calculate distance matrix
+#     dist_mtx <- pairwiseDist(seq=uniqueSeq, dist_mat=getDNAMatrix(gap=0))
+#     # calculate kernel matrix
+#     krnl_mtx <- krnlMtxGenerator(mtx=dist_mtx, neighborhood=neighborhood, d=d)
+#     # calculate affinity matrix. n.neighboors could be ceiling(sqrt(nUniqueSeq))
+#     aff_mtx <- makeAffinity(mtx=round(krnl_mtx, 5), n.neighboors=nUniqueSeq)
+#     n <- nrow(aff_mtx)
+#     if (all(aff_mtx[!diag(nrow(aff_mtx))] == 0)) {
+#         k <- n
+#         message(paste("Affinity matrix is diagonal. Unique sequences belong to separate clones. nClone=", k))
+#         return(list(k, "no eigenvalue", db_group))
+#     } else {
+#         L <- laplacian_mtx(aff_mtx)
+#         evL <- eigen(L, symmetric=TRUE)
+#         eigenVecs <- round(evL$vectors, 5)
+#         eigenVals <- floor_dec(evL$values, 3)
+#         egvRev <- rev(eigenVals)
+#         nonZero.ID <- which(egvRev > 0)
+#         k <- min(nonZero.ID)-1
+#         # k <- which.max(diff(egvRev))   # slope: forward differencing
+#         df <- data.frame(id=c(1:n), egv=egvRev)
+#         p <- ggplot(df, aes(x=id, y=egv)) +
+#             theme_bw() +
+#             ggtitle(paste0("nClone=", k)) +
+#             xlab("Number of Cluster") +
+#             ylab("EigenValue") +
+#             geom_point(shape=1, size=1.0) +
+#             geom_vline(xintercept=k, color="red", linetype=2)
+#         return(list(p, rev(eigenVals), db_group))
+#     }
+# }
 
 # inter-clone-distance vs intra-clone-distance
 calculateInterVsIntra <- function(db,
@@ -340,15 +340,14 @@ calculateInterVsIntra <- function(db,
                                   progress = FALSE) {
 
     # make temproary clone column
-    db$CLOE_temp <- as.character(db[[clone]])
-
-    # groups to use
-    groupBy <- c("V", "J", "L")
+    db$CLONE_temp <- as.character(db[[clone]])
 
     # find unique groups of sequences with same vgene, jgene, and junction length
     uniqueGroups <- db %>%
-        dplyr::group_by(V, J, L) %>%
-        dplyr::summarise(CLOE_temp=paste(unique(CLOE_temp), collapse=","))
+        dplyr::group_by_(.dots = c("V", "J", "L")) %>%
+        # dplyr::summarise(CLONE_temp=paste(unique(CLONE_temp), collapse=",")) %>%
+        dplyr::summarise_(CLONE_temp=interp(~paste(unique(x), collapse=","), x=as.name("CLONE_temp")))
+
     n_groups <- nrow(uniqueGroups)
 
     # Create cluster of nproc size and export namespaces
@@ -369,19 +368,20 @@ calculateInterVsIntra <- function(db,
         pb <- shazam:::progressBar(n_groups)
     }
 
+    k <- NULL
     # open dataframes
     vec_ff <- foreach(k=1:n_groups,
                       .combine="c",
                       .packages = c("dplyr"),
                       .errorhandling='stop') %dopar% {
-                          clones <- strsplit(uniqueGroups$CLOE_temp[k], split=",")[[1]]
+                          clones <- strsplit(uniqueGroups$CLONE_temp[k], split=",")[[1]]
                           l <- uniqueGroups$L[k]
                           n_clones <- length(clones)
-                          seqs <- db$JUNC_temp[db$CLOE_temp %in% clones]
-                          names(seqs) <- db$CLOE_temp[db$CLOE_temp %in% clones]
+                          seqs <- db$JUNC_temp[db$CLONE_temp %in% clones]
+                          names(seqs) <- db$CLONE_temp[db$CLONE_temp %in% clones]
                           # cat("group=", k, "/", n_groups, ", number of clones=", n_clones, ", number of sequences=", length(seqs), "\n", sep="")
                           seqs_db <- data_frame(value = seqs, name = names(seqs)) %>%
-                              group_by(name, value) %>% # alternatively: group_by(name) if name value pair is always unique
+                              dplyr::group_by_(.dots=c("name", "value")) %>% # alternatively: group_by(name) if name value pair is always unique
                               slice(1) %>%
                               ungroup()
                           seqs <- seqs_db$value
@@ -396,7 +396,7 @@ calculateInterVsIntra <- function(db,
                               if (!all(dist_mtx == 0)) {
                                   n <- n+1
                                   vec_f[n] <- max(dist_mtx)/l
-                                  names(vec_f)[n] <- paste(clones[1], "inter", sep="_")
+                                  names(vec_f)[n] <- paste(clones[1], "NA", "inter", sep="_")
                               }
                           } else {
                               for (i in 1:(n_clones-1)) {
@@ -404,7 +404,7 @@ calculateInterVsIntra <- function(db,
                                   if (!all(xx == 0)) {
                                       n <- n+1
                                       vec_f[n] <- max(xx)/l
-                                      names(vec_f)[n] <- paste(clones[i], "inter", sep="_")
+                                      names(vec_f)[n] <- paste(clones[i], "NA", "inter", sep="_")
                                   }
                                   for (j in (i+1):n_clones) {
                                       xy <- dist_mtx[rownames(dist_mtx) == clones[i], colnames(dist_mtx) == clones[j]]
@@ -420,7 +420,7 @@ calculateInterVsIntra <- function(db,
                               if (!all(yy == 0)) {
                                   n <- n+1
                                   vec_f[n] <- max(yy)/l
-                                  names(vec_f)[n] <- paste(clones[j], "inter", sep="_")
+                                  names(vec_f)[n] <- paste(clones[j], "NA", "inter", sep="_")
                               }
                           }
                           # Update progress
@@ -438,21 +438,26 @@ calculateInterVsIntra <- function(db,
     db_dff <- data.frame(keyName=names(vec_ff), VALUE=vec_ff, row.names=NULL)
     db_dff$LABEL <- "inter"
     db_dff$LABEL[grepl("intra", db_dff$keyName)] <- "intra"
-    db_dff <- cbind(stringr::str_split_fixed(db_dff$keyName, "_", n=3), db_dff)
+    clones_xy <- data.frame(matrix(unlist(stringi::stri_split_fixed(db_dff$keyName, "_", n=3)),
+                                   nrow=nrow(db_dff),
+                                   byrow=T),
+                            stringsAsFactors=FALSE)
+    db_dff <- cbind(clones_xy, db_dff)
     db_dff$keyName <- NULL
-    db_dff$`3` <- NULL
-    db_dff <- db_dff %>%
-        dplyr::rename(CLONE_X=`1`,
-                      CLONE_Y=`2`)
+    colnames(db_dff)[colnames(db_dff) == "X1"] <- "CLONE_X"
+    colnames(db_dff)[colnames(db_dff) == "X2"] <- "CLONE_Y"
+    colnames(db_dff)[colnames(db_dff) == "X3"] <- "empty"
+    db_dff$empty <- NULL
     db_dff$CLONE_Y[grepl("inter", db_dff$CLONE_Y)] <- NA
     interVsIntra <- list()
     interVsIntra[[length(interVsIntra)+1]] <- db_dff
 
     # find threshold
     db.summ <- db_dff %>%
-        dplyr::group_by(LABEL) %>%
-        dplyr::summarise(MEAN=mean(VALUE, na.rm = TRUE),
-                         SD=sd(VALUE, na.rm = TRUE))
+        dplyr::group_by_(.dots = "LABEL") %>%
+        dplyr::summarise_(MEAN=interp(~mean(x, na.rm = TRUE), x=as.name("VALUE")),
+                          SD=interp(~sd(x, na.rm = TRUE), x=as.name("VALUE")))
+
     func1.1 <- db.summ$MEAN[db.summ$LABEL == "inter"]
     func1.2 <- db.summ$SD[db.summ$LABEL == "inter"]
     func2.1 <- db.summ$MEAN[db.summ$LABEL == "intra"]
@@ -474,6 +479,8 @@ calculateInterVsIntra <- function(db,
 # plot inter-clone-distance vs intra-clone-distance
 plotInterVsIntra <- function(db, threshold) {
 
+    . <- NULL
+
     # Check for valid columns
     columns <- c("VALUE", "LABEL")
     columns <- columns[!is.null(columns)]
@@ -482,15 +489,16 @@ plotInterVsIntra <- function(db, threshold) {
     db <- select(db, c("VALUE", "LABEL"))
 
     pdat <- db %>%
-        dplyr::group_by(LABEL) %>%
+        group_by_(.dots = "LABEL") %>%
         do(data.frame(loc = density(.$VALUE, na.rm = TRUE)$x,
                       dens = density(.$VALUE, na.rm = TRUE)$y
         )
         )
 
     pdat <- pdat %>%
-        dplyr::group_by(LABEL) %>%
-        dplyr::mutate(dens_norm=normalize(dens))
+        dplyr::group_by_(.dots = "LABEL") %>%
+        dplyr::mutate_(dens_norm=interp(~normalize(x), x=as.name("dens")))
+
     # Flip and offset densities for the groups
     pdat$dens_norm <- ifelse(pdat$LABEL == 'inter', pdat$dens_norm*(-1), pdat$dens_norm)
     # fill color
@@ -507,7 +515,7 @@ plotInterVsIntra <- function(db, threshold) {
     # db2_txt <- data.frame(X=0.9,  Y=threshold+0.025, LAB=paste(meanIntra, pm, sdIntra))
 
     hline_size <- 1.0
-    txt_size <- 5.0
+    # txt_size <- 5.0
     # plot
     p <- ggplot(pdat) +
         getBaseTheme() +
@@ -522,7 +530,7 @@ plotInterVsIntra <- function(db, threshold) {
                           values=fill_manual,
                           labels = c("inter"="maximum-distance\nwithin clones  ",
                                      "intra"="minimum-distance\nbetween clones  ")) +
-        geom_polygon(aes(x=dens_norm, y=loc, fill=LABEL)) +
+        geom_polygon(aes_string(x="dens_norm", y="loc", fill="LABEL")) +
         geom_hline(yintercept=threshold, color="grey30", linetype=2, size=hline_size) #+
     # geom_text(data=mg1_txt, aes(x=X, y=Y, label=LAB), size=txt_size, inherit.aes = FALSE) +
     # geom_text(data=db1_txt, aes(x=X, y=Y, label=LAB), size=txt_size, inherit.aes = FALSE) +
@@ -570,10 +578,8 @@ calculateNeighborhoods <- function(db,
     idx <- 1
     for (i in 1:n_groups) {
         # print(paste(n_groups, i, sep=" "))
-        db_group <- db %>%
-            dplyr::filter(V == uniqueGroups$V[i],
-                          J == uniqueGroups$J[i],
-                          L == uniqueGroups$L[i])
+        db_group <- filter_(db, ~V == uniqueGroups$V[i], ~J == uniqueGroups$J[i], ~L == uniqueGroups$L[i])
+
         if (nrow(db_group) == 1) {
             # Update progress
             if (progress) { pb$tick() }
@@ -610,7 +616,7 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
         ggtitle(paste("Threshold=", threshold)) +
         xlab("Normalized hamming distance") +
         ylab("Density") +
-        geom_histogram(aes(x=sigmas, y=..density..),
+        geom_histogram(aes_string(x="sigmas", y="..density.."),
                        binwidth=binwidth, center=center, alpha=1.0, fill="black", color="white", size=0.25)
     if (!is.null(threshold)) p <- p + geom_vline(xintercept=threshold, linetype=2, size=vline_size)
     return(p)
@@ -647,18 +653,19 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 #'                           directory is used if this is not specified while \code{out_name} is specified.
 #'
 #' @details
-#' An unsupervised pipeline to identify B cell clones from adaptive immune receptor repertoire
-#' sequencing (AIRR-Seq) datasets. This method is based on spectral clustering of the junction sequences of B cell receptors
-#' (BCRs, also referred to as Immunoglobulins, (Igs)) that share the same V gene, J gene and junction length.
-#' It uses an adaptive threshold that analyzes sequences in a local neighborhood.
+#' An unsupervised pipeline to identify B cell clones from adaptive immune receptor
+#' repertoire sequencing (AIRR-Seq) datasets. This method is based on spectral clustering
+#' of the junction sequences of B cell receptors (BCRs, also referred to as Immunoglobulins,
+#' (Igs)) that share the same V gene, J gene and junction length. It uses an adaptive
+#' threshold that analyzes sequences in a local neighborhood.
 #'
 #' @note
 #' To assess the performance of clonal assignment process check \code{clonesAnalysis}.
 #'
 #' @return
-#' Returns a modified \code{db} data.frame with clone identifiers in the \code{CLONE} column. if
-#' \code{out_name} is not \code{NULL}, it will save the modified \code{db} and a summary of cloning performance in
-#' the current directory or the specified \code{out_dir}.
+#' Returns a modified \code{db} data.frame with clone identifiers in the \code{CLONE} column.
+#' if \code{out_name} is not \code{NULL}, it will save the modified \code{db} and a summary
+#' of cloning performance in the current directory or the specified \code{out_dir}.
 #'
 #' @references
 #' \enumerate{
@@ -667,9 +674,10 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 #'
 #' @examples
 #' # Readin example data as a demo
-#' data(scopeExampleDb, package="scope")
+#' data(ExampleDb, package="scope")
 #' # clone data using defineClonesScope function
-#' db_cloned <- defineClonesScope(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", first = TRUE)
+#' db <- defineClonesScope(db=ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+#'                         j_call = "J_CALL", first = TRUE)
 #' @export
 defineClonesScope <- function(db,
                               junction = "JUNCTION",
@@ -745,7 +753,7 @@ defineClonesScope <- function(db,
     # filter mod 3 junction lengths
     if (mod3) {
         nIint <- nrow(db)
-        db <- filter(db, L%%3 == 0)
+        db <- filter_(db, ~L%%3 == 0)
         nFin <- nrow(db)
         cat("MOD3 FILTER> ", "\n")
         cat(nIint-nFin, " invalid junction length(s) not mod3 in the ", junction, " column. ", "\n")
@@ -755,7 +763,7 @@ defineClonesScope <- function(db,
     # filter junctions with length >6
     if (cdr3) {
         nIint <- nrow(db)
-        db <- filter(db, L > 6)
+        db <- filter_(db, ~L > 6)
         nFin <- nrow(db)
         cat("CDR3 FILTER> ", "\n")
         cat(nIint-nFin, " invalid junction length(s) < 7 in the ", junction, " column. ", "\n")
@@ -806,6 +814,7 @@ defineClonesScope <- function(db,
     set.seed(12345)
 
     # cloning
+    i <- NULL
     db_cloned <- foreach(i=1:n_groups,
                          .combine="rbind",
                          .export=c("filterFunction", "spectralClustering", "krnlMtxGenerator",
@@ -818,7 +827,7 @@ defineClonesScope <- function(db,
                              db_group <- db %>%
                                  dplyr::filter_(filterFunction(groupBy, filterBy))
                              db_group$ID <- db_group %>%
-                                 dplyr::group_by(JUNC_temp) %>%
+                                 dplyr::group_by_(.dots = "JUNC_temp") %>%
                                  dplyr::group_indices()
                              if (length(unique(db_group$JUNC_temp)) == 1) {
                                  CLONE <- data.frame(CLONE=as.vector(paste(i, rep(1, times=nrow(db_group)), sep="_")))
@@ -852,13 +861,13 @@ defineClonesScope <- function(db,
         if (progress) cat("SAVING SUMMARY> ", "\n")
         db_summ <- db_cloned %>%
             dplyr::group_by_at(vars(one_of(groupBy))) %>%
-            dplyr::summarise(NUMBER_OF_SEQUENCE = n(),
-                             NUMBER_OF_UNIQUE_SEQUENCE = length(unique(JUNC_temp)),
-                             NUMBER_OF_CLONE = length(unique(CLONE)),
-                             CLONE = paste(unique(CLONE), collapse = ",")) %>%
-            dplyr::rename(V_GENE = V,
-                          J_GENE = J,
-                          JUNCTION_LENGTH = L)
+            dplyr::summarise_(NUMBER_OF_SEQUENCE = interp(~length(x), x=as.name("JUNC_temp")),
+                              NUMBER_OF_UNIQUE_SEQUENCE = interp(~length(unique(x)), x=as.name("JUNC_temp")),
+                              NUMBER_OF_CLONE = interp(~length(unique(x)), x=as.name("CLONE")),
+                              CLONE = interp(~paste(unique(x), collapse = ","), x=as.name("CLONE")))
+        colnames(db_summ)[colnames(db_summ) == "V"] <- "V_GENE"
+        colnames(db_summ)[colnames(db_summ) == "J"] <- "J_GENE"
+        colnames(db_summ)[colnames(db_summ) == "L"] <- "JUNCTION_LENGTH"
         fileName <- paste(out_name, "summary-pass.tsv", sep="_")
         writeChangeoDb(db_summ, file = file.path(out_dir, fileName))
     }
@@ -908,22 +917,24 @@ defineClonesScope <- function(db,
 #' @param    progress        if \code{TRUE} print a progress bar.
 #'
 #' @note
-#' Arguments \code{first} and \code{cdr3} must match the corresponding arguments used in the \link{defineClonesScope} function.
+#' Arguments \code{first} and \code{cdr3} must match the corresponding arguments
+#' used in the \link{defineClonesScope} function.
 #'
 #' @return
-#' Returns a \link{clonesAnalysisResult} object.
+#' Returns a \link{ClonesAnalysisResult} object.
 #'
 #'@examples
 #' # Readin example data as a demo
-#' data(scopeExampleDb_cloned, package="scope")
+#' data(ClonedExampleDb, package="scope")
 #' # clonal assignment analysis using clonesAnalysis function
-#' results <- clonesAnalysis(db = db_cloned, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", clone = "CLONE", first = TRUE)
+#' results <- clonesAnalysis(db = ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+#'                           j_call = "J_CALL", clone = "CLONE", first = TRUE)
 #' # print threshold (a numeric)
 #' results@threshold
 #' # get inter and intra conal distances (a data.frame)
 #' df <- results@interVsIntra[[1]]
-#' # density plot of inter versus intra clonal distances.
-#' results@plotInterVsIntra (a ggplot).
+#' # density plot of inter versus intra clonal distances  (a ggplot).
+#' results@plotInterVsIntra
 #' # get the neighborhoods used in spectral clustering (a numeric vector).
 #' ngs <- results@neighborhoods
 #' # plot histogram of neighborhoods (a ggplot).
@@ -1009,11 +1020,11 @@ clonesAnalysis <- function(db,
     p2[[length(p2)+1]] <- p
 
     # return all
-    clonesAnalysisResult <- new("clonesAnalysisResult",
+    ClonesAnalysisResult <- new("ClonesAnalysisResult",
                                 threshold=threshold,
                                 interVsIntra=interVsIntra,
                                 plotInterVsIntra=p1,
                                 neighborhoods=neighborhoods,
                                 plotNeighborhoods=p2)
-    return(clonesAnalysisResult)
+    return(ClonesAnalysisResult)
 }

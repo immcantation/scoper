@@ -4,11 +4,15 @@ Version: 0.1.0
 Date: 2018-04-17
 Authors@R: c(person("Nima", "Nouri", role=c("aut", "cre"), 
                     email="nima.nouri@yale.edu"),
+             person("Jason", "Vander Heiden", role=c("ctb"), 
+                    email="jason.vanderheiden@yale.edu"), 
              person("Steven", "Kleinstein", role=c("aut", "cph"), 
                     email="steven.kleinstein@yale.edu"))
 Title: Spectral clustering-based method for BCR clones identification
-Description: A collection of convenience functions, plotting routines, and 
-    general examples for the alakazam, shazam and tigger R packages.
+Description: Provides a computational framework for unsupervised identification B cell clones 
+             from adaptive immune receptor repertoire sequencing (AIRR-Seq) datasets. This method 
+             is based on spectral clustering of the junction sequences of B cell receptors (BCRs, 
+             also referred to as Immunoglobulins, (Igs)) that share the same V gene, J gene and junction length. 
 License: CC BY-SA 4.0
 URL: https://bitbucket.org/kleinstein/scope
 BugReports: https://bitbucket.org/kleinstein/scope/issues
@@ -20,19 +24,15 @@ Depends:
     ggplot2 (>= 2.0.0)
 Imports: 
     alakazam,
+    shazam, 
     doParallel,
-    plyr,
-    dplyr,
     foreach,
-    iterators,
-    parallel,
-    RColorBrewer,
-    reshape2,
-    scales,
-    seqinr,
+    dplyr (>= 0.5.0),
     stringi,
-    stringr,
-    tidyr
+    methods,
+    stats,
+    iterators,
+    lazyeval
 Suggests:
     knitr,
     rmarkdown,

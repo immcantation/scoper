@@ -14,6 +14,8 @@
 #' @import      dplyr
 #' @import      ggplot2
 #' @import      stringi
-#' @import      stringr
-#' @import      methods
+#' @importFrom  methods     new
+#' @importFrom  stats       density kmeans sd uniroot
+#' @importFrom  iterators   icount
+#' @importFrom  lazyeval    interp
 NULL
