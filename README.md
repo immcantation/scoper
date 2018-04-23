@@ -37,6 +37,5 @@ install()
 
 Contact
 -------------------------------------------------------------------------------
-
     For help and questions please contact the [Immcantation Group](mailto:immcantation@googlegroups.com)
 or use the [issue tracker](https://bitbucket.org/kleinstein/scope/issues?status=new&status=open).
