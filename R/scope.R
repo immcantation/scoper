@@ -2,8 +2,8 @@
 
 #' scope
 #'
-#' A collection of convenience functions, plotting routines, and
-#' general examples for the alakazam, shazam and tigger R packages.
+#' A computational framework for unsupervised identification B cell clones from
+#' adaptive immune receptor repertoire sequencing (AIRR-Seq) datasets.
 #'
 #' @name        scope
 #' @docType     package
