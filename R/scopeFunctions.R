@@ -603,6 +603,7 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 #' @examples
 #' # Readin example data as a demo
 #' data(ExampleDb, package="scope")
+#'
 #' # clone data using defineClonesScope function
 #' db <- defineClonesScope(db=ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 #'                         j_call = "J_CALL", first = TRUE)
@@ -854,17 +855,22 @@ defineClonesScope <- function(db,
 #'@examples
 #' # Readin example data as a demo
 #' data(ClonedExampleDb, package="scope")
+#'
 #' # clonal assignment analysis using clonesAnalysis function
 #' results <- clonesAnalysis(db = ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 #'                           j_call = "J_CALL", clone = "CLONE", first = TRUE)
 #' # print threshold (a numeric)
 #' results@threshold
+#'
 #' # get inter and intra conal distances (a data.frame)
 #' df <- results@interVsIntra[[1]]
+#'
 #' # density plot of inter versus intra clonal distances  (a ggplot).
 #' results@plotInterVsIntra
+#'
 #' # get the neighborhoods used in spectral clustering (a numeric vector).
 #' ngs <- results@neighborhoods
+#'
 #' # plot histogram of neighborhoods (a ggplot).
 #' results@plotNeighborhoods
 #' @export
