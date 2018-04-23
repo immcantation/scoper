@@ -1,7 +1,7 @@
 SCOPe
 -------------------------------------------------------------------------------
 
-    Provides a computational framework for unsupervised identification B cell
+Provides a computational framework for unsupervised identification B cell
 clones from adaptive immune receptor repertoire sequencing (AIRR-Seq) datasets. 
 This method is based on spectral clustering of the junction sequences of B cell 
 receptors (BCRs, Immunoglobulins) that share the same V gene, J gene and 
@@ -38,4 +38,4 @@ install()
 Contact
 -------------------------------------------------------------------------------
 
-    For help and questions please contact the [Immcantation Group](mailto:immcantation@googlegroups.com)
+For help and questions please contact the [Immcantation Group](mailto:immcantation@googlegroups.com)
