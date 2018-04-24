@@ -18,6 +18,12 @@
 #'
 #' @name        scope
 #' @docType     package
+#' @references
+#' \itemize{
+#'   \item  Nouri N and Kleinstein SH. A spectral clustering-based method for identifying
+#'   clones from high-throughput B cell repertoire sequencing data. Bioinformatics, (in press).
+#'  }
+#'
 #' @import      alakazam
 #' @import      shazam
 #' @import      doParallel
