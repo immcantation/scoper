@@ -1,0 +1,22 @@
+site_name: scope
+repo_url: https://bitbucket.org/kleinstein/scope
+theme: readthedocs
+markdown_extensions:
+  - def_list
+  - sane_lists
+  - smarty
+  - toc:
+      permalink: True
+docs_dir: docs
+pages:
+  - 'About':
+    - 'Introduction': index.md
+    - 'Package Overview': topics/scope.md
+    - 'Release Notes': news.md
+  - 'Vignettes':
+    - 'Clonal partitioning': vignettes/scope-Vignette.md
+  - 'Help Topics':
+    - topics/defineClonesScope.md
+    - topics/clonesAnalysis.md
+    - topics/ClonesAnalysisResult-class.md
+    - topics/ExampleDb.md

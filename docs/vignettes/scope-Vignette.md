@@ -1,27 +1,4 @@
----
-title: 'Scope: Spectral clustering for clonal partitioning'
-author: "Nima Nouri"
-date: '`r Sys.Date()`'
-output:
-  pdf_document:
-    dev: pdf
-    fig_height: 4
-    fig_width: 7.5
-    highlight: pygments
-    toc: yes
-  html_document:
-    fig_height: 4
-    fig_width: 7.5
-    highlight: pygments
-    theme: readable
-    toc: yes
-geometry: margin=1in
-fontsize: 11pt
-vignette: >
-  %\VignetteEngine{knitr::rmarkdown} 
-  %\VignetteIndexEntry{Clonal partitioning} 
-  %\usepackage[utf8]{inputenc}
----
+# Clonal partitioning
 
 ## Description
 `scope` package provides a computational framework for unsupervised identification B cell
@@ -114,13 +91,21 @@ directory. The `out_name` string is used as the prefix of the successfully
 processed output files. User can also asign the desire directory path to the
 `out_dir` argument. A small example Change-O database is included in the `scope` package:
 
-```{r, eval=TRUE, warning=FALSE, message=FALSE}
+
+```r
 # Readin example data as a demo
 library("scope")
 data(ExampleDb, package="scope")
 # clone data using defineClonesScope function
 db <- defineClonesScope(db=ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
                         j_call = "J_CALL", first = TRUE)
+```
+
+```
+## CLONES=  1058
+## RECORDS=  2000
+## PASS=  2000
+## FAIL=  0
 ```
 
 ## Cloning performance analysis
@@ -146,7 +131,8 @@ returns an R object including infromation to interpret clonal assignment perform
 
 A small example Change-O database is included in the `scope` package:
  
-```{r, eval=TRUE, warning=FALSE, message=FALSE}
+
+```r
 library("scope")
 # Readin example data as a demo
 data(ClonedExampleDb, package="scope")
@@ -155,12 +141,34 @@ results <- clonesAnalysis(db = ClonedExampleDb, junction = "JUNCTION", v_call = 
                           j_call = "J_CALL", clone = "CLONE", first = TRUE)
 # print threshold (a numeric)
 results@threshold
+```
+
+```
+## [1] 0.23
+```
+
+```r
 # get inter and intra conal distances (a data.frame)
 df <- results@interVsIntra[[1]]
 # density plot of inter versus intra clonal distances  (a ggplot).
 results@plotInterVsIntra
+```
+
+```
+## [[1]]
+```
+
+![plot of chunk scope-Vignette-2](figure/scope-Vignette-2-1.png)
+
+```r
 # get the neighborhoods used in spectral clustering (a numeric vector).
 ngs <- results@neighborhoods
 # plot histogram of neighborhoods (a ggplot).
 results@plotNeighborhoods
 ```
+
+```
+## [[1]]
+```
+
+![plot of chunk scope-Vignette-2](figure/scope-Vignette-2-2.png)
