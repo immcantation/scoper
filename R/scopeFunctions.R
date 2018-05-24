@@ -569,7 +569,7 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 #' @param    cdr3            if \code{TRUE} remove 3 nts from both ends of \code{junction}
 #'                           (converts IMGT junction to CDR3 region). if \code{TRUE} remove \code{junction}(s)
 #'                           with length less than 7 nts.
-#' @param    mod3            if \code{TRUE} remove \code{junction}(s) with number of nucleutides not modulus of 3.
+#' @param    mod3            if \code{TRUE} remove \code{junction}(s) with number of nucleotides not modulus of 3.
 #' @param    iter_max	     the maximum number of iterations allowed for kmean clustering step.
 #' @param    nstart	         the number of random sets chosen for kmean clustering initialization.
 #' @param    nproc           number of cores to distribute the function over.
