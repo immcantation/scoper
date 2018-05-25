@@ -13,6 +13,7 @@ pages:
     - 'Introduction': index.md
     - 'Package Overview': topics/scope.md
     - 'Release Notes': news.md
+    - 'Related Projects': projects.md
   - 'Vignettes':
     - 'Clonal partitioning': vignettes/scope-Vignette.md
   - 'Help Topics':

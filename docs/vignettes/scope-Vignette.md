@@ -1,4 +1,4 @@
-# Clonal partitioning
+# Identifying clones from high-throughput B cell repertoire sequencing data
 
 ## Description
 `scope` package provides a computational framework for unsupervised identification B cell
@@ -58,12 +58,18 @@ requires the following fields (columns) to be present in the Change-O database:
 * `J_CALL`
 * `JUNCTION`
 
-## Identifying clones from high-throughput B cell repertoire sequencing data
+## Clonal partitioning
 
 The function for the clonal family inference takes a few parameters:
 
-* `defineClonesScope(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", first = FALSE, cdr3 = FALSE, mod3 = FALSE, iter_max = 1000, nstart = 25, nproc = 1, progress = FALSE, out_name = NULL, out_dir = ".")`
-  
+
+```r
+defineClonesScope(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", 
+                  first = FALSE, cdr3 = FALSE, mod3 = FALSE, iter_max = 1000, 
+                  nstart = 25, nproc = 1, progress = FALSE, out_name = NULL, 
+                  out_dir = ".")
+```
+
 The data set needs to be passed to the argument `db`, which at the end would be
 returned as a modified `db` data.frame with clone identifiers in the `CLONE`
 column. Name of the columns containing nucleotide sequences (junction region), the V-segment
@@ -97,7 +103,7 @@ processed output files. User can also asign the desire directory path to the
 library("scope")
 data(ExampleDb, package="scope")
 # clone data using defineClonesScope function
-db <- defineClonesScope(db=ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+db <- defineClonesScope(db = ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
                         j_call = "J_CALL", first = TRUE)
 ```
 
@@ -108,13 +114,18 @@ db <- defineClonesScope(db=ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 ## FAIL=  0
 ```
 
-## Cloning performance analysis
+## Clonal analysis
 
 To perform a series of analysis to assess the cloning performance, `clonesAnalysis` function 
 has been developed:
 
-`clonesAnalysis(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", clone = "CLONE", first = FALSE, cdr3 = FALSE, nproc = 1, progress = FALSE)`
-  
+
+```r
+clonesAnalysis(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", 
+               clone = "CLONE", first = FALSE, cdr3 = FALSE, nproc = 1, 
+               progress = FALSE)
+```
+
 The `clonesAnalysis` function invokes the cloned `db` data.frame and 
 provides summary statistics and visualization of the
 clonal clustering results. The arguments `junction`, `v_call`, `j_call`,
@@ -158,7 +169,7 @@ results@plotInterVsIntra
 ## [[1]]
 ```
 
-![plot of chunk scope-Vignette-2](figure/scope-Vignette-2-1.png)
+![plot of chunk scope-Vignette-4](figure/scope-Vignette-4-1.png)
 
 ```r
 # get the neighborhoods used in spectral clustering (a numeric vector).
@@ -171,4 +182,4 @@ results@plotNeighborhoods
 ## [[1]]
 ```
 
-![plot of chunk scope-Vignette-2](figure/scope-Vignette-2-2.png)
+![plot of chunk scope-Vignette-4](figure/scope-Vignette-4-2.png)
