@@ -1,7 +1,7 @@
 Package: scope
 Type: Package
 Version: 0.1.0
-Date: 2018-04-17
+Date: 2018-05-31
 Authors@R: c(person("Nima", "Nouri", role=c("aut", "cre"), 
                     email="nima.nouri@yale.edu"),
              person("Jason", "Vander Heiden", role=c("ctb"), 
@@ -23,8 +23,8 @@ Depends:
     R (>= 3.1.2),
     ggplot2 (>= 2.0.0)
 Imports: 
-    alakazam,
-    shazam, 
+    alakazam (>= 0.2.10.999),
+    shazam (>= 0.1.9.999), 
     doParallel,
     foreach,
     dplyr (>= 0.5.0),

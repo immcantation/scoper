@@ -293,7 +293,7 @@ calculateInterVsIntra <- function(db,
     # check the progressbar
     if (progress) {
         cat("INTER AND INTRA DISTANCES ANALYSIS> ", "\n")
-        pb <- shazam:::progressBar(n_groups)
+        pb <- progressBar(n_groups)
     }
 
     k <- NULL
@@ -412,7 +412,7 @@ plotInterVsIntra <- function(db, threshold) {
     # Check for valid columns
     columns <- c("VALUE", "LABEL")
     columns <- columns[!is.null(columns)]
-    check <- shazam:::checkColumns(db, columns)
+    check <- checkColumns(db, columns)
     if (check != TRUE) { stop(check) }
     db <- select(db, c("VALUE", "LABEL"))
 
@@ -498,7 +498,7 @@ calculateNeighborhoods <- function(db,
     if (progress) {
         cat("\n")
         cat("NEIGHBORHOOD ANALYSIS> ", "\n")
-        pb <- shazam:::progressBar(n_groups)
+        pb <- progressBar(n_groups)
     }
 
     # sigma anlysis
@@ -644,15 +644,17 @@ defineClonesScope <- function(db,
     # Check for valid columns
     columns <- c(junction, v_call, j_call) #, fields
     columns <- columns[!is.null(columns)]
-    check <- shazam:::checkColumns(db, columns)
+    check <- checkColumns(db, columns)
     if (check != TRUE) { stop(check) }
 
     # Check for invalid characters
-    valid_seq <- sapply(db[[junction]], shazam:::allValidChars, colnames(getDNAMatrix(gap=0)))
+    valid_chars <- colnames(getDNAMatrix(gap=0))
+    .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
+    valid_seq <- sapply(db[[junction]], .validateSeq)
     not_valid_seq <- which(!valid_seq)
-    if (length(not_valid_seq)>0) {
+    if (length(not_valid_seq) > 0) {
         stop("Invalid sequence characters in the ", junction, " column. ",
-                length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  colnames(getDNAMatrix(gap=0)), "'")
+                length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'")
     }
 
     # chaeck outputs
@@ -668,9 +670,6 @@ defineClonesScope <- function(db,
     #     stop(" 'neighborhood' must be specified.")
     # }
     # if (neighborhood == "assign" & is.null(similarity)) stop("similarity needs to be assigned.")
-
-    # Convert sequence columns to uppercase
-    db <- shazam:::toupperColumns(db, junction)
 
     # add temporary junction column
     db$JUNC_temp <- db[[junction]]
@@ -736,7 +735,7 @@ defineClonesScope <- function(db,
     # check the progressbar
     if (progress) {
         cat("CLONING> ", "\n")
-        pb <- shazam:::progressBar(n_groups)
+        pb <- progressBar(n_groups)
     }
 
     # set seed for reproducibility
@@ -888,7 +887,7 @@ clonesAnalysis <- function(db,
     # Check for valid columns
     columns <- c(junction, v_call, j_call, clone)
     columns <- columns[!is.null(columns)]
-    check <- shazam:::checkColumns(db, columns)
+    check <- checkColumns(db, columns)
     if (check != TRUE) { stop(check) }
 
     # add junction temp column
