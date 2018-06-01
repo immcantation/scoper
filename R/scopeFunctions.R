@@ -164,6 +164,15 @@ normalize <- function(x) {
     return ((x-min(x)) / (max(x)-min(x)))
 }
 
+# Intersection Function
+intersectPoint <- function(t,
+                           func1.0 = 0, func1.1 = 0, func1.2 = 0,
+                           func2.0 = 0, func2.1 = 0, func2.2 = 0) {
+    fit1 <- func1.0*dnorm(t, mean = func1.1, sd = func1.2)
+    fit2 <- func2.0*dnorm(t, mean = func2.1, sd = func2.2)
+    return(fit1 - fit2)
+}
+
 # assigne v and j jenes
 Parse_VJ <- function(db,
                      v_call="V_CALL",
@@ -392,8 +401,7 @@ calculateInterVsIntra <- function(db,
     func2.2 <- db.summ$SD[db.summ$LABEL == "intra"]
     minInt <- 0
     maxInt <- 1
-    intxn <- uniroot(shazam:::intersectPoint, interval = c(minInt, maxInt), tol=1e-8, extendInt="yes",
-                     first_curve = "norm", second_curve = "norm",
+    intxn <- uniroot(intersectPoint, interval = c(minInt, maxInt), tol=1e-8, extendInt="yes",
                      func1.0=1, func1.1=func1.1, func1.2=func1.2,
                      func2.0=1, func2.1=func2.1, func2.2=func2.2)
     threshold <- round(intxn$root, 2)
