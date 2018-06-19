@@ -1,13 +1,16 @@
+theme: readthedocs
 site_name: scope
 repo_url: https://bitbucket.org/kleinstein/scope
-theme: readthedocs
+docs_dir: docs
 markdown_extensions:
   - def_list
   - sane_lists
   - smarty
+  - pymdownx.arithmatex
   - toc:
       permalink: True
-docs_dir: docs
+extra_javascript:
+  - https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML
 pages:
   - 'About':
     - 'Introduction': index.md
