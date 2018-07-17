@@ -173,35 +173,6 @@ intersectPoint <- function(t,
     return(fit1 - fit2)
 }
 
-# assigne v and j jenes
-Parse_VJ <- function(db,
-                     v_call="V_CALL",
-                     j_call="J_CALL",
-                     first=TRUE) {
-    if (first) {
-        db$V <- alakazam::getGene(db[[v_call]])
-        db$J <- alakazam::getGene(db[[j_call]])
-    } else {
-        db$V1 <- alakazam::getGene(db[[v_call]], first=FALSE)
-        db$J1 <- alakazam::getGene(db[[j_call]], first=FALSE)
-        db$V <- db$V1
-        db$J <- db$J1
-        # Reassign V genes to most general group of genes
-        for(ambig in unique(db$V1[grepl(',', db$V1)])) {
-            for(g in strsplit(ambig, split=',')[[1]]) {
-                db$V[grepl(g, db$V1)] = ambig
-            }
-        }
-        # Reassign J genes to most general group of genes
-        for(ambig in unique(db$J1[grepl(',',db$J1)])) {
-            for(g in strsplit(ambig, split=',')[[1]]) {
-                db$J[grepl(g, db$J1)] = ambig
-            }
-        }
-    }
-    return(db)
-}
-
 # spectral clustering algorithm
 spectralClustering <- function(entrySeq,
                                id,
@@ -281,7 +252,7 @@ calculateInterVsIntra <- function(db,
 
     # find unique groups of sequences with same vgene, jgene, and junction length
     uniqueGroups <- db %>%
-        dplyr::group_by_(.dots = c("V", "J", "L")) %>%
+        dplyr::group_by_(.dots = c("VJ_GROUP", "L")) %>%
         # dplyr::summarise(CLONE_temp=paste(unique(CLONE_temp), collapse=",")) %>%
         dplyr::summarise_(CLONE_temp=interp(~paste(unique(x), collapse=","), x=as.name("CLONE_temp")))
 
@@ -291,7 +262,7 @@ calculateInterVsIntra <- function(db,
     if(nproc == 1) {
         # If needed to run on a single core/cpu then, register DoSEQ
         # (needed for 'foreach' in non-parallel mode)
-        foreach::registerDoSEQ()
+        registerDoSEQ()
     } else if( nproc > 1 ) {
         cluster <- parallel::makeCluster(nproc, type="PSOCK")
         registerDoParallel(cluster)
@@ -375,7 +346,7 @@ calculateInterVsIntra <- function(db,
     db_dff <- data.frame(keyName=names(vec_ff), VALUE=vec_ff, row.names=NULL)
     db_dff$LABEL <- "inter"
     db_dff$LABEL[grepl("intra", db_dff$keyName)] <- "intra"
-    clones_xy <- data.frame(matrix(unlist(stringi::stri_split_fixed(db_dff$keyName, "_", n=3)),
+    clones_xy <- data.frame(matrix(unlist(stri_split_fixed(db_dff$keyName, "_", n=3)),
                                    nrow=nrow(db_dff),
                                    byrow=T),
                             stringsAsFactors=FALSE)
@@ -460,7 +431,7 @@ plotInterVsIntra <- function(db, threshold) {
               axis.ticks.x = element_blank(),
               axis.title.y=element_text(size=12),
               axis.text.y=element_text(size=11)) +
-        ggtitle(paste("Threshold=", threshold)) +
+        ggtitle(paste("Effective threshold=", threshold)) +
         ylab("Normalized hamming distance") +
         scale_fill_manual(name="",
                           values=fill_manual,
@@ -486,7 +457,7 @@ calculateNeighborhoods <- function(db,
                                    cdr3 = FALSE,
                                    progress = FALSE) {
     # groups to use
-    groupBy <- c("V", "J", "L")
+    groupBy <- c("VJ_GROUP", "L")
     # find unique groups of sequences with same vgene, jgene, and junction length
     uniqueGroups <- data.frame(unique(db[, groupBy]))
     colnames(uniqueGroups) <- groupBy
@@ -514,7 +485,7 @@ calculateNeighborhoods <- function(db,
     idx <- 1
     for (i in 1:n_groups) {
         # print(paste(n_groups, i, sep=" "))
-        db_group <- filter_(db, ~V == uniqueGroups$V[i], ~J == uniqueGroups$J[i], ~L == uniqueGroups$L[i])
+        db_group <- filter_(db, ~VJ_GROUP == uniqueGroups$VJ_GROUP[i], ~L == uniqueGroups$L[i])
 
         if (nrow(db_group) == 1) {
             # Update progress
@@ -549,7 +520,7 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
         getBaseTheme() +
         theme(axis.text=element_text(size=11),
               axis.title=element_text(size=12)) +
-        ggtitle(paste("Threshold=", threshold)) +
+        ggtitle(paste("Effective threshold=", threshold)) +
         xlab("Normalized hamming distance") +
         ylab("Density") +
         geom_histogram(aes_string(x="sigmas", y="..density.."),
@@ -640,7 +611,7 @@ defineClonesScope <- function(db,
     rec_count <- nrow(db)
 
     # temp columns
-    temp_cols <- c("V", "J", "L", "JUNC_temp", "NUMBRE_OF_N", "NUMBRE_OF_DOT", "V1", "J1", "ID","CLONE_temp")
+    temp_cols <- c("VJ_GROUP", "L", "JUNC_temp", "NUMBRE_OF_N", "NUMBRE_OF_DOT", "ID","CLONE_temp")
 
     # check for invalid columns
     invalid_cols <- c("CLONE", temp_cols)
@@ -683,7 +654,7 @@ defineClonesScope <- function(db,
     db$JUNC_temp <- db[[junction]]
 
     # add junction length column
-    db$L <- stringi::stri_length(db$JUNC_temp)
+    db$L <- stri_length(db$JUNC_temp)
 
     # check for mod3
     # filter mod 3 junction lengths
@@ -706,17 +677,17 @@ defineClonesScope <- function(db,
         # add cdr3 temp column
         db$JUNC_temp <- substr(db$JUNC_temp, 4, db$L-3)
         # update cdr3 length column
-        db$L <- stringi::stri_length(db$JUNC_temp)
+        db$L <- stri_length(db$JUNC_temp)
     }
 
     # Parse V and J columns to get gene
-    db <- Parse_VJ(db,
-                   v_call=v_call,
-                   j_call=j_call,
-                   first=first)
+    db <- groupByGene(db,
+                      v_call=v_call,
+                      j_call=j_call,
+                      first=first)
 
     # groups to use
-    groupBy <- c("V", "J", "L")
+    groupBy <- c("VJ_GROUP", "L")
     # if (!is.null(fields)) {
     #     groupBy <- append(groupBy, fields)
     # }
@@ -732,7 +703,7 @@ defineClonesScope <- function(db,
     if(nproc == 1) {
         # If needed to run on a single core/cpu then, register DoSEQ
         # (needed for 'foreach' in non-parallel mode)
-        foreach::registerDoSEQ()
+        registerDoSEQ()
     } else if( nproc > 1 ) {
         cluster <- parallel::makeCluster(nproc, type="PSOCK")
         registerDoParallel(cluster)
@@ -801,8 +772,6 @@ defineClonesScope <- function(db,
                               NUMBER_OF_UNIQUE_SEQUENCE = interp(~length(unique(x)), x=as.name("JUNC_temp")),
                               NUMBER_OF_CLONE = interp(~length(unique(x)), x=as.name("CLONE")),
                               CLONE = interp(~paste(unique(x), collapse = ","), x=as.name("CLONE")))
-        colnames(db_summ)[colnames(db_summ) == "V"] <- "V_GENE"
-        colnames(db_summ)[colnames(db_summ) == "J"] <- "J_GENE"
         colnames(db_summ)[colnames(db_summ) == "L"] <- "JUNCTION_LENGTH"
         fileName <- paste(out_name, "summary-pass.tsv", sep="_")
         writeChangeoDb(db_summ, file = file.path(out_dir, fileName))
@@ -902,21 +871,21 @@ clonesAnalysis <- function(db,
     db$JUNC_temp <- db[[junction]]
 
     # add junction length column
-    db$L <- stringi::stri_length(db$JUNC_temp)
+    db$L <- stri_length(db$JUNC_temp)
 
     # check for cdr3
     if (cdr3) {
         # add cdr3 temp column
         db$JUNC_temp <- substr(db$JUNC_temp, 4, db$L-3)
         # update cdr3 length column
-        db$L <- stringi::stri_length(db$JUNC_temp)
+        db$L <- stri_length(db$JUNC_temp)
     }
 
     # Parse V and J columns to get gene
-    db <- Parse_VJ(db,
-                   v_call=v_call,
-                   j_call=j_call,
-                   first=first)
+    db <- groupByGene(db,
+                      v_call=v_call,
+                      j_call=j_call,
+                      first=first)
 
     # calculate inter and intra distances
     results <- calculateInterVsIntra(db,

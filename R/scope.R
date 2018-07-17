@@ -24,14 +24,24 @@
 #'   clones from high-throughput B cell repertoire sequencing data. Bioinformatics, (in press).
 #'  }
 #'
-#' @import      alakazam
-#' @import      shazam
-#' @import      doParallel
-#' @import      foreach
-#' @import      dplyr
-#' @import      ggplot2
-#' @import      stringi
 #' @import      methods
+#' @importFrom  ggplot2     ggplot aes_string
+#'                          theme theme_bw element_text element_blank element_rect
+#'                          ggtitle xlab ylab
+#'                          scale_fill_manual
+#'                          geom_polygon geom_histogram geom_hline geom_vline
+#' @importFrom  dplyr       do n desc funs %>%
+#'                          as_data_frame data_frame data_frame_
+#'                          bind_cols bind_rows combine
+#'                          filter filter_ select select_ arrange arrange_
+#'                          group_by group_by_ ungroup
+#'                          mutate mutate_ summarize summarize_
+#'                          mutate_at summarize_at vars slice one_of
+#' @importFrom  stringi     stri_split_fixed stri_length
+#' @importFrom  doParallel  registerDoParallel
+#' @importFrom  foreach     foreach %dopar% registerDoSEQ
+#' @importFrom  alakazam    pairwiseDist checkColumns getDNAMatrix progressBar writeChangeoDb
+#' @importFrom  shazam      groupByGene
 #' @importFrom  stats       density kmeans sd uniroot dnorm
 #' @importFrom  iterators   icount
 #' @importFrom  lazyeval    interp
