@@ -40,8 +40,7 @@
 #' @importFrom  stringi     stri_split_fixed stri_length
 #' @importFrom  doParallel  registerDoParallel
 #' @importFrom  foreach     foreach %dopar% registerDoSEQ
-#' @importFrom  alakazam    pairwiseDist checkColumns getDNAMatrix progressBar writeChangeoDb
-#' @importFrom  shazam      groupByGene
+#' @importFrom  alakazam    pairwiseDist checkColumns getDNAMatrix progressBar writeChangeoDb groupGenes
 #' @importFrom  stats       density kmeans sd uniroot dnorm
 #' @importFrom  iterators   icount
 #' @importFrom  lazyeval    interp

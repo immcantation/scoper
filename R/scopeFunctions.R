@@ -681,10 +681,10 @@ defineClonesScope <- function(db,
     }
 
     # Parse V and J columns to get gene
-    db <- groupByGene(db,
-                      v_call=v_call,
-                      j_call=j_call,
-                      first=first)
+    db <- groupGenes(db,
+                     v_call=v_call,
+                     j_call=j_call,
+                     first=first)
 
     # groups to use
     groupBy <- c("VJ_GROUP", "L")
@@ -882,10 +882,10 @@ clonesAnalysis <- function(db,
     }
 
     # Parse V and J columns to get gene
-    db <- groupByGene(db,
-                      v_call=v_call,
-                      j_call=j_call,
-                      first=first)
+    db <- groupGenes(db,
+                     v_call=v_call,
+                     j_call=j_call,
+                     first=first)
 
     # calculate inter and intra distances
     results <- calculateInterVsIntra(db,
