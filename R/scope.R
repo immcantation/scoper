@@ -20,8 +20,8 @@
 #' @docType     package
 #' @references
 #' \itemize{
-#'   \item  Nouri N and Kleinstein SH. A spectral clustering-based method for identifying
-#'   clones from high-throughput B cell repertoire sequencing data. Bioinformatics, (in press).
+#'   \item  Nouri N and Kleinstein SH (2018). A spectral clustering-based method for identifying clones
+#'   from high-throughput B cell repertoire sequencing data. Bioinformatics, 34(13):i341-i349.
 #'  }
 #'
 #' @import      methods
