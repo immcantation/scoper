@@ -1,5 +1,4 @@
 site_name: scope
-site_favicon: img/immcantation.ico
 theme: readthedocs
 repo_url: https://bitbucket.org/kleinstein/scope
 docs_dir: docs
