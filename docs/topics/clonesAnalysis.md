@@ -71,25 +71,9 @@ Examples
 -------------------
 
 ```R
-# Readin example data as a demo
-data(ClonedExampleDb, package="scope")
-
 # clonal assignment analysis using clonesAnalysis function
-results <- clonesAnalysis(db = ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+results <- clonesAnalysis(ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 j_call = "J_CALL", clone = "CLONE", first = TRUE)
-
-```
-
-*
-Attaching package: ‘dplyr’
-**The following objects are masked from ‘package:stats’:
-
-    filter, lag
-**The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-*
-```R
 # print threshold (a numeric)
 results@threshold
 
@@ -118,7 +102,7 @@ results@plotInterVsIntra
 
 ```
 
-![9](clonesAnalysis-9.png)
+![5](clonesAnalysis-5.png)
 
 ```
 
@@ -141,7 +125,7 @@ results@plotNeighborhoods
 
 ```
 
-![13](clonesAnalysis-13.png)
+![9](clonesAnalysis-9.png)
 
 ```
 

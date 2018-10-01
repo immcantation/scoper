@@ -107,11 +107,8 @@ Examples
 -------------------
 
 ```R
-# Readin example data as a demo
-data(ExampleDb, package="scope")
-
 # clone data using defineClonesScope function
-db <- defineClonesScope(db=ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+db <- defineClonesScope(ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 j_call = "J_CALL", first = TRUE)
 ```
 
