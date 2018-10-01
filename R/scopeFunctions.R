@@ -580,11 +580,8 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 #'  }
 #'
 #' @examples
-#' # Readin example data as a demo
-#' data(ExampleDb, package="scope")
-#'
 #' # clone data using defineClonesScope function
-#' db <- defineClonesScope(db=ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+#' db <- defineClonesScope(ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 #'                         j_call = "J_CALL", first = TRUE)
 #' @export
 defineClonesScope <- function(db,
@@ -829,11 +826,8 @@ defineClonesScope <- function(db,
 #' Returns a \link{ClonesAnalysisResult} object.
 #'
 #'@examples
-#' # Readin example data as a demo
-#' data(ClonedExampleDb, package="scope")
-#'
 #' # clonal assignment analysis using clonesAnalysis function
-#' results <- clonesAnalysis(db = ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+#' results <- clonesAnalysis(ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 #'                           j_call = "J_CALL", clone = "CLONE", first = TRUE)
 #' # print threshold (a numeric)
 #' results@threshold
