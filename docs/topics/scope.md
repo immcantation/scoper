@@ -28,8 +28,8 @@ References
 -------------------
 
 
-+ Nouri N and Kleinstein SH. A spectral clustering-based method for identifying
-clones from high-throughput B cell repertoire sequencing data. Bioinformatics, (in press).
++ Nouri N and Kleinstein SH (2018). A spectral clustering-based method for identifying clones
+from high-throughput B cell repertoire sequencing data. Bioinformatics, 34(13):i341-i349.
  
 
 

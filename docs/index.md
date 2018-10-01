@@ -53,12 +53,3 @@ For help and questions please contact the [Immcantation Group](mailto:immcantati
 [Nima Nouri](mailto:nima.nouri@yale.edu) (aut, cre)  
 [Jason Vander Heiden](mailto:jason.vanderheiden@yale.edu) (ctb)  
 [Steven Kleinstein](mailto:steven.kleinstein@yale.edu) (aut, cph)
-
-# Citing
-
-To cite the SCOPe package in publications, please use:
-
-Nouri N and Kleinstein SH (2018), “A spectral clustering-based method for identifying clones
-from high-throughput B cell repertoire sequencing data.” _Bioinformatics_, *34*(13):i341-i349.
-doi:10.1093/bioinformatics/bty235 (URL:https://doi.org/10.1093/bioinformatics/bty235).
- 
