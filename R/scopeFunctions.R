@@ -199,7 +199,7 @@ spectralClustering <- function(entrySeq,
     # calculate kernel matrix
     krnl_mtx <- krnlMtxGenerator(mtx=dist_mtx, neighborhood=neighborhood, d=d)
     # calculate affinity matrix. n.neighboors could be ceiling(sqrt(nUniqueSeq))
-    aff_mtx <- makeAffinity(mtx=round(krnl_mtx, 5), n.neighboors=nUniqueSeq)
+    aff_mtx <- makeAffinity(mtx=round(krnl_mtx, 2), n.neighboors=nUniqueSeq)
     # clustering
     unique_idCluster <- kMeanClustering(entry=aff_mtx, iter_max=iter_max, nstart=nstart)
     # back to reality
