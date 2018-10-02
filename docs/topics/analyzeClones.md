@@ -1,16 +1,16 @@
-**clonesAnalysis** - *clonal assignment analysis*
+**analyzeClones** - *Clonal assignment analysis*
 
 Description
 --------------------
 
-The `clonesAnalysis` function performs a series of analysis to assess the performance of
+The `analyzeClones` function performs a series of analysis to assess the performance of
 `defineClonesScope` function.
 
 
 Usage
 --------------------
 ```
-clonesAnalysis(db, junction = "JUNCTION", v_call = "V_CALL",
+analyzeClones(db, junction = "JUNCTION", v_call = "V_CALL",
 j_call = "J_CALL", clone = "CLONE", first = FALSE, cdr3 = FALSE,
 nproc = 1, progress = FALSE)
 ```
@@ -56,7 +56,7 @@ progress
 Value
 -------------------
 
-Returns a [ClonesAnalysisResult](ClonesAnalysisResult-class.md) object.
+Returns a [ClonalAnalysis](ClonalAnalysis-class.md) object.
 
 
 Note
@@ -71,8 +71,8 @@ Examples
 -------------------
 
 ```R
-# clonal assignment analysis using clonesAnalysis function
-results <- clonesAnalysis(ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+# Clonal assignment analysis
+results <- analyzeClones(ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 j_call = "J_CALL", clone = "CLONE", first = TRUE)
 # print threshold (a numeric)
 results@threshold
@@ -89,10 +89,10 @@ results@threshold
 ```R
 
 # get inter and intra conal distances (a data.frame)
-df <- results@interVsIntra[[1]]
+df <- results@inter_intra[[1]]
 
 # density plot of inter versus intra clonal distances  (a ggplot).
-results@plotInterVsIntra
+results@plot_inter_intra
 
 ```
 
@@ -102,7 +102,7 @@ results@plotInterVsIntra
 
 ```
 
-![5](clonesAnalysis-5.png)
+![5](analyzeClones-5.png)
 
 ```
 
@@ -116,7 +116,7 @@ results@plotInterVsIntra
 ngs <- results@neighborhoods
 
 # plot histogram of neighborhoods (a ggplot).
-results@plotNeighborhoods
+results@plot_neighborhoods
 ```
 
 
@@ -125,7 +125,7 @@ results@plotNeighborhoods
 
 ```
 
-![9](clonesAnalysis-9.png)
+![9](analyzeClones-9.png)
 
 ```
 

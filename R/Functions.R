@@ -1,12 +1,8 @@
-# Generates distance to nearest neighbor
-
-#' @include scope.R
-NULL
-
 #### Classes ####
-#' Output of the clonesAnalysis function
+
+#' Output of the analyzeClones function
 #'
-#' \code{ClonesAnalysisResult} contains output from the \link{clonesAnalysis} function.
+#' \code{ClonalAnalysis} contains output from the \link{analyzeClones} function.
 #' It includes infromation to interpret clonal assignment performance.
 #'
 #' @slot   threshold              cut-off separating the inter (within) and intra (between)
@@ -19,13 +15,13 @@ NULL
 #' @slot   plot_neighborhoods      histogram of neighborhoods. The threshold is shown with a vertical
 #'                                dashed-line.
 #'
-#' @seealso      \link{clonesAnalysis}
+#' @seealso      \link{analyzeClones}
 #'
-#' @name         ClonesAnalysisResult-class
-#' @rdname       ClonesAnalysisResult-class
-#' @aliases      ClonesAnalysisResult
-#' @exportClass  ClonesAnalysisResult
-setClass("ClonesAnalysisResult",
+#' @name         ClonalAnalysis-class
+#' @rdname       ClonalAnalysis-class
+#' @aliases      ClonalAnalysis
+#' @exportClass  ClonalAnalysis
+setClass("ClonalAnalysis",
          slots = c(threshold="numeric",
                    inter_intra="list",
                    plot_inter_intra="list",
@@ -349,10 +345,10 @@ calculateInterVsIntra <- function(db,
                      func2.0=1, func2.1=func2.1, func2.2=func2.2)
     threshold <- round(intxn$root, 2)
 
-    ClonesAnalysisResult <- new("ClonesAnalysisResult",
+    ClonalAnalysis <- new("ClonalAnalysis",
                                 inter_intra=interVsIntra,
                                 threshold=threshold)
-    return(ClonesAnalysisResult)
+    return(ClonalAnalysis)
 }
 
 # plot inter-clone-distance vs intra-clone-distance
@@ -539,7 +535,7 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 #' threshold that analyzes sequences in a local neighborhood.
 #'
 #' @note
-#' To assess the performance of clonal assignment process check \code{clonesAnalysis}.
+#' To assess the performance of clonal assignment process check \code{analyzeClones}.
 #'
 #' @return
 #' Returns a modified \code{db} data.frame with clone identifiers in the \code{CLONE} column.
@@ -769,10 +765,11 @@ defineClonesScope <- function(db,
 
 
 
-#### clonal analysis ####
-#' clonal assignment analysis
+#### Clonal analysis ####
+
+#' Clonal assignment analysis
 #'
-#' The \code{clonesAnalysis} function performs a series of analysis to assess the performance of
+#' The \code{analyzeClones} function performs a series of analysis to assess the performance of
 #' \code{defineClonesScope} function.
 #'
 #' @param    db              data.frame with Change-O style columns containing sequence data.
@@ -795,11 +792,11 @@ defineClonesScope <- function(db,
 #' used in the \link{defineClonesScope} function.
 #'
 #' @return
-#' Returns a \link{ClonesAnalysisResult} object.
+#' Returns a \link{ClonalAnalysis} object.
 #'
 #'@examples
-#' # clonal assignment analysis using clonesAnalysis function
-#' results <- clonesAnalysis(ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+#' # Clonal assignment analysis
+#' results <- analyzeClones(ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 #'                           j_call = "J_CALL", clone = "CLONE", first = TRUE)
 #' # print threshold (a numeric)
 #' results@threshold
@@ -816,7 +813,7 @@ defineClonesScope <- function(db,
 #' # plot histogram of neighborhoods (a ggplot).
 #' results@plot_neighborhoods
 #' @export
-clonesAnalysis <- function(db,
+analyzeClones <- function(db,
                            junction = "JUNCTION",
                            v_call = "V_CALL",
                            j_call = "J_CALL",
@@ -896,11 +893,12 @@ clonesAnalysis <- function(db,
     p2[[length(p2)+1]] <- p
 
     # return all
-    ClonesAnalysisResult <- new("ClonesAnalysisResult",
-                                threshold=threshold,
-                                inter_intra=interVsIntra,
-                                plot_inter_intra=p1,
-                                neighborhoods=neighborhoods,
-                                plot_neighborhoods=p2)
-    return(ClonesAnalysisResult)
+    analysis <- new("ClonalAnalysis",
+                    threshold=threshold,
+                    inter_intra=interVsIntra,
+                    plot_inter_intra=p1,
+                    neighborhoods=neighborhoods,
+                    plot_neighborhoods=p2)
+    
+    return(analysis)
 }

@@ -18,8 +18,8 @@ Spectral Clustering for clOne Partitioning (SCOPe)
 
 
 
-+ [defineClonesScope](defineClonesScope.md):      Clustering sequences into clonal groups.
-+ [clonesAnalysis](clonesAnalysis.md):         Summary statistics and visualization of the
++ [defineClonesScope](defineClonesScope.md):  Clustering sequences into clonal groups.
++ [analyzeClones](analyzeClones.md):      Summary statistics and visualization of the
 clonal clustering results.
 
 
@@ -28,9 +28,9 @@ References
 -------------------
 
 
-+ Nouri N and Kleinstein SH (2018). A spectral clustering-based method for identifying clones
+1. Nouri N and Kleinstein SH (2018). A spectral clustering-based method for identifying clones
 from high-throughput B cell repertoire sequencing data. Bioinformatics, 34(13):i341-i349.
- 
+
 
 
 

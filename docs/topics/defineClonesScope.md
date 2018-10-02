@@ -91,7 +91,7 @@ threshold that analyzes sequences in a local neighborhood.
 Note
 -------------------
 
-To assess the performance of clonal assignment process check `clonesAnalysis`.
+To assess the performance of clonal assignment process check `analyzeClones`.
 
 
 References

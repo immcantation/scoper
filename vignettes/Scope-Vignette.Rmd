@@ -128,21 +128,21 @@ db <- defineClonesScope(db = ExampleDb, junction = "JUNCTION", v_call = "V_CALL"
 
 ## Clonal analysis
 
-To perform a series of analysis to assess the cloning performance, `clonesAnalysis` function 
+To perform a series of analysis to assess the cloning performance, `analyzeClones` function 
 has been developed:
 
 ```{r, eval=FALSE, warning=FALSE, message=FALSE}
-clonesAnalysis(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", 
+analyzeClones(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", 
                clone = "CLONE", first = FALSE, cdr3 = FALSE, nproc = 1, 
                progress = FALSE)
 ```
 
-The `clonesAnalysis` function invokes the cloned `db` data.frame and 
+The `analyzeClones` function invokes the cloned `db` data.frame and 
 provides summary statistics and visualization of the
 clonal clustering results. The arguments `junction`, `v_call`, `j_call`,
 `first`, and `cdr3` should match the parameters which were passed to the
 `defineClonesScope` function and the name of the clone identifier column is
-invoked by the argument `clone`. After analyzing the `clonesAnalysis` function 
+invoked by the argument `clone`. After analyzing the `analyzeClones` function 
 returns an R object including infromation to interpret clonal assignment performance:
 
 1. __threshold__: effective cut-off separating the inter (within) and intra (between) clonal distances.
@@ -155,10 +155,10 @@ A small example Change-O database is included in the `scope` package:
  
 ```{r, eval=TRUE, warning=FALSE, message=FALSE}
 library("scope")
-# Readin example data as a demo
+# Read in example data as a demo
 data(ClonedExampleDb, package="scope")
-# clonal assignment analysis using clonesAnalysis function
-results <- clonesAnalysis(db = ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+# Clonal assignment analysis
+results <- analyzeClones(db = ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
                           j_call = "J_CALL", clone = "CLONE", first = TRUE)
 # print threshold (a numeric)
 results@threshold

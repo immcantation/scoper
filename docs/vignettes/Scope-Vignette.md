@@ -116,22 +116,22 @@ db <- defineClonesScope(db = ExampleDb, junction = "JUNCTION", v_call = "V_CALL"
 
 ## Clonal analysis
 
-To perform a series of analysis to assess the cloning performance, `clonesAnalysis` function 
+To perform a series of analysis to assess the cloning performance, `analyzeClones` function 
 has been developed:
 
 
 ```r
-clonesAnalysis(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", 
+analyzeClones(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", 
                clone = "CLONE", first = FALSE, cdr3 = FALSE, nproc = 1, 
                progress = FALSE)
 ```
 
-The `clonesAnalysis` function invokes the cloned `db` data.frame and 
+The `analyzeClones` function invokes the cloned `db` data.frame and 
 provides summary statistics and visualization of the
 clonal clustering results. The arguments `junction`, `v_call`, `j_call`,
 `first`, and `cdr3` should match the parameters which were passed to the
 `defineClonesScope` function and the name of the clone identifier column is
-invoked by the argument `clone`. After analyzing the `clonesAnalysis` function 
+invoked by the argument `clone`. After analyzing the `analyzeClones` function 
 returns an R object including infromation to interpret clonal assignment performance:
 
 1. __threshold__: effective cut-off separating the inter (within) and intra (between) clonal distances.
@@ -145,10 +145,10 @@ A small example Change-O database is included in the `scope` package:
 
 ```r
 library("scope")
-# Readin example data as a demo
+# Read in example data as a demo
 data(ClonedExampleDb, package="scope")
-# clonal assignment analysis using clonesAnalysis function
-results <- clonesAnalysis(db = ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+# Clonal assignment analysis
+results <- analyzeClones(db = ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
                           j_call = "J_CALL", clone = "CLONE", first = TRUE)
 # print threshold (a numeric)
 results@threshold
@@ -160,26 +160,26 @@ results@threshold
 
 ```r
 # get inter and intra conal distances (a data.frame)
-df <- results@interVsIntra[[1]]
+df <- results@inter_intra[[1]]
 # density plot of inter versus intra clonal distances  (a ggplot).
-results@plotInterVsIntra
+results@plot_inter_intra
 ```
 
 ```
 ## [[1]]
 ```
 
-![plot of chunk scope-Vignette-4](figure/scope-Vignette-4-1.png)
+![plot of chunk Scope-Vignette-4](figure/Scope-Vignette-4-1.png)
 
 ```r
 # get the neighborhoods used in spectral clustering (a numeric vector).
 ngs <- results@neighborhoods
 # plot histogram of neighborhoods (a ggplot).
-results@plotNeighborhoods
+results@plot_neighborhoods
 ```
 
 ```
 ## [[1]]
 ```
 
-![plot of chunk scope-Vignette-4](figure/scope-Vignette-4-2.png)
+![plot of chunk Scope-Vignette-4](figure/Scope-Vignette-4-2.png)

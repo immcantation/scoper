@@ -41,5 +41,5 @@ Suggests:
 RoxygenNote: 6.1.0
 Collate: 
     'Data.R'
-    'scope.R'
-    'scopeFunctions.R'
+    'Scope.R'
+    'Functions.R'

@@ -11,18 +11,18 @@
 #' @section Spectral Clustering for clOne Partitioning (SCOPe):
 #'
 #' \itemize{
-#'   \item  \link{defineClonesScope}:      Clustering sequences into clonal groups.
-#'   \item  \link{clonesAnalysis}:         Summary statistics and visualization of the
-#'                                         clonal clustering results.
+#'   \item  \link{defineClonesScope}:  Clustering sequences into clonal groups.
+#'   \item  \link{analyzeClones}:      Summary statistics and visualization of the
+#'                                     clonal clustering results.
 #' }
 #'
 #' @name        scope
 #' @docType     package
 #' @references
-#' \itemize{
+#' \enumerate{
 #'   \item  Nouri N and Kleinstein SH (2018). A spectral clustering-based method for identifying clones
 #'   from high-throughput B cell repertoire sequencing data. Bioinformatics, 34(13):i341-i349.
-#'  }
+#' }
 #'
 #' @import      methods
 #' @importFrom  ggplot2     ggplot aes_string

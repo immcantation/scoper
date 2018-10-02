@@ -1,9 +1,9 @@
-**ClonesAnalysisResult-class** - *Output of the clonesAnalysis function*
+**ClonalAnalysis-class** - *Output of the analyzeClones function*
 
 Description
 --------------------
 
-`ClonesAnalysisResult` contains output from the [clonesAnalysis](clonesAnalysis.md) function.
+`ClonalAnalysis` contains output from the [analyzeClones](analyzeClones.md) function.
 It includes infromation to interpret clonal assignment performance.
 
 
@@ -18,10 +18,10 @@ Slots
 :   cut-off separating the inter (within) and intra (between)
 clonal distances.
 
-`interVsIntra`
+`inter_intra`
 :   data.frame containing all inter and intra clonal distances.
 
-`plotInterVsIntra`
+`plot_inter_intra`
 :   density plot of inter versus intra clonal distances. The threshold is
 shown with a horizental dashed-line.
 
@@ -29,7 +29,7 @@ shown with a horizental dashed-line.
 :   a numeric vector containing scale parameters used in spectral
 clustering process.
 
-`plotNeighborhoods`
+`plot_neighborhoods`
 :   histogram of neighborhoods. The threshold is shown with a vertical
 dashed-line.
 
@@ -39,7 +39,7 @@ dashed-line.
 See also
 -------------------
 
-[clonesAnalysis](clonesAnalysis.md)
+[analyzeClones](analyzeClones.md)
 
 
 
