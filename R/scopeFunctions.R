@@ -4,13 +4,6 @@
 NULL
 
 #### Classes ####
-
-setClass("InterVsIntraResult",
-         slots = c(interVsIntra="list",
-                   threshold="numeric"))
-
-
-
 #' Output of the clonesAnalysis function
 #'
 #' \code{ClonesAnalysisResult} contains output from the \link{clonesAnalysis} function.
@@ -18,12 +11,12 @@ setClass("InterVsIntraResult",
 #'
 #' @slot   threshold              cut-off separating the inter (within) and intra (between)
 #'                                clonal distances.
-#' @slot   interVsIntra           data.frame containing all inter and intra clonal distances.
-#' @slot   plotInterVsIntra       density plot of inter versus intra clonal distances. The threshold is
+#' @slot   inter_intra           data.frame containing all inter and intra clonal distances.
+#' @slot   plot_inter_intra       density plot of inter versus intra clonal distances. The threshold is
 #'                                shown with a horizental dashed-line.
 #' @slot   neighborhoods          a numeric vector containing scale parameters used in spectral
 #'                                clustering process.
-#' @slot   plotNeighborhoods      histogram of neighborhoods. The threshold is shown with a vertical
+#' @slot   plot_neighborhoods      histogram of neighborhoods. The threshold is shown with a vertical
 #'                                dashed-line.
 #'
 #' @seealso      \link{clonesAnalysis}
@@ -34,31 +27,10 @@ setClass("InterVsIntraResult",
 #' @exportClass  ClonesAnalysisResult
 setClass("ClonesAnalysisResult",
          slots = c(threshold="numeric",
-                   interVsIntra="list",
-                   plotInterVsIntra="list",
+                   inter_intra="list",
+                   plot_inter_intra="list",
                    neighborhoods="numeric",
-                   plotNeighborhoods="list"))
-
-#### Define universal plot settings ####
-getBaseTheme <- function() {
-    base_theme <- theme_bw() +
-        theme(text=element_text(size=10),
-              plot.margin=grid::unit(c(0.5,0.8,0.5,0.5), units="line")) +
-        theme(panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.background = element_blank(),
-              panel.border = element_rect(size = 2.0, linetype = "solid", colour = "black", fill = NA)) +
-        theme(strip.background=element_blank(),
-              strip.text=element_text(size=16, face="bold")) +
-        theme(legend.position='bottom',
-              legend.spacing=grid::unit(2, "points"),
-              legend.text=element_text(size=12),
-              legend.title=element_text(size=15),
-              legend.key.height=grid::unit(10, "points"),
-              legend.key.width=grid::unit(20, "points"))
-    return(base_theme)
-}
-
+                   plot_neighborhoods="list"))
 
 ####  sub-functions ####
 
@@ -377,10 +349,10 @@ calculateInterVsIntra <- function(db,
                      func2.0=1, func2.1=func2.1, func2.2=func2.2)
     threshold <- round(intxn$root, 2)
 
-    InterVsIntraResult <- new("InterVsIntraResult",
-                              interVsIntra=interVsIntra,
-                              threshold=threshold)
-    return(InterVsIntraResult)
+    ClonesAnalysisResult <- new("ClonesAnalysisResult",
+                                inter_intra=interVsIntra,
+                                threshold=threshold)
+    return(ClonesAnalysisResult)
 }
 
 # plot inter-clone-distance vs intra-clone-distance
@@ -425,7 +397,7 @@ plotInterVsIntra <- function(db, threshold) {
     # txt_size <- 5.0
     # plot
     p <- ggplot(pdat) +
-        getBaseTheme() +
+        baseTheme() +
         theme(axis.title.x = element_blank(),
               axis.text.x=element_blank(),
               axis.ticks.x = element_blank(),
@@ -517,7 +489,7 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
     binwidth <- 0.01
     center <- 0.005
     p <- ggplot(sigmas_df) +
-        getBaseTheme() +
+        baseTheme() +
         theme(axis.text=element_text(size=11),
               axis.title=element_text(size=12)) +
         ggtitle(paste("Effective threshold=", threshold)) +
@@ -833,16 +805,16 @@ defineClonesScope <- function(db,
 #' results@threshold
 #'
 #' # get inter and intra conal distances (a data.frame)
-#' df <- results@interVsIntra[[1]]
+#' df <- results@inter_intra[[1]]
 #'
 #' # density plot of inter versus intra clonal distances  (a ggplot).
-#' results@plotInterVsIntra
+#' results@plot_inter_intra
 #'
 #' # get the neighborhoods used in spectral clustering (a numeric vector).
 #' ngs <- results@neighborhoods
 #'
 #' # plot histogram of neighborhoods (a ggplot).
-#' results@plotNeighborhoods
+#' results@plot_neighborhoods
 #' @export
 clonesAnalysis <- function(db,
                            junction = "JUNCTION",
@@ -893,7 +865,7 @@ clonesAnalysis <- function(db,
                                      progress = progress)
 
     # revoke the results
-    df <- results@interVsIntra[[1]]
+    df <- results@inter_intra[[1]]
     threshold <- results@threshold
     interVsIntra <- list()
     interVsIntra[[length(interVsIntra)+1]] <- df
@@ -926,9 +898,9 @@ clonesAnalysis <- function(db,
     # return all
     ClonesAnalysisResult <- new("ClonesAnalysisResult",
                                 threshold=threshold,
-                                interVsIntra=interVsIntra,
-                                plotInterVsIntra=p1,
+                                inter_intra=interVsIntra,
+                                plot_inter_intra=p1,
                                 neighborhoods=neighborhoods,
-                                plotNeighborhoods=p2)
+                                plot_neighborhoods=p2)
     return(ClonesAnalysisResult)
 }

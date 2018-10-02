@@ -163,11 +163,11 @@ results <- clonesAnalysis(db = ClonedExampleDb, junction = "JUNCTION", v_call = 
 # print threshold (a numeric)
 results@threshold
 # get inter and intra conal distances (a data.frame)
-df <- results@interVsIntra[[1]]
+df <- results@inter_intra[[1]]
 # density plot of inter versus intra clonal distances  (a ggplot).
-results@plotInterVsIntra
+results@plot_inter_intra
 # get the neighborhoods used in spectral clustering (a numeric vector).
 ngs <- results@neighborhoods
 # plot histogram of neighborhoods (a ggplot).
-results@plotNeighborhoods
+results@plot_neighborhoods
 ```
