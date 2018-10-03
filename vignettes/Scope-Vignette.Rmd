@@ -1,5 +1,5 @@
 ---
-title: 'Scope: Spectral clustering for clonal partitioning'
+title: 'SCOPe: Spectral clustering for clonal partitioning'
 author: "Nima Nouri"
 date: '`r Sys.Date()`'
 output:
@@ -17,8 +17,10 @@ output:
     toc: yes
 geometry: margin=1in
 fontsize: 11pt
-vignette: |
-  %\VignetteEngine{knitr::rmarkdown}  %\VignetteIndexEntry{Identifying clones from high-throughput B cell repertoire sequencing data}  %\usepackage[utf8]{inputenc}
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Spectral clustering}
+  %\usepackage[utf8]{inputenc}
 ---
 
 ## Description
