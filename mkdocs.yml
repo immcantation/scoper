@@ -1,7 +1,6 @@
-site_name: scope
-site_favicon: img/immcantation.ico
+site_name: scoper
 theme: readthedocs
-repo_url: https://bitbucket.org/kleinstein/scope
+repo_url: https://bitbucket.org/kleinstein/scoper
 docs_dir: docs
 markdown_extensions:
   - def_list
