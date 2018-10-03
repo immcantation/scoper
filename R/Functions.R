@@ -248,7 +248,7 @@ calculateInterVsIntra <- function(db,
     # open dataframes
     vec_ff <- foreach(k=1:n_groups,
                       .combine="c",
-                      .packages = c("dplyr"),
+                      #.packages = c("dplyr"),
                       .errorhandling='stop') %dopar% {
                           clones <- strsplit(uniqueGroups$CLONE_temp[k], split=",")[[1]]
                           l <- uniqueGroups$L[k]
@@ -691,7 +691,7 @@ defineClonesScope <- function(db,
                          .combine="rbind",
                          .export=c("filterFunction", "spectralClustering", "krnlMtxGenerator",
                                    "makeAffinity", "kMeanClustering", "laplacian_mtx", "floor_dec", neighborhood),
-                         .packages = c("dplyr"),
+                         #.packages = c("dplyr"),
                          .errorhandling='stop') %dopar% {
                              ft <- uniqueGroups[i, ]
                              filterBy <- c()
@@ -899,6 +899,6 @@ analyzeClones <- function(db,
                     plot_inter_intra=p1,
                     neighborhoods=neighborhoods,
                     plot_neighborhoods=p2)
-    
+
     return(analysis)
 }

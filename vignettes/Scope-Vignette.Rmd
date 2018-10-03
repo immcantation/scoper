@@ -22,6 +22,7 @@ vignette: |
 ---
 
 ## Description
+
 `scope` package provides a computational framework for unsupervised identification B cell
 clones from adaptive immune receptor repertoire sequencing (AIRR-Seq)
 datasets. This method is based on spectral clustering of the junction
@@ -29,6 +30,7 @@ sequences of B cell receptors (BCRs, Immunoglobulins) that share the same
 V gene, J gene and junction length.
 
 ## Method
+
 The spectral clustering-based method proceeds in five steps, as follows:
 
 1. __Compute the similarity matrix__: Given a set of BCR sequences $\{x_1, x_2, \cdots, x_n\}$ 
@@ -72,12 +74,18 @@ Euclidean distance-based clustering over the $k$ eigenvectors associated
 with the smallest $k$ eigenvalues to find the appropriate clones.
 
 ## Requirements
+
 Clonal family inference using spectral clustering-based technique 
 requires the following fields (columns) to be present in the Change-O database: 
 
 * `V_CALL`
 * `J_CALL`
 * `JUNCTION`
+
+```{r, eval=TRUE, warning=FALSE, message=FALSE}
+# Load scope
+library("scope")
+```
 
 ## Clonal partitioning
 
@@ -118,11 +126,8 @@ processed output files. User can also asign the desire directory path to the
 `out_dir` argument. A small example Change-O database is included in the `scope` package:
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE}
-# Readin example data as a demo
-library("scope")
-data(ExampleDb, package="scope")
-# clone data using defineClonesScope function
-db <- defineClonesScope(db = ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+# Clone data using defineClonesScope function
+db <- defineClonesScope(ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
                         j_call = "J_CALL", first = TRUE)
 ```
 
@@ -133,8 +138,8 @@ has been developed:
 
 ```{r, eval=FALSE, warning=FALSE, message=FALSE}
 analyzeClones(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", 
-               clone = "CLONE", first = FALSE, cdr3 = FALSE, nproc = 1, 
-               progress = FALSE)
+              clone = "CLONE", first = FALSE, cdr3 = FALSE, nproc = 1, 
+              progress = FALSE), warning=FALSE, message=FALSE
 ```
 
 The `analyzeClones` function invokes the cloned `db` data.frame and 
@@ -154,12 +159,9 @@ returns an R object including infromation to interpret clonal assignment perform
 A small example Change-O database is included in the `scope` package:
  
 ```{r, eval=TRUE, warning=FALSE, message=FALSE}
-library("scope")
-# Read in example data as a demo
-data(ClonedExampleDb, package="scope")
 # Clonal assignment analysis
-results <- analyzeClones(db = ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
-                          j_call = "J_CALL", clone = "CLONE", first = TRUE)
+results <- analyzeClones(ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+                         j_call = "J_CALL", clone = "CLONE", first = TRUE)
 # print threshold (a numeric)
 results@threshold
 # get inter and intra conal distances (a data.frame)
