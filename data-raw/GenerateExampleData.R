@@ -26,14 +26,14 @@ ExampleDb <- ExampleDb[c("SEQUENCE_ID",
 devtools::use_data(ExampleDb, overwrite=TRUE)
 
 #### Generate example clones ####
-ClonedExampleDb <- defineClonesScope(db,
-                                     junction = "JUNCTION",
-                                     v_call = "V_CALL",
-                                     j_call = "J_CALL",
-                                     first = TRUE,
-                                     cdr3 = FALSE,
-                                     mod3 = FALSE,
-                                     nproc = 1,
-                                     progress = T)
+ClonedExampleDb <- defineClonesScoper(db,
+                                      junction = "JUNCTION",
+                                      v_call = "V_CALL",
+                                      j_call = "J_CALL",
+                                      first = TRUE,
+                                      cdr3 = FALSE,
+                                      mod3 = FALSE,
+                                      nproc = 1,
+                                      progress = T)
 # Save
 devtools::use_data(ClonedExampleDb, overwrite=TRUE)

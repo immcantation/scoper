@@ -498,10 +498,10 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 }
 
 
-#### defineClonesScope ####
+#### defineClonesScoper ####
 #' Assigning Ig sequences into clonal groups
 #'
-#' The \code{defineClonesScope} function provides an unsupervised pipline for assigning Ig sequences into
+#' The \code{defineClonesScoper} function provides an unsupervised pipline for assigning Ig sequences into
 #' clonal groups sharing same V gene, J gene, and junction length.
 #'
 #' @param    db              data.frame with Change-O style columns containing sequence data.
@@ -548,23 +548,23 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 #'  }
 #'
 #' @examples
-#' # clone data using defineClonesScope function
-#' db <- defineClonesScope(ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
-#'                         j_call = "J_CALL", first = TRUE)
+#' # clone data using defineClonesScoper function
+#' db <- defineClonesScoper(ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+#'                          j_call = "J_CALL", first = TRUE)
 #' @export
-defineClonesScope <- function(db,
-                              junction = "JUNCTION",
-                              v_call = "V_CALL",
-                              j_call = "J_CALL",
-                              first = FALSE,
-                              cdr3 = FALSE,
-                              mod3 = FALSE,
-                              iter_max = 1000,
-                              nstart = 25,
-                              nproc = 1,
-                              progress = FALSE,
-                              out_name = NULL,
-                              out_dir = ".") {
+defineClonesScoper <- function(db,
+                               junction = "JUNCTION",
+                               v_call = "V_CALL",
+                               j_call = "J_CALL",
+                               first = FALSE,
+                               cdr3 = FALSE,
+                               mod3 = FALSE,
+                               iter_max = 1000,
+                               nstart = 25,
+                               nproc = 1,
+                               progress = FALSE,
+                               out_name = NULL,
+                               out_dir = ".") {
 
 
     # Initial checks
@@ -770,7 +770,7 @@ defineClonesScope <- function(db,
 #' Clonal assignment analysis
 #'
 #' The \code{analyzeClones} function performs a series of analysis to assess the performance of
-#' \code{defineClonesScope} function.
+#' \code{defineClonesScoper} function.
 #'
 #' @param    db              data.frame with Change-O style columns containing sequence data.
 #' @param    junction        name of the column containing nucleotide sequences to compare.
@@ -789,7 +789,7 @@ defineClonesScope <- function(db,
 #'
 #' @note
 #' Arguments \code{first} and \code{cdr3} must match the corresponding arguments
-#' used in the \link{defineClonesScope} function.
+#' used in the \link{defineClonesScoper} function.
 #'
 #' @return
 #' Returns a \link{ClonalAnalysis} object.

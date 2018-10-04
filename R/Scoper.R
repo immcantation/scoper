@@ -1,6 +1,6 @@
 # Project documentation and imports
 
-#' The SCOPe package
+#' The SCOPer package
 #'
 #' Provides a computational framework for unsupervised identification B cell
 #' clones from adaptive immune receptor repertoire sequencing (AIRR-Seq) datasets.
@@ -8,15 +8,15 @@
 #' receptors (BCRs, Immunoglobulins) that share the same V gene, J gene and
 #' junction length.
 #'
-#' @section Spectral Clustering for clOne Partitioning (SCOPe):
+#' @section Spectral Clustering for clOne Partitioning (SCOPer):
 #'
 #' \itemize{
-#'   \item  \link{defineClonesScope}:  Clustering sequences into clonal groups.
-#'   \item  \link{analyzeClones}:      Summary statistics and visualization of the
-#'                                     clonal clustering results.
+#'   \item  \link{defineClonesScoper}:  Clustering sequences into clonal groups.
+#'   \item  \link{analyzeClones}:       Summary statistics and visualization of the
+#'                                      clonal clustering results.
 #' }
 #'
-#' @name        scope
+#' @name        scoper
 #' @docType     package
 #' @references
 #' \enumerate{

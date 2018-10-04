@@ -1,5 +1,5 @@
 library(markr)
-library(scope)
+library(scoper)
 
 # Directories
 pkg_path <- "."

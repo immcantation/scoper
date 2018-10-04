@@ -1,4 +1,4 @@
-SCOPe
+SCOPer
 -------------------------------------------------------------------------------
 
 Provides a computational framework for unsupervised identification B cell
@@ -10,7 +10,7 @@ junction length.
 Build Instructions
 -------------------------------------------------------------------------------
 
-To build from the [source code](http://bitbucket.org/kleinstein/scope),
+To build from the [source code](http://bitbucket.org/kleinstein/scoper),
 first install the build dependencies:
 
 ```R
@@ -21,7 +21,7 @@ To install the latest development code via devtools:
 
 ```R
 library(devtools)
-install_bitbucket("kleinstein/scope@default")
+install_bitbucket("kleinstein/scoper@default")
 ```
 
 Note, using `install_bitbucket` will not build the documentation. To generate the 

@@ -1,13 +1,15 @@
 # Identifying clones from high-throughput B cell repertoire sequencing data
 
 ## Description
-`scope` package provides a computational framework for unsupervised identification B cell
+
+`scoper` package provides a computational framework for unsupervised identification B cell
 clones from adaptive immune receptor repertoire sequencing (AIRR-Seq)
 datasets. This method is based on spectral clustering of the junction
 sequences of B cell receptors (BCRs, Immunoglobulins) that share the same
 V gene, J gene and junction length.
 
 ## Method
+
 The spectral clustering-based method proceeds in five steps, as follows:
 
 1. __Compute the similarity matrix__: Given a set of BCR sequences $\{x_1, x_2, \cdots, x_n\}$ 
@@ -51,6 +53,7 @@ Euclidean distance-based clustering over the $k$ eigenvectors associated
 with the smallest $k$ eigenvalues to find the appropriate clones.
 
 ## Requirements
+
 Clonal family inference using spectral clustering-based technique 
 requires the following fields (columns) to be present in the Change-O database: 
 
@@ -58,16 +61,22 @@ requires the following fields (columns) to be present in the Change-O database:
 * `J_CALL`
 * `JUNCTION`
 
+
+```r
+# Load scoper
+library("scoper")
+```
+
 ## Clonal partitioning
 
 The function for the clonal family inference takes a few parameters:
 
 
 ```r
-defineClonesScope(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", 
-                  first = FALSE, cdr3 = FALSE, mod3 = FALSE, iter_max = 1000, 
-                  nstart = 25, nproc = 1, progress = FALSE, out_name = NULL, 
-                  out_dir = ".")
+defineClonesScoper(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", 
+                   first = FALSE, cdr3 = FALSE, mod3 = FALSE, iter_max = 1000, 
+                   nstart = 25, nproc = 1, progress = FALSE, out_name = NULL, 
+                   out_dir = ".")
 ```
 
 The data set needs to be passed to the argument `db`, which at the end would be
@@ -95,16 +104,13 @@ if the argument `out_name` be assigned, a `*.tsv` Change-O formated of cloned
 data.frame and a summary of cloning performance would be saved in the current
 directory. The `out_name` string is used as the prefix of the successfully
 processed output files. User can also asign the desire directory path to the
-`out_dir` argument. A small example Change-O database is included in the `scope` package:
+`out_dir` argument. A small example Change-O database is included in the `scoper` package:
 
 
 ```r
-# Readin example data as a demo
-library("scope")
-data(ExampleDb, package="scope")
-# clone data using defineClonesScope function
-db <- defineClonesScope(db = ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
-                        j_call = "J_CALL", first = TRUE)
+# Clone data using defineClonesScoper function
+db <- defineClonesScoper(ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+                         j_call = "J_CALL", first = TRUE)
 ```
 
 ```
@@ -122,15 +128,15 @@ has been developed:
 
 ```r
 analyzeClones(db, junction = "JUNCTION", v_call = "V_CALL", j_call = "J_CALL", 
-               clone = "CLONE", first = FALSE, cdr3 = FALSE, nproc = 1, 
-               progress = FALSE)
+              clone = "CLONE", first = FALSE, cdr3 = FALSE, nproc = 1, 
+              progress = FALSE), warning=FALSE, message=FALSE
 ```
 
 The `analyzeClones` function invokes the cloned `db` data.frame and 
 provides summary statistics and visualization of the
 clonal clustering results. The arguments `junction`, `v_call`, `j_call`,
 `first`, and `cdr3` should match the parameters which were passed to the
-`defineClonesScope` function and the name of the clone identifier column is
+`defineClonesScoper` function and the name of the clone identifier column is
 invoked by the argument `clone`. After analyzing the `analyzeClones` function 
 returns an R object including infromation to interpret clonal assignment performance:
 
@@ -140,16 +146,13 @@ returns an R object including infromation to interpret clonal assignment perform
 4. __neighborhoods__: numeric vector containing scale parameters used in spectral clustering process.
 5. __plotNeighborhoods__: histogram of neighborhoods. The effective threshold is shown with a vertical dashed-line.
 
-A small example Change-O database is included in the `scope` package:
+A small example Change-O database is included in the `scoper` package:
  
 
 ```r
-library("scope")
-# Read in example data as a demo
-data(ClonedExampleDb, package="scope")
 # Clonal assignment analysis
-results <- analyzeClones(db = ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
-                          j_call = "J_CALL", clone = "CLONE", first = TRUE)
+results <- analyzeClones(ClonedExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+                         j_call = "J_CALL", clone = "CLONE", first = TRUE)
 # print threshold (a numeric)
 results@threshold
 ```
@@ -169,7 +172,7 @@ results@plot_inter_intra
 ## [[1]]
 ```
 
-![plot of chunk Scope-Vignette-4](figure/Scope-Vignette-4-1.png)
+![plot of chunk Scoper-Vignette-5](figure/Scoper-Vignette-5-1.png)
 
 ```r
 # get the neighborhoods used in spectral clustering (a numeric vector).
@@ -182,4 +185,4 @@ results@plot_neighborhoods
 ## [[1]]
 ```
 
-![plot of chunk Scope-Vignette-4](figure/Scope-Vignette-4-2.png)
+![plot of chunk Scoper-Vignette-5](figure/Scoper-Vignette-5-2.png)

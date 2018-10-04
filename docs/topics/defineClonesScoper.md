@@ -1,16 +1,16 @@
-**defineClonesScope** - *Assigning Ig sequences into clonal groups*
+**defineClonesScoper** - *Assigning Ig sequences into clonal groups*
 
 Description
 --------------------
 
-The `defineClonesScope` function provides an unsupervised pipline for assigning Ig sequences into
+The `defineClonesScoper` function provides an unsupervised pipline for assigning Ig sequences into
 clonal groups sharing same V gene, J gene, and junction length.
 
 
 Usage
 --------------------
 ```
-defineClonesScope(db, junction = "JUNCTION", v_call = "V_CALL",
+defineClonesScoper(db, junction = "JUNCTION", v_call = "V_CALL",
 j_call = "J_CALL", first = FALSE, cdr3 = FALSE, mod3 = FALSE,
 iter_max = 1000, nstart = 25, nproc = 1, progress = FALSE,
 out_name = NULL, out_dir = ".")
@@ -107,8 +107,8 @@ Examples
 -------------------
 
 ```R
-# clone data using defineClonesScope function
-db <- defineClonesScope(ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
+# clone data using defineClonesScoper function
+db <- defineClonesScoper(ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 j_call = "J_CALL", first = TRUE)
 ```
 

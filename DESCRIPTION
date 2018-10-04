@@ -1,7 +1,7 @@
-Package: scope
+Package: scoper
 Type: Package
 Version: 0.1.0
-Date: 2018-10-03
+Date: 2018-10-05
 Authors@R: c(person("Nima", "Nouri", role=c("aut", "cre"), 
                     email="nima.nouri@yale.edu"),
              person("Jason", "Vander Heiden", role=c("ctb"), 
@@ -14,8 +14,8 @@ Description: Provides a computational framework for unsupervised identification 
              is based on spectral clustering of the junction sequences of B cell receptors (BCRs, 
              also referred to as Immunoglobulins, (Igs)) that share the same V gene, J gene and junction length. 
 License: CC BY-SA 4.0
-URL: https://bitbucket.org/kleinstein/scope
-BugReports: https://bitbucket.org/kleinstein/scope/issues
+URL: http://scoper.readthedocs.org
+BugReports: https://bitbucket.org/kleinstein/scoper/issues
 LazyData: true
 BuildVignettes: true
 VignetteBuilder: knitr
@@ -41,5 +41,5 @@ Suggests:
 RoxygenNote: 6.1.0
 Collate: 
     'Data.R'
-    'Scope.R'
+    'Scoper.R'
     'Functions.R'

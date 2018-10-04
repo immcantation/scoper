@@ -1,4 +1,4 @@
-**scope** - *The SCOPe package*
+**scoper** - *The SCOPer package*
 
 Description
 --------------------
@@ -12,14 +12,14 @@ junction length.
 
 
 
-Spectral Clustering for clOne Partitioning (SCOPe)
+Spectral Clustering for clOne Partitioning (SCOPer)
 -------------------
 
 
 
 
-+ [defineClonesScope](defineClonesScope.md):  Clustering sequences into clonal groups.
-+ [analyzeClones](analyzeClones.md):      Summary statistics and visualization of the
++ [defineClonesScoper](defineClonesScoper.md):  Clustering sequences into clonal groups.
++ [analyzeClones](analyzeClones.md):       Summary statistics and visualization of the
 clonal clustering results.
 
 

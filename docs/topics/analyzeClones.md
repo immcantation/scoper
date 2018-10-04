@@ -4,7 +4,7 @@ Description
 --------------------
 
 The `analyzeClones` function performs a series of analysis to assess the performance of
-`defineClonesScope` function.
+`defineClonesScoper` function.
 
 
 Usage
@@ -63,7 +63,7 @@ Note
 -------------------
 
 Arguments `first` and `cdr3` must match the corresponding arguments
-used in the [defineClonesScope](defineClonesScope.md) function.
+used in the [defineClonesScoper](defineClonesScoper.md) function.
 
 
 
