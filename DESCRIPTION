@@ -14,7 +14,7 @@ Description: Provides a computational framework for unsupervised identification 
              is based on spectral clustering of the junction sequences of B cell receptors (BCRs, 
              also referred to as Immunoglobulins, (Igs)) that share the same V gene, J gene and junction length. 
 License: CC BY-SA 4.0
-URL: http://scoper.readthedocs.org
+URL: https://scoper.readthedocs.io
 BugReports: https://bitbucket.org/kleinstein/scoper/issues
 LazyData: true
 BuildVignettes: true

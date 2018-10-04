@@ -14,13 +14,13 @@ extra_javascript:
 pages:
   - 'About':
     - 'Introduction': index.md
-    - 'Package Overview': topics/scope.md
+    - 'Package Overview': topics/scoper.md
     - 'Release Notes': news.md
     - 'Related Projects': projects.md
   - 'Vignettes':
-    - 'Clonal partitioning': vignettes/scope-Vignette.md
+    - 'Clonal partitioning': vignettes/Scoper-Vignette.md
   - 'Help Topics':
-    - topics/defineClonesScope.md
-    - topics/clonesAnalysis.md
-    - topics/ClonesAnalysisResult-class.md
+    - topics/defineClonesScoper.md
+    - topics/analyzeClones.md
+    - topics/ClonalAnalysis-class.md
     - topics/ExampleDb.md
