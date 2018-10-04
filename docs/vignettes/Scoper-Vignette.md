@@ -141,10 +141,10 @@ invoked by the argument `clone`. After analyzing the `analyzeClones` function
 returns an R object including infromation to interpret clonal assignment performance:
 
 1. __threshold__: effective cut-off separating the inter (within) and intra (between) clonal distances.
-2. __interVsIntra__: data.frame containing all inter and intra clonal distances.
-3. __plotInterVsIntra__: density plot of inter versus intra clonal distances. The threshold is shown with a horizental dashed-line.
+2. __inter_intra__: data.frame containing all inter and intra clonal distances.
+3. __plot_inter_intra__: density plot of inter versus intra clonal distances. The threshold is shown with a horizental dashed-line.
 4. __neighborhoods__: numeric vector containing scale parameters used in spectral clustering process.
-5. __plotNeighborhoods__: histogram of neighborhoods. The effective threshold is shown with a vertical dashed-line.
+5. __plot_neighborhoods__: histogram of neighborhoods. The effective threshold is shown with a vertical dashed-line.
 
 A small example Change-O database is included in the `scoper` package:
  

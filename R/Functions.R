@@ -527,6 +527,11 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 #' @param    out_dir         specify to change the output directory. The input file
 #'                           directory is used if this is not specified while \code{out_name} is specified.
 #'
+#' @return
+#' Returns a modified \code{db} data.frame with clone identifiers in the \code{CLONE} column.
+#' if \code{out_name} is not \code{NULL}, it will save the modified \code{db} and a summary
+#' of cloning performance in the current directory or the specified \code{out_dir}.
+#'
 #' @details
 #' An unsupervised pipeline to identify B cell clones from adaptive immune receptor
 #' repertoire sequencing (AIRR-Seq) datasets. This method is based on spectral clustering
@@ -534,18 +539,8 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
 #' (Igs)) that share the same V gene, J gene and junction length. It uses an adaptive
 #' threshold that analyzes sequences in a local neighborhood.
 #'
-#' @note
+#' @seealso
 #' To assess the performance of clonal assignment process check \code{analyzeClones}.
-#'
-#' @return
-#' Returns a modified \code{db} data.frame with clone identifiers in the \code{CLONE} column.
-#' if \code{out_name} is not \code{NULL}, it will save the modified \code{db} and a summary
-#' of cloning performance in the current directory or the specified \code{out_dir}.
-#'
-#' @references
-#' \enumerate{
-#'   \item  coming soon..
-#'  }
 #'
 #' @examples
 #' # clone data using defineClonesScoper function

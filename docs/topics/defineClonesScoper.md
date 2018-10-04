@@ -88,20 +88,6 @@ of the junction sequences of B cell receptors (BCRs, also referred to as Immunog
 threshold that analyzes sequences in a local neighborhood.
 
 
-Note
--------------------
-
-To assess the performance of clonal assignment process check `analyzeClones`.
-
-
-References
--------------------
-
-
-1. coming soon..
- 
-
-
 
 Examples
 -------------------
@@ -121,6 +107,12 @@ FAIL=  0
 
 ```
 
+
+
+See also
+-------------------
+
+To assess the performance of clonal assignment process check `analyzeClones`.
 
 
 
