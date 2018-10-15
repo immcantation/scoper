@@ -29,3 +29,26 @@ For help and questions please contact the [Immcantation Group](mailto:immcantati
 [Nima Nouri](mailto:nima.nouri@yale.edu) (aut, cre)  
 [Jason Vander Heiden](mailto:jason.vanderheiden@yale.edu) (ctb)  
 [Steven Kleinstein](mailto:steven.kleinstein@yale.edu) (aut, cph)
+
+
+# Citing
+
+
+To cite the scoper package in publications, please use:
+
+Nouri N and Kleinstein S (2018). “A spectral clustering-based method for identifying clones from high-throughput B cell repertoire sequencing data.”
+_Bioinformatics_, pp. i341-i349. doi: 10.1093/bioinformatics/bty235 (URL: http://doi.org/10.1093/bioinformatics/bty235).
+
+A BibTeX entry for LaTeX users is
+
+  @Article{,
+    style = {citation},
+    title = {A spectral clustering-based method for identifying clones 
+                    from high-throughput B cell repertoire sequencing data.},
+    author = {Nima Nouri and Steven H. Kleinstein},
+    year = {2018},
+    journal = {Bioinformatics},
+    pages = {i341-i349},
+    doi = {10.1093/bioinformatics/bty235},
+  }
+
