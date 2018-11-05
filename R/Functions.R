@@ -599,7 +599,7 @@ defineClonesScoper <- function(db,
     # chaeck outputs
     if (!is.null(out_name)) {
         if (is.null(out_dir)) stop("out_dir must be specified.")
-        if (!dir.exists(out_dir)) stop("out_dir", out_dir, "does not exist.")
+        if (!dir.exists(out_dir)) stop("out_dir '", out_dir, "' does not exist.")
     }
 
     # neighborhood <- match.arg(neighborhood)

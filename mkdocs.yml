@@ -15,6 +15,7 @@ extra_javascript:
 pages:
   - 'About':
     - 'Introduction': index.md
+    - 'Download & Installation': install.md
     - 'Package Overview': topics/scoper.md
     - 'Release Notes': news.md
     - 'Related Projects': projects.md
