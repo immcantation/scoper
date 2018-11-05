@@ -30,6 +30,8 @@ Imports:
     doParallel,
     foreach,
     dplyr (>= 0.7.0),
+    kedd,
+    KernSmooth,
     stringi,
     methods,
     stats,

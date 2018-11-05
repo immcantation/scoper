@@ -20,7 +20,7 @@ For help and questions please contact the [Immcantation Group](mailto:immcantati
 # Dependencies
 
 **Depends:** ggplot2  
-**Imports:** alakazam, shazam, doParallel, foreach, dplyr, stringi, methods, stats, iterators, lazyeval  
+**Imports:** alakazam, shazam, doParallel, foreach, dplyr, kedd, KernSmooth, stringi, methods, stats, iterators, lazyeval  
 **Suggests:** knitr, rmarkdown, testthat
 
 

@@ -15,7 +15,7 @@ Slots
 
 
 `threshold`
-:   cut-off separating the inter (within) and intra (between)
+:   cut-off separating the inter (between) and intra (within)
 clonal distances.
 
 `inter_intra`

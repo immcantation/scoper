@@ -114,10 +114,8 @@ db <- defineClonesScoper(ExampleDb, junction = "JUNCTION", v_call = "V_CALL",
 ```
 
 ```
-## CLONES=  1058
-## RECORDS=  2000
-## PASS=  2000
-## FAIL=  0
+## Error in defineClonesScoper(ExampleDb, junction = "JUNCTION", v_call = "V_CALL", : Column(s) 'CLONE' already exist.
+##  Invalid column names are: 'CLONE', 'VJ_GROUP', 'L', 'JUNC_temp', 'NUMBRE_OF_N', 'NUMBRE_OF_DOT', 'ID', 'CLONE_temp'.
 ```
 
 ## Clonal analysis
@@ -158,7 +156,7 @@ results@threshold
 ```
 
 ```
-## [1] 0.23
+## [1] 0.149
 ```
 
 ```r
