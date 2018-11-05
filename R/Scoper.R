@@ -27,8 +27,8 @@
 #' @import      methods
 #' @importFrom  ggplot2     ggplot aes_string
 #'                          theme theme_bw element_text element_blank element_rect
-#'                          ggtitle xlab ylab
-#'                          scale_fill_manual
+#'                          ggtitle xlab ylab coord_flip
+#'                          scale_fill_manual scale_y_continuous
 #'                          geom_polygon geom_histogram geom_hline geom_vline
 #' @importFrom  dplyr       do n desc funs %>%
 #'                          as_data_frame data_frame data_frame_
@@ -37,6 +37,8 @@
 #'                          group_by group_by_ ungroup
 #'                          mutate mutate_ summarize summarize_
 #'                          mutate_at summarize_at vars slice one_of
+#' @importFrom  kedd        h.ucv
+#' @importFrom  KernSmooth  bkde
 #' @importFrom  stringi     stri_split_fixed stri_length
 #' @importFrom  doParallel  registerDoParallel
 #' @importFrom  foreach     foreach %dopar% registerDoSEQ

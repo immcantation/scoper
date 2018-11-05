@@ -5,7 +5,7 @@
 #' \code{ClonalAnalysis} contains output from the \link{analyzeClones} function.
 #' It includes infromation to interpret clonal assignment performance.
 #'
-#' @slot   threshold              cut-off separating the inter (within) and intra (between)
+#' @slot   threshold              cut-off separating the inter (between) and intra (within)
 #'                                clonal distances.
 #' @slot   inter_intra           data.frame containing all inter and intra clonal distances.
 #' @slot   plot_inter_intra       density plot of inter versus intra clonal distances. The threshold is
@@ -269,42 +269,29 @@ calculateInterVsIntra <- function(db,
                           # minimum and maximum distance in each clone
                           n <- 0
                           if (n_clones == 1) {
-                              if (!all(dist_mtx == 0)) {
-                                  n <- n+1
-                                  vec_f[n] <- max(dist_mtx)/l
-                                  names(vec_f)[n] <- paste(clones[1], "NA", "inter", sep="_")
-                              }
+                              n <- n+1
+                              vec_f[n] <- max(dist_mtx)/l
+                              names(vec_f)[n] <- paste(clones[1], "NA", "intra", sep="_")
                           } else {
                               for (i in 1:(n_clones-1)) {
                                   xx <- dist_mtx[rownames(dist_mtx) == clones[i], colnames(dist_mtx) == clones[i]]
-                                  if (!all(xx == 0)) {
-                                      n <- n+1
-                                      vec_f[n] <- max(xx)/l
-                                      names(vec_f)[n] <- paste(clones[i], "NA", "inter", sep="_")
-                                  }
+                                  n <- n+1
+                                  vec_f[n] <- max(xx)/l
+                                  names(vec_f)[n] <- paste(clones[i], "NA", "intra", sep="_")
                                   for (j in (i+1):n_clones) {
                                       xy <- dist_mtx[rownames(dist_mtx) == clones[i], colnames(dist_mtx) == clones[j]]
-                                      xy <- xy[xy>0]
-                                      if (length(xy) != 0) {
-                                          n <- n+1
-                                          vec_f[n] <- min(xy)/l
-                                          names(vec_f)[n] <- paste(clones[i], clones[j], "intra", sep="_")
-                                      }
+                                      n <- n+1
+                                      vec_f[n] <- min(xy)/l
+                                      names(vec_f)[n] <- paste(clones[i], clones[j], "inter", sep="_")
                                   }
                               }
                               yy <- dist_mtx[rownames(dist_mtx) == clones[j], colnames(dist_mtx) == clones[j]]
-                              if (!all(yy == 0)) {
-                                  n <- n+1
-                                  vec_f[n] <- max(yy)/l
-                                  names(vec_f)[n] <- paste(clones[j], "NA", "inter", sep="_")
-                              }
+                              n <- n+1
+                              vec_f[n] <- max(yy)/l
+                              names(vec_f)[n] <- paste(clones[j], "NA", "intra", sep="_")
                           }
                           # Update progress
                           if (progress) { pb$tick() }
-                          # remove all na's
-                          vec_f <- vec_f[!is.na(vec_f)]
-                          # return result from each proc
-                          if (length(vec_f) == 0) return(NULL)
                           return(vec_f)
                       }
     # Stop the cluster
@@ -312,8 +299,8 @@ calculateInterVsIntra <- function(db,
 
     # convert to a data.frame
     db_dff <- data.frame(keyName=names(vec_ff), VALUE=vec_ff, row.names=NULL)
-    db_dff$LABEL <- "inter"
-    db_dff$LABEL[grepl("intra", db_dff$keyName)] <- "intra"
+    db_dff$LABEL <- "intra"
+    db_dff$LABEL[grepl("inter", db_dff$keyName)] <- "inter"
     clones_xy <- data.frame(matrix(unlist(stri_split_fixed(db_dff$keyName, "_", n=3)),
                                    nrow=nrow(db_dff),
                                    byrow=T),
@@ -324,30 +311,34 @@ calculateInterVsIntra <- function(db,
     colnames(db_dff)[colnames(db_dff) == "X2"] <- "CLONE_Y"
     colnames(db_dff)[colnames(db_dff) == "X3"] <- "empty"
     db_dff$empty <- NULL
-    db_dff$CLONE_Y[grepl("inter", db_dff$CLONE_Y)] <- NA
+    db_dff$CLONE_Y[grepl("intra", db_dff$CLONE_Y)] <- NA
     interVsIntra <- list()
     interVsIntra[[length(interVsIntra)+1]] <- db_dff
 
     # find threshold
-    db.summ <- db_dff %>%
-        dplyr::group_by_(.dots = "LABEL") %>%
-        dplyr::summarise_(MEAN=interp(~mean(x, na.rm = TRUE), x=as.name("VALUE")),
-                          SD=interp(~sd(x, na.rm = TRUE), x=as.name("VALUE")))
-
-    func1.1 <- db.summ$MEAN[db.summ$LABEL == "inter"]
-    func1.2 <- db.summ$SD[db.summ$LABEL == "inter"]
-    func2.1 <- db.summ$MEAN[db.summ$LABEL == "intra"]
-    func2.2 <- db.summ$SD[db.summ$LABEL == "intra"]
-    minInt <- 0
-    maxInt <- 1
-    intxn <- uniroot(intersectPoint, interval = c(minInt, maxInt), tol=1e-8, extendInt="yes",
-                     func1.0=1, func1.1=func1.1, func1.2=func1.2,
-                     func2.0=1, func2.1=func2.1, func2.2=func2.2)
-    threshold <- round(intxn$root, 2)
-
+    bandwidth <- kedd::h.ucv(unique(db_dff$VALUE), 4)$h
+    dens <- KernSmooth::bkde(db_dff$VALUE, bandwidth=bandwidth, canonical=TRUE)
+    # suppressWarnings(dens <- density(db_dff$VALUE, kernel="gaussian", adjust=1, bw="ucv"))  #"nrd0"
+    xdens <- dens$x
+    ydens <- dens$y
+    
+    tryCatch({
+        d <- xdens[which(diff(sign(diff(ydens))) == 2)[1] + 1]
+    },
+    error = function(e) {
+        warning('No Effective threshold was found.')
+        return(NULL) })
+    
+    if (is.null(d)) {
+        threshold <- NA
+    } else {
+        threshold <- round(d, 3)   
+    }
+    
+    # return results
     ClonalAnalysis <- new("ClonalAnalysis",
-                                inter_intra=interVsIntra,
-                                threshold=threshold)
+                          inter_intra=interVsIntra,
+                          threshold=threshold)
     return(ClonalAnalysis)
 }
 
@@ -363,54 +354,40 @@ plotInterVsIntra <- function(db, threshold) {
     if (check != TRUE) { stop(check) }
     db <- select(db, c("VALUE", "LABEL"))
 
-    pdat <- db %>%
-        group_by_(.dots = "LABEL") %>%
-        do(data.frame(loc = density(.$VALUE, na.rm = TRUE)$x,
-                      dens = density(.$VALUE, na.rm = TRUE)$y
-        )
-        )
-
-    pdat <- pdat %>%
-        dplyr::group_by_(.dots = "LABEL") %>%
-        dplyr::mutate_(dens_norm=interp(~normalize(x), x=as.name("dens")))
-
-    # Flip and offset densities for the groups
-    pdat$dens_norm <- ifelse(pdat$LABEL == 'inter', pdat$dens_norm*(-1), pdat$dens_norm)
     # fill color
-    fill_manual <- c("inter"="grey30",
-                     "intra"="grey60")
-    # labels
-    # mg <- "Mean \u00b1 SD"
-    # Encoding(mg) <- "UTF-8"
-    # pm <-"\u00b1"
-    # Encoding(pm)<-"UTF-8"
-    # mg1_txt <- data.frame(X=-0.9, Y=threshold-0.025, LAB=paste(mg))
-    # db1_txt <- data.frame(X=-0.9, Y=threshold-0.05, LAB=paste(meanInter, pm, sdInter))
-    # mg2_txt <- data.frame(X=0.9, Y=threshold+0.05, LAB=paste(mg))
-    # db2_txt <- data.frame(X=0.9,  Y=threshold+0.025, LAB=paste(meanIntra, pm, sdIntra))
+    fill_manual <- c("intra"="grey30",
+                     "inter"="grey60")
 
     hline_size <- 1.0
-    # txt_size <- 5.0
+    
     # plot
-    p <- ggplot(pdat) +
+    p <- ggplot() +
         baseTheme() +
-        theme(axis.title.x = element_blank(),
-              axis.text.x=element_blank(),
-              axis.ticks.x = element_blank(),
-              axis.title.y=element_text(size=12),
-              axis.text.y=element_text(size=11)) +
+        theme(axis.title=element_text(size=12),
+              axis.text=element_text(size=11)) +
         ggtitle(paste("Effective threshold=", threshold)) +
-        ylab("Normalized hamming distance") +
+        xlab("Normalized hamming distance") +
+        ylab("Density") +
+        scale_y_continuous(labels=abs) +
         scale_fill_manual(name="",
                           values=fill_manual,
-                          labels = c("inter"="maximum-distance\nwithin clones  ",
-                                     "intra"="minimum-distance\nbetween clones  ")) +
-        geom_polygon(aes_string(x="dens_norm", y="loc", fill="LABEL")) +
-        geom_hline(yintercept=threshold, color="grey30", linetype=2, size=hline_size) #+
-    # geom_text(data=mg1_txt, aes(x=X, y=Y, label=LAB), size=txt_size, inherit.aes = FALSE) +
-    # geom_text(data=db1_txt, aes(x=X, y=Y, label=LAB), size=txt_size, inherit.aes = FALSE) +
-    # geom_text(data=mg2_txt, aes(x=X, y=Y, label=LAB), size=txt_size, inherit.aes = FALSE) +
-    # geom_text(data=db2_txt, aes(x=X, y=Y, label=LAB), size=txt_size, inherit.aes = FALSE)
+                          labels=c("intra"="maximum-distance\nwithin clones  ",
+                                   "inter"="minimum-distance\nbetween clones  ")) +
+        # geom_polygon(aes_string(x="dens_norm", y="loc", fill="LABEL")) +
+        geom_histogram(data=filter_(db, ~LABEL == "intra"),
+                       aes_string(x="VALUE", y="-(..density..)", fill="LABEL"),
+                       binwidth = 0.02) +
+        geom_histogram(data=filter_(db, ~LABEL == "inter"),
+                       aes_string(x="VALUE", y="..density..", fill="LABEL"),
+                       binwidth=0.02) +
+        geom_hline(yintercept=0, color="black", linetype=1, size=0.25) +
+        coord_flip()
+    
+    if (!is.na(threshold)) {
+        p <- p + 
+            geom_vline(xintercept=threshold, color="grey30", linetype=2, size=hline_size)
+    }
+    
     return(p)
 }
 
