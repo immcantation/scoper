@@ -204,6 +204,22 @@ kMeanClustering <- function (entry,
     }
 }
 
+
+# find effective threshold
+findEffThreshold <- function(x) {
+    bandwidth <- kedd::h.ucv(unique(x), 4)$h
+    dens <- KernSmooth::bkde(x, bandwidth=bandwidth, canonical=TRUE)
+    xdens <- dens$x
+    ydens <- dens$y
+    tryCatch({
+        d <- xdens[which(diff(sign(diff(ydens))) == 2)[1] + 1]
+    },
+    error = function(e) {
+        warning('No Effective threshold was found.')
+        return(NULL) })
+    return(d)
+}
+
 # inter-clone-distance vs intra-clone-distance
 calculateInterVsIntra <- function(db,
                                   junction = "JUNCTION",
@@ -315,31 +331,25 @@ calculateInterVsIntra <- function(db,
     interVsIntra <- list()
     interVsIntra[[length(interVsIntra)+1]] <- db_dff
 
-    # find threshold
-    bandwidth <- kedd::h.ucv(unique(db_dff$VALUE), 4)$h
-    dens <- KernSmooth::bkde(db_dff$VALUE, bandwidth=bandwidth, canonical=TRUE)
-    # suppressWarnings(dens <- density(db_dff$VALUE, kernel="gaussian", adjust=1, bw="ucv"))  #"nrd0"
-    xdens <- dens$x
-    ydens <- dens$y
-    
-    tryCatch({
-        d <- xdens[which(diff(sign(diff(ydens))) == 2)[1] + 1]
-    },
-    error = function(e) {
+    # find effective threshold
+    if (length(unique(db_dff$VALUE)) < 3) {
+        d <- NULL
         warning('No Effective threshold was found.')
-        return(NULL) })
+    } else {
+        d <- findEffThreshold(x=db_dff$VALUE)
+    }
     
     if (is.null(d)) {
-        threshold <- NA
+        threshold <- NA_real_
     } else {
         threshold <- round(d, 3)   
     }
     
-    # return results
-    ClonalAnalysis <- new("ClonalAnalysis",
-                          inter_intra=interVsIntra,
-                          threshold=threshold)
-    return(ClonalAnalysis)
+    # return results list
+    return_list <- list("inter_intra"=interVsIntra,
+                        "threshold"=threshold)
+    
+    return(return_list)
 }
 
 # plot inter-clone-distance vs intra-clone-distance
@@ -352,8 +362,11 @@ plotInterVsIntra <- function(db, threshold) {
     columns <- columns[!is.null(columns)]
     check <- checkColumns(db, columns)
     if (check != TRUE) { stop(check) }
+    
     db <- select(db, c("VALUE", "LABEL"))
-
+    data_intra <- filter_(db, ~LABEL == "intra")
+    data_inter <- filter_(db, ~LABEL == "inter")
+    
     # fill color
     fill_manual <- c("intra"="grey30",
                      "inter"="grey60")
@@ -373,16 +386,25 @@ plotInterVsIntra <- function(db, threshold) {
                           values=fill_manual,
                           labels=c("intra"="maximum-distance\nwithin clones  ",
                                    "inter"="minimum-distance\nbetween clones  ")) +
-        # geom_polygon(aes_string(x="dens_norm", y="loc", fill="LABEL")) +
-        geom_histogram(data=filter_(db, ~LABEL == "intra"),
-                       aes_string(x="VALUE", y="-(..density..)", fill="LABEL"),
-                       binwidth = 0.02) +
-        geom_histogram(data=filter_(db, ~LABEL == "inter"),
-                       aes_string(x="VALUE", y="..density..", fill="LABEL"),
-                       binwidth=0.02) +
         geom_hline(yintercept=0, color="black", linetype=1, size=0.25) +
-        coord_flip()
+        coord_flip(xlim = c(0,1))
     
+    if (nrow(data_intra) > 0) {
+        p <- p + 
+            geom_histogram(data=data_intra,
+                           aes_string(x="VALUE", y="-(..density..)", fill="LABEL"),
+                           binwidth = 0.02)
+    }
+    
+    if (nrow(data_inter) > 0) {
+        p <- p + 
+            geom_histogram(data=data_inter,
+                           aes_string(x="VALUE", y="..density..", fill="LABEL"),
+                           binwidth=0.02)
+    } else {
+        warning("No inter clonal distance is detected. Each group of sequences with same V-gene, J-gene, and junction length may contain only one clone.")
+    }
+
     if (!is.na(threshold)) {
         p <- p + 
             geom_vline(xintercept=threshold, color="grey30", linetype=2, size=hline_size)
@@ -468,9 +490,10 @@ plotNeighborhoods <- function(sigmas, threshold = NULL) {
         ggtitle(paste("Effective threshold=", threshold)) +
         xlab("Normalized hamming distance") +
         ylab("Density") +
+        scale_x_continuous(limits = c(0,1)) +
         geom_histogram(aes_string(x="sigmas", y="..density.."),
                        binwidth=binwidth, center=center, alpha=1.0, fill="black", color="white", size=0.25)
-    if (!is.null(threshold)) p <- p + geom_vline(xintercept=threshold, linetype=2, size=vline_size)
+    if (!is.na(threshold)) p <- p + geom_vline(xintercept=threshold, linetype=2, size=vline_size)
     return(p)
 }
 
@@ -834,8 +857,8 @@ analyzeClones <- function(db,
                                      progress = progress)
 
     # revoke the results
-    df <- results@inter_intra[[1]]
-    threshold <- results@threshold
+    df <- results$inter_intra[[1]]
+    threshold <- results$threshold
     interVsIntra <- list()
     interVsIntra[[length(interVsIntra)+1]] <- df
 
@@ -874,3 +897,6 @@ analyzeClones <- function(db,
 
     return(analysis)
 }
+
+
+
