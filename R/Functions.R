@@ -354,8 +354,6 @@ calculateInterVsIntra <- function(db,
 # plot inter-clone-distance vs intra-clone-distance
 plotInterVsIntra <- function(db, threshold) {
 
-    . <- NULL
-
     # Check for valid columns
     columns <- c("VALUE", "LABEL")
     columns <- columns[!is.null(columns)]
@@ -364,9 +362,9 @@ plotInterVsIntra <- function(db, threshold) {
     
     db <- select(db, c("VALUE", "LABEL"))
     data_intra <- db %>% 
-        dplyr::filter(LABEL == "intra")
+        dplyr::filter(!!rlang::sym("LABEL") == "intra")
     data_inter <- db %>%
-        dplyr::filter(LABEL == "inter")
+        dplyr::filter(!!rlang::sym("LABEL") == "inter")
     
     # fill color
     fill_manual <- c("intra"="grey30",
@@ -454,8 +452,8 @@ calculateNeighborhoods <- function(db,
     for (i in 1:n_groups) {
         # print(paste(n_groups, i, sep=" "))
         db_group <- db %>%
-            dplyr::filter(VJ_GROUP == uniqueGroups$VJ_GROUP[i],
-                          L == uniqueGroups$L[i])
+            dplyr::filter(!!rlang::sym("VJ_GROUP") == uniqueGroups$VJ_GROUP[i],
+                          !!rlang::sym("L") == uniqueGroups$L[i])
 
         if (nrow(db_group) == 1) {
             # Update progress
@@ -623,7 +621,7 @@ defineClonesScoper <- function(db,
     # filter mod 3 junction lengths
     if (mod3) {
         nIint <- nrow(db)
-        db <- db %>% dplyr::filter(L%%3 == 0)
+        db <- db %>% dplyr::filter(!!rlang::sym("L")%%3 == 0)
         nFin <- nrow(db)
         cat("MOD3 FILTER> ", "\n")
         cat(nIint-nFin, " invalid junction length(s) not mod3 in the ", junction, " column. ", "\n")
@@ -633,7 +631,7 @@ defineClonesScoper <- function(db,
     # filter junctions with length >6
     if (cdr3) {
         nIint <- nrow(db)
-        db <- db %>% dplyr::filter(L > 6)
+        db <- db %>% dplyr::filter(!!rlang::sym("L") > 6)
         nFin <- nrow(db)
         cat("CDR3 FILTER> ", "\n")
         cat(nIint-nFin, " invalid junction length(s) < 7 in the ", junction, " column. ", "\n")
@@ -691,8 +689,8 @@ defineClonesScoper <- function(db,
                          #.packages = c("dplyr"),
                          .errorhandling='stop') %dopar% {
                              db_group <- db %>%
-                                 dplyr::filter(VJ_GROUP == uniqueGroups$VJ_GROUP[i],
-                                               L == uniqueGroups$L[i])
+                                 dplyr::filter(!!rlang::sym("VJ_GROUP") == uniqueGroups$VJ_GROUP[i],
+                                               !!rlang::sym("L") == uniqueGroups$L[i])
                              
                              db_group$ID <- db_group %>%
                                  dplyr::group_by(.dots = "JUNC_temp") %>%
