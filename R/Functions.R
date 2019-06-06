@@ -236,9 +236,8 @@ calculateInterVsIntra <- function(db,
 
     # find unique groups of sequences with same vgene, jgene, and junction length
     uniqueGroups <- db %>%
-        dplyr::group_by_(.dots = c("VJ_GROUP", "L")) %>%
-        # dplyr::summarise(CLONE_temp=paste(unique(CLONE_temp), collapse=",")) %>%
-        dplyr::summarise_(CLONE_temp=interp(~paste(unique(x), collapse=","), x=as.name("CLONE_temp")))
+        dplyr::group_by(.dots=c("VJ_GROUP", "L")) %>%
+        dplyr::summarise(CLONE_temp=paste(unique(!!rlang::sym("CLONE_temp")), collapse=","))
 
     n_groups <- nrow(uniqueGroups)
 
@@ -273,7 +272,7 @@ calculateInterVsIntra <- function(db,
                           names(seqs) <- db$CLONE_temp[db$CLONE_temp %in% clones]
                           # cat("group=", k, "/", n_groups, ", number of clones=", n_clones, ", number of sequences=", length(seqs), "\n", sep="")
                           seqs_db <- data_frame(value = seqs, name = names(seqs)) %>%
-                              dplyr::group_by_(.dots=c("name", "value")) %>% # alternatively: group_by(name) if name value pair is always unique
+                              dplyr::group_by(.dots=c("name", "value")) %>% # alternatively: group_by(name) if name value pair is always unique
                               slice(1) %>%
                               ungroup()
                           seqs <- seqs_db$value
@@ -364,8 +363,10 @@ plotInterVsIntra <- function(db, threshold) {
     if (check != TRUE) { stop(check) }
     
     db <- select(db, c("VALUE", "LABEL"))
-    data_intra <- filter_(db, ~LABEL == "intra")
-    data_inter <- filter_(db, ~LABEL == "inter")
+    data_intra <- db %>% 
+        dplyr::filter(LABEL == "intra")
+    data_inter <- db %>%
+        dplyr::filter(LABEL == "inter")
     
     # fill color
     fill_manual <- c("intra"="grey30",
@@ -452,7 +453,9 @@ calculateNeighborhoods <- function(db,
     idx <- 1
     for (i in 1:n_groups) {
         # print(paste(n_groups, i, sep=" "))
-        db_group <- filter_(db, ~VJ_GROUP == uniqueGroups$VJ_GROUP[i], ~L == uniqueGroups$L[i])
+        db_group <- db %>%
+            dplyr::filter(VJ_GROUP == uniqueGroups$VJ_GROUP[i],
+                          L == uniqueGroups$L[i])
 
         if (nrow(db_group) == 1) {
             # Update progress
@@ -620,7 +623,7 @@ defineClonesScoper <- function(db,
     # filter mod 3 junction lengths
     if (mod3) {
         nIint <- nrow(db)
-        db <- filter_(db, ~L%%3 == 0)
+        db <- db %>% dplyr::filter(L%%3 == 0)
         nFin <- nrow(db)
         cat("MOD3 FILTER> ", "\n")
         cat(nIint-nFin, " invalid junction length(s) not mod3 in the ", junction, " column. ", "\n")
@@ -630,7 +633,7 @@ defineClonesScoper <- function(db,
     # filter junctions with length >6
     if (cdr3) {
         nIint <- nrow(db)
-        db <- filter_(db, ~L > 6)
+        db <- db %>% dplyr::filter(L > 6)
         nFin <- nrow(db)
         cat("CDR3 FILTER> ", "\n")
         cat(nIint-nFin, " invalid junction length(s) < 7 in the ", junction, " column. ", "\n")
@@ -657,7 +660,6 @@ defineClonesScoper <- function(db,
     colnames(uniqueGroups) <- groupBy
     rownames(uniqueGroups) <- NULL
     n_groups <- nrow(uniqueGroups)
-    groupBy_length <- length(groupBy)
 
     # Create cluster of nproc size and export namespaces
     if(nproc == 1) {
@@ -688,13 +690,12 @@ defineClonesScoper <- function(db,
                                    "makeAffinity", "kMeanClustering", "laplacian_mtx", "floor_dec", neighborhood),
                          #.packages = c("dplyr"),
                          .errorhandling='stop') %dopar% {
-                             ft <- uniqueGroups[i, ]
-                             filterBy <- c()
-                             for (j in 1:groupBy_length) filterBy <- c(filterBy, as.character(ft[[groupBy[j]]]))
                              db_group <- db %>%
-                                 dplyr::filter_(filterFunction(groupBy, filterBy))
+                                 dplyr::filter(VJ_GROUP == uniqueGroups$VJ_GROUP[i],
+                                               L == uniqueGroups$L[i])
+                             
                              db_group$ID <- db_group %>%
-                                 dplyr::group_by_(.dots = "JUNC_temp") %>%
+                                 dplyr::group_by(.dots = "JUNC_temp") %>%
                                  dplyr::group_indices()
                              if (length(unique(db_group$JUNC_temp)) == 1) {
                                  CLONE <- data.frame(CLONE=as.vector(paste(i, rep(1, times=nrow(db_group)), sep="_")))
@@ -728,10 +729,10 @@ defineClonesScoper <- function(db,
         if (progress) cat("SAVING SUMMARY> ", "\n")
         db_summ <- db_cloned %>%
             dplyr::group_by_at(vars(one_of(groupBy))) %>%
-            dplyr::summarise_(NUMBER_OF_SEQUENCE = interp(~length(x), x=as.name("JUNC_temp")),
-                              NUMBER_OF_UNIQUE_SEQUENCE = interp(~length(unique(x)), x=as.name("JUNC_temp")),
-                              NUMBER_OF_CLONE = interp(~length(unique(x)), x=as.name("CLONE")),
-                              CLONE = interp(~paste(unique(x), collapse = ","), x=as.name("CLONE")))
+            dplyr::summarise(NUMBER_OF_SEQUENCE = length(!!rlang::sym("JUNC_temp")),
+                             NUMBER_OF_UNIQUE_SEQUENCE = length(unique(!!rlang::sym("JUNC_temp"))),
+                             NUMBER_OF_CLONE = length(unique(!!rlang::sym("CLONE"))),
+                             CLONE = paste(unique(!!rlang::sym("CLONE")), collapse = ","))
         colnames(db_summ)[colnames(db_summ) == "L"] <- "JUNCTION_LENGTH"
         fileName <- paste(out_name, "summary-pass.tsv", sep="_")
         writeChangeoDb(db_summ, file = file.path(out_dir, fileName))

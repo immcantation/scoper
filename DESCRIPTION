@@ -1,7 +1,7 @@
 Package: scoper
 Type: Package
-Version: 0.1.0
-Date: 2018-10-04
+Version: 0.1.0.999
+Date: 2019-06-06
 Authors@R: c(person("Nima", "Nouri", role=c("aut", "cre"), 
                     email="nima.nouri@yale.edu"),
              person("Jason", "Vander Heiden", role=c("ctb"), 
@@ -25,11 +25,11 @@ Depends:
     R (>= 3.1.2),
     ggplot2 (>= 2.0.0)
 Imports: 
-    alakazam (>= 0.2.11),
-    shazam (>= 0.1.10), 
+    alakazam (>= 0.2.11.999),
+    shazam (>= 0.1.11.999), 
     doParallel,
     foreach,
-    dplyr (>= 0.7.0),
+    dplyr (>= 0.8.1),
     kedd,
     KernSmooth,
     stringi,
@@ -41,7 +41,7 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Collate: 
     'Data.R'
     'Scoper.R'
