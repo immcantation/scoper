@@ -47,4 +47,5 @@
 #' @importFrom  stats       density kmeans sd uniroot dnorm
 #' @importFrom  iterators   icount
 #' @importFrom  lazyeval    interp
+#' @importFrom  rlang       sym syms
 NULL
