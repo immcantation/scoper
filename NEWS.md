@@ -16,7 +16,7 @@ General:
 + New models, `hierarchical` for hierarchical-clustering based, and `identical` 
   for clustering among identical junction sequences are added. 
 + New method for spectral-clustering based model has been added through the 
-  `shm` in argument `method`.
+  `vj` in argument `method`.
 
 
 Version 0.1.0.999:  November 5, 2018
