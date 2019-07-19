@@ -1,14 +1,11 @@
 SCOPer
 -------------------------------------------------------------------------------
 
-SCOPer (Spectral Clustering for clOne Partitioning) provides a computational framework 
-for unsupervised identification B cell clones from adaptive immune receptor repertoire 
-sequencing (AIRR-Seq) datasets. This method performs spectral clustering of the B cell 
-receptor (BCR) junction region within groups of BCR sequences sharing the same V gene, 
-J gene, and junction length. Rather than a fixed threshold, SCOPe uses an adaptive 
-threshold for clustering sequences to determine the local sequence neighborhood, 
-which offers an improvement in both the sensitivity and specificity over a simple fixed 
-threshold for all junction lengths. SCOPer is part of the 
+SCOPer provides a computational framework for B cell clones identification
+from adaptive immune receptor repertoire sequencing (AIRR-Seq) datasets. 
+Three models are included (identical, hierarchical, and spectral) 
+that perform clustering among sequences of BCRs/IGs (B cell receptors/immunoglobulins) 
+which share the same V gene, J gene and junction length. SCOPer is part of the 
 [Immcantation](http://immcantation.readthedocs.io) analysis framework.
 
 Contact
@@ -20,7 +17,7 @@ For help and questions please contact the [Immcantation Group](mailto:immcantati
 # Dependencies
 
 **Depends:** ggplot2  
-**Imports:** alakazam, shazam, doParallel, foreach, dplyr, kedd, KernSmooth, stringi, methods, stats, iterators, lazyeval  
+**Imports:** alakazam, shazam, doParallel, foreach, dplyr, Rcpp, seqinr, data.table, stringi, methods, stats, rlang  
 **Suggests:** knitr, rmarkdown, testthat
 
 
@@ -34,21 +31,14 @@ For help and questions please contact the [Immcantation Group](mailto:immcantati
 # Citing
 
 
-To cite the scoper package in publications, please use:
+To cite the scoper package or spectral clustering-based model in publications, please use:
 
-Nouri N and Kleinstein S (2018). “A spectral clustering-based method for identifying clones from high-throughput B cell repertoire sequencing data.”
-_Bioinformatics_, pp. i341-i349. doi: 10.1093/bioinformatics/bty235 (URL: http://doi.org/10.1093/bioinformatics/bty235).
+Nouri N, Kleinstein S (2018). “A spectral clustering-based method for identifying clones from high-throughput B cell repertoire sequencing data.”
+_Bioinformatics_, i341-i349. doi: 10.1093/bioinformatics/bty235 (URL: https://doi.org/10.1093/bioinformatics/bty235).
 
-A BibTeX entry for LaTeX users is
+To cite the hierarchical clustering-based model in publications, please use:
 
-  @Article{,
-    style = {citation},
-    title = {A spectral clustering-based method for identifying clones 
-                    from high-throughput B cell repertoire sequencing data.},
-    author = {Nima Nouri and Steven H. Kleinstein},
-    year = {2018},
-    journal = {Bioinformatics},
-    pages = {i341-i349},
-    doi = {10.1093/bioinformatics/bty235},
-  }
+Gupta N, Adams K, Briggs A, Timberlake S, Vigneault F, Kleinstein S (2017). “Hierarchical clustering can identify B cell clones with high confidence in
+Ig repertoire sequencing data.” _The Journal of Immunology_, 2489-2499. doi: 10.4049/jimmunol.1601850 (URL: https://doi.org/10.4049/jimmunol.1601850).
+
 

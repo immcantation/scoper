@@ -2,16 +2,14 @@ site_name: scoper
 site_favicon: img/immcantation.ico
 theme: readthedocs
 repo_url: https://bitbucket.org/kleinstein/scoper
-docs_dir: docs
+docs_dir: readthedocs
 markdown_extensions:
   - def_list
   - sane_lists
   - smarty
-  - pymdownx.arithmatex
   - toc:
       permalink: True
-extra_javascript:
-  - https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML
+docs_dir: 'docs'
 pages:
   - 'About':
     - 'Introduction': index.md
@@ -23,6 +21,4 @@ pages:
     - 'Clonal partitioning': vignettes/Scoper-Vignette.md
   - 'Help Topics':
     - topics/defineClonesScoper.md
-    - topics/analyzeClones.md
-    - topics/ClonalAnalysis-class.md
     - topics/ExampleDb.md

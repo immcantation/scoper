@@ -5,16 +5,11 @@ Description
 
 A small example database subset from Laserson and Vigneault et al, 2014.
 
-Includes the `CLONE` column.
-
 
 Usage
 --------------------
 ```
 ExampleDb
-```
-```
-ClonedExampleDb
 ```
 
 

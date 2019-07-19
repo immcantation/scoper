@@ -1,3 +1,24 @@
+Version 0.2.0:  July 20, 2019
+-------------------------------------------------------------------------------
+
+Deprecated:
+
++ function `analyzeClones` is deprecated. The clonal analysis has been added 
+  to the main function `defineClonesScoper` as an argument `analyze_clones`. 
++ the out put class is deprecated. Results would be reported as a list if 
+  argument `analyze_clones` set to be true, otherwise a single dataframe is
+  returned.
++ `plot_neighborhoods` from clonal analysis has been deprecated.
++ `neighborhoods` from clonal analysis has been deprecated.
+
+General:
+
++ New models, `hierarchical` for hierarchical-clustering based, and `identical` 
+  for clustering among identical junction sequences are added. 
++ New method for spectral-clustering based model has been added through the 
+  `shm` in argument `method`.
+
+
 Version 0.1.0.999:  November 5, 2018
 -------------------------------------------------------------------------------
 
