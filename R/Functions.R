@@ -399,8 +399,8 @@ plotInterVsIntra <- function(data) {
         if (nrow(df) > 0) {
             eff_th <- df$x
             eff_th <- eff_th[mean(a) - sd(a) < eff_th & eff_th < mean(b) + sd(b)]
-            if (length(eff_th) == 1) {
-                eff_threshold <- round(eff_th, 2)
+            if (length(eff_th) > 0) {
+                eff_threshold <- round(mean(eff_th), 2)
             } 
         }    
     }
@@ -608,7 +608,7 @@ defineClonesScoper <- function(db,
                                junction_col = "JUNCTION",
                                v_call_col = "V_CALL",
                                j_call_col = "J_CALL",
-                               clone_col = c("CLONE", "clone_id"),
+                               clone_col = c("clone_id", "CLONE"),
                                targeting_model = NULL,
                                len_limit = NULL,
                                first = FALSE, 
@@ -650,7 +650,7 @@ defineClonesScoper <- function(db,
         }
     } else if (model == "spectral") {
         if (!method %in% c("novj", "vj")) { 
-            stop(paste0("'method' should be one of 'novj' or 'shm' for model '", model, "'.")) 
+            stop(paste0("'method' should be one of 'novj' or 'vj' for model '", model, "'.")) 
         }
     } else {
         stop(paste0("'model' shoubd be one of 'identical', 'hierarchical', or 'spectral'.")) 
@@ -746,6 +746,12 @@ defineClonesScoper <- function(db,
     
     ### Parse V and J columns to get gene
     if (verbose) { cat("ASSIGN VJL GROUPS>", "\n", sep=" ") }
+    if (log_verbose) {
+        cat("ASSIGN VJL GROUPS>", "\n", sep=" ",
+            file = file.path(out_dir, log_verbose_name), append=TRUE) 
+        cat("", "\n", sep=" ",
+            file = file.path(out_dir, log_verbose_name), append=TRUE) 
+    }
     db <- groupGenes(db,
                      v_call = v_call_col,
                      j_call = j_call_col,
@@ -906,9 +912,9 @@ defineClonesScoper <- function(db,
     
     ### make summary 
     if (summerize_clones) {
-        if (verbose) { cat("   ANALYZE CLONES> ...", "\n") }
+        if (verbose) { cat("   SUMMARY CLONES> ...", "\n") }
         if (log_verbose)  { 
-            cat("   ANALYZE CLONES> ...",  "\n", sep=" ", 
+            cat("   SUMMARY CLONES> ...",  "\n", sep=" ", 
                 file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
         
@@ -939,9 +945,9 @@ defineClonesScoper <- function(db,
         ### plot inter and intra distances
         p_results <- plotInterVsIntra(data = results$inter_intra)
         
-        if (verbose)  { cat("   ANALYZE CLONES> DONE.", "\n") }
+        if (verbose)  { cat("   SUMMARY CLONES> DONE.", "\n") }
         if (log_verbose)  { 
-            cat("   ANALYZE CLONES> DONE.",  "\n", sep=" ", 
+            cat("   SUMMARY CLONES> DONE.",  "\n", sep=" ", 
                 file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
     }

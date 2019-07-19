@@ -135,7 +135,7 @@ A small example Change-O database is included in the `scoper` package:
 
 
 ```r
-# Clonal assignment analysis
+# Clonal assignment using hierarchical model
 results <- defineClonesScoper(db = ExampleDb, clone_col = "CLONE",
                               model = "hierarchical", method = "single", 
                               threshold = 0.15, summerize_clones = TRUE)
@@ -157,3 +157,34 @@ results$plot_inter_intra
 ```
 
 ![plot of chunk Scoper-Vignette-3](figure/Scoper-Vignette-3-1.png)
+
+```r
+# Clonal assignment using spectral model
+# IMGT_V object from shazam package to identify sequence limit length
+library("shazam")
+results <- defineClonesScoper(db = ExampleDb, clone_col = "clone_id",
+                              model = "spectral", method = "vj", 
+                              len_limit = shazam::IMGT_V,
+                              targeting_model = shazam::HH_S5F,
+                              sequence_col = "SEQUENCE_IMGT",
+                              germline_col = "GERMLINE_IMGT_D_MASK",
+                              threshold = 0.15, 
+                              summerize_clones = TRUE)
+# cloned data (a data.frame)
+cloned_db <- results$db
+# print effective threshold (a numeric)
+results$eff_threshold
+```
+
+```
+## [1] 0.28
+```
+
+```r
+# get inter and intra conal distances (a data.frame)
+df <- results$inter_intra
+# histogram of inter versus intra clonal distances  (a ggplot).
+results$plot_inter_intra
+```
+
+![plot of chunk Scoper-Vignette-3](figure/Scoper-Vignette-3-2.png)
