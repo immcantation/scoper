@@ -17,7 +17,7 @@ sequence_col = "SEQUENCE_IMGT", junction_col = "JUNCTION",
 v_call_col = "V_CALL", j_call_col = "J_CALL",
 clone_col = c("clone_id", "CLONE"), targeting_model = NULL,
 len_limit = NULL, first = FALSE, cdr3 = FALSE, mod3 = FALSE,
-threshold = NULL, base_sim = 0.95, iter_max = 1000,
+max_N = NULL, threshold = NULL, base_sim = 0.95, iter_max = 1000,
 nstart = 1000, nproc = 1, verbose = FALSE, log_verbose = FALSE,
 out_dir = ".", summerize_clones = FALSE)
 ```
@@ -79,6 +79,12 @@ cdr3
 mod3
 :   if `TRUE` removes `junction_col`(s) with number of nucleotides not 
 modulus of 3.
+
+max_N
+:   The maximum number of N's to permit in the junction sequence before excluding the 
+record from clonal assignment. Note, under model `"hierarchical"` and method 
+`"single"` non-informative positions can create artifactual links between 
+unrelated sequences. Use with caution. Default is set to be `"NULL"` for no action.
 
 threshold
 :   the distance threshold for clonal grouping if `model` = `"hierarchical"`; or 

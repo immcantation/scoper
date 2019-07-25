@@ -17,7 +17,7 @@ For help and questions please contact the [Immcantation Group](mailto:immcantati
 # Dependencies
 
 **Depends:** ggplot2  
-**Imports:** alakazam, shazam, doParallel, foreach, dplyr, Rcpp, seqinr, data.table, stringi, methods, stats, rlang  
+**Imports:** alakazam, shazam, doParallel, foreach, dplyr, Rcpp, seqinr, data.table, stringi, stringr, methods, stats, rlang  
 **Suggests:** knitr, rmarkdown, testthat
 
 
