@@ -539,6 +539,10 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'                              \code{junction_col}(s) with length less than 7 nts.
 #' @param    mod3               if \code{TRUE} removes \code{junction_col}(s) with number of nucleotides not 
 #'                              modulus of 3.
+#' @param    max_N              The maximum number of N's to permit in the junction sequence before excluding the 
+#'                              record from clonal assignment. Note, under model \code{"hierarchical"} and method 
+#'                              \code{"single"} non-informative positions can create artifactual links between 
+#'                              unrelated sequences. Use with caution. Default is set to be \code{"NULL"} for no action.
 #' @param    threshold          the distance threshold for clonal grouping if \code{model} = \code{"hierarchical"}; or 
 #'                              the upper-limit cut-off if \code{model} = \code{"spectral"}.
 #' @param    base_sim           required similarity cut-off for sequences in equal distances from each other.
@@ -614,6 +618,7 @@ defineClonesScoper <- function(db,
                                first = FALSE, 
                                cdr3 = FALSE, 
                                mod3 = FALSE,
+                               max_N = NULL,
                                threshold = NULL,
                                base_sim = 0.95,
                                iter_max = 1000, 
@@ -726,24 +731,30 @@ defineClonesScoper <- function(db,
     ### check for mod3
     # filter mod 3 junction lengths
     if (mod3) {
-        nIint <- nrow(db)
-        db <- db %>% dplyr::filter(!!rlang::sym(junction_l)%%3 == 0)
-        nFin <- nrow(db)
-        n_rmv_mod3 <- nIint - nFin
+        n_rmv_mod3 <- sum(db[[junction_l]]%%3 != 0)
+        db <- db %>% 
+            dplyr::filter(!!rlang::sym(junction_l)%%3 == 0)
     }
     
     ### check for cdr3
     # filter junctions with length > 6
     if (cdr3) {
-        nIint <- nrow(db)
-        db <- db %>% dplyr::filter(!!rlang::sym(junction_l) > 6)
-        nFin <- nrow(db)
-        n_rmv_cdr3 <- nIint - nFin
+        n_rmv_cdr3 <- sum(db[[junction_l]] <= 6)
+        db <- db %>% 
+            dplyr::filter(!!rlang::sym(junction_l) > 6)
         # add cdr3 column
         db$CDR3 <- substr(db[[junction_col]], 4, db[[junction_l]]-3)
         cdr3_col <- "CDR3"
     }
     
+    ### check for N's
+    # Count the number of 'N's in junction
+    if (!is.null(max_N)) {
+        n_rmv_N <- sum(str_count(db[[junction_col]], "N") > max_N)
+        db <- db %>% 
+            dplyr::filter(str_count(!!rlang::sym(junction_col), "N") <= max_N)
+    }
+
     ### Parse V and J columns to get gene
     if (verbose) { cat("ASSIGN VJL GROUPS>", "\n", sep=" ") }
     if (log_verbose) {
@@ -895,14 +906,22 @@ defineClonesScoper <- function(db,
     }
     if (cdr3) {
         if (n_rmv_cdr3 > 0) {
-            cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction_col, " column removed.", "\n", sep=" ")
+            cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction_col, "column removed.", "\n", sep=" ")
             if (log_verbose)  { 
-                cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction_col, " column removed.", "\n", sep=" ",
+                cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction_col, "column removed.", "\n", sep=" ",
                     file = file.path(out_dir, log_verbose_name), append=TRUE) 
             }
         }
     }
-    
+    if (!is.null(max_N)) {
+        if (n_rmv_N > 0) {
+            cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_N, ") in the", junction_col, "column removed.", "\n", sep=" ")
+            if (log_verbose)  { 
+                cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_N, ") in the", junction_col, "column removed.", "\n", sep=" ",
+                    file = file.path(out_dir, log_verbose_name), append=TRUE) 
+            }
+        }
+    }
     ### print ending message
     if (verbose) { cat("          CLONING> DONE.", "\n", sep=" ") }
     if (log_verbose)  { 

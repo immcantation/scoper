@@ -37,6 +37,7 @@ Imports:
     seqinr,
     data.table,
     stringi,
+    stringr,
     methods,
     stats,
     rlang
