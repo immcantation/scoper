@@ -496,6 +496,7 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 
 
 #### defineClonesScoper ####
+
 #' Assigning Ig sequences into clonal groups
 #'
 #' The \code{defineClonesScoper} function provides a computational pipline for assigning Ig 
@@ -514,7 +515,7 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' @param    j_call_col         character name of the column containing the J-segment allele calls.
 #' @param    clone_col          one of the \code{"CLONE"} or \code{"clone_id"} for the output column name 
 #'                              containing the clone ids.
-#' @param    targeting_model    a \link{TargetingModel} object. Only applicable if \code{model} = \code{"spectral"} 
+#' @param    targeting_model    \link{TargetingModel} object. Only applicable if \code{model} = \code{"spectral"} 
 #'                              and \code{method} = \code{"vj"}. See Details for description.
 #' @param    len_limit          \link{IMGT_V} object defining the regions and boundaries of the Ig 
 #'                              sequences. If NULL, mutations are counted for entire sequence. Only 
@@ -551,15 +552,15 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' For \code{summerize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone_col} column. 
 #' For \code{summerize_clones} = \code{TRUE} returns a list containing:
 #' \itemize{
-#'      \item   \code{$db}:                   a modified \code{db} data.frame with clone identifiers in the \code{clone_col} column. 
-#'      \item   \code{$vjl_group_summ}:       a data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
-#'                                            and so on.
-#'      \item   \code{$inter_intra}:          a data.frame containing minimum inter (between) and maximum intra (within) 
-#'                                            clonal distances.
-#'      \item   \code{$eff_threshold}:        effective cut-off separating the inter (between) and intra (within) clonal 
-#'                                            distances.
-#'      \item   \code{$plot_inter_intra}:     a ggplot histogram of inter (between) versus intra (within) clonal distances. The 
-#'                                            effective threshold is shown with a horizental dashed-line.
+#'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone_col} column. 
+#'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
+#'                                           and so on.
+#'      \item   \code{inter_intra}:          data.frame containing minimum inter (between) and maximum intra (within) 
+#'                                           clonal distances.
+#'      \item   \code{eff_threshold}:        effective cut-off separating the inter (between) and intra (within) clonal 
+#'                                           distances.
+#'      \item   \code{plot_inter_intra}:     ggplot histogram of inter (between) versus intra (within) clonal distances. The 
+#'                                           effective threshold is shown with a horizental dashed-line.
 #' }
 #' If \code{log_verbose} = \code{TRUE}, it will write verbose logging to a file in the current directory or 
 #' the specified \code{out_dir}.
@@ -570,7 +571,7 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' data sets. Three models are included which perform clustering among sequences of B cell receptors 
 #' (BCRs, also referred to as Immunoglobulins, (Igs)) that share the same V gene, J gene and junction length: 
 #' \itemize{
-#'       \item \code{model} = \code{"identical"}: defines clones among identical junctions. Availabe \code{method}(s) are:
+#'       \item \code{model} = \code{"identical"}: defines clones among identical junctions. Available \code{method}(s) are:
 #'       (1) \code{"nt"} (nucleotide based clustering) and (2) \code{"aa"} (amino acid based clustering).
 #'       \item \code{model} = \code{"hierarchical"}: hierarchical clustering-based method for partitioning sequences 
 #'       into clones. Availabe agglomeration \code{method}(s) are: (1) \code{"single"}, (2) \code{"average"}, and (3) 
@@ -588,10 +589,9 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' }
 #'
 #' @examples
-#' # clone data using defineClonesScoper function 
-#' results <- defineClonesScoper(db = ExampleDb, 
-#'                               model = "hierarchical", method = "single", 
-#'                               threshold = 0.15, summerize_clones = TRUE)
+#' results <- defineClonesScoper(ExampleDb, 
+#'                               model="hierarchical", method="single", 
+#'                               threshold=0.15, summerize_clones=TRUE)
 #' @export
 defineClonesScoper <- function(db,
                                model = c("identical", "hierarchical", "spectral"),
