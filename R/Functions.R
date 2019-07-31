@@ -155,16 +155,10 @@ pairwiseMutions <- function(germ_imgt,
             x[(lv+1):(lv+trim_l)] <- ""   # x[(lv+1):(lv+trim_l[i])] <- ""
             return(paste(x, collapse=""))
         })
-        ##### check sequences length
+        ##### Pads ragged ends
         l <- unique(nchar(seq_imgt))
-        ##### fill by N's if sequences have different lengths
         if (length(l) > 1) {
-            max_l <- max(l)
-            ids <- which(nchar(seq_imgt) < max_l)
-            for (x in ids) {
-                seq_imgt[x] <- paste(seq_imgt[x], paste(rep("N", max_l-nchar(seq_imgt[x])), collapse=""), sep="")
-            }
-            # invisible(capture.output(seq_imgt <- jAllignment(vjSeqs=seq_imgt, vjCut=lv)))
+            seq_imgt <- padSeqEnds(seq = seq_imgt, len = NULL, start = FALSE, pad_char = "N")
         }
         ##### trim out junction/cdr3 segments from germ_imgt
         germ_imgt <- sapply(1:length(germ_imgt), function(i){
@@ -172,15 +166,10 @@ pairwiseMutions <- function(germ_imgt,
             x[(lv+1):(lv+trim_l)] <- ""  # x[(lv+1):(lv+trim_l[i])] <- ""
             return(paste(x, collapse=""))
         })
-        ##### check germlines length
+        ##### Pads ragged ends
         l <- unique(nchar(germ_imgt))
-        ##### fill by N's if germlines have different lengths
         if (length(l) > 1) {
-            max_l <- max(l)
-            ids <- which(nchar(germ_imgt) < max_l)
-            for (x in ids) {
-                germ_imgt[x] <- paste(germ_imgt[x], paste(rep("N", max_l-nchar(germ_imgt[x])), collapse=""), sep="")
-            }
+            germ_imgt <- padSeqEnds(seq = germ_imgt, len = NULL, start = FALSE, pad_char = "N")
         }
         ##### find consensus germline (allel level grouping)
         # see arg "method" from shazam::collapseClones function
@@ -201,9 +190,9 @@ pairwiseMutions <- function(germ_imgt,
         eff_germ_lent <- nchar(eff_germ)
         lenConsensus <- min(seq_imgt_lent, germ_imgt_lent, eff_germ_lent) 
         ##### trim extra characters
-        if (seq_imgt_lent > lenConsensus)  {  seq_imgt <- substr(seq_imgt,  start = 1, stop = lenConsensus) }
-        if (germ_imgt_lent > lenConsensus)  { germ_imgt <- substr(germ_imgt,  start = 1, stop = lenConsensus) }
-        if (eff_germ_lent > lenConsensus) { eff_germ <- substr(eff_germ, start = 1, stop = lenConsensus) }  
+        if ( seq_imgt_lent > lenConsensus)  { seq_imgt <- substr( seq_imgt, start = 1, stop = lenConsensus) }
+        if (germ_imgt_lent > lenConsensus) { germ_imgt <- substr(germ_imgt, start = 1, stop = lenConsensus) }
+        if ( eff_germ_lent > lenConsensus)  { eff_germ <- substr( eff_germ, start = 1, stop = lenConsensus) }  
     }
     ##### count informative positions
     informative_pos <- sapply(1:n, function(x){ sum(stri_count(seq_imgt[x], fixed = c("A","C","G","T"))) })

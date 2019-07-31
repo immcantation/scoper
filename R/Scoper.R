@@ -40,7 +40,7 @@
 #' @importFrom  data.table  as.data.table .I
 #' @importFrom  doParallel  registerDoParallel
 #' @importFrom  foreach     foreach %dopar% registerDoSEQ
-#' @importFrom  alakazam    pairwiseDist checkColumns getDNAMatrix 
+#' @importFrom  alakazam    pairwiseDist checkColumns getDNAMatrix padSeqEnds
 #'                          progressBar groupGenes baseTheme translateDNA
 #' @importFrom  shazam      consensusSequence
 #' @importFrom  stats       density kmeans sd cor
