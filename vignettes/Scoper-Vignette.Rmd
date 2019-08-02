@@ -87,7 +87,7 @@ defineClonesScoper(db,
                    v_call_col = "V_CALL", j_call_col = "J_CALL",
                    clone_col = c("CLONE", "clone_id"),
                    targeting_model = NULL, len_limit = NULL, first = FALSE, 
-                   cdr3 = FALSE, mod3 = FALSE, max_N = NULL, threshold = NULL,
+                   cdr3 = FALSE, mod3 = FALSE, max_n = NULL, threshold = NULL,
                    base_sim = 0.95, iter_max = 1000, nstart = 1000, nproc = 1,
                    verbose = FALSE, log_verbose = FALSE, out_dir = ".",
                    summerize_clones = FALSE)
