@@ -1,8 +1,7 @@
 site_name: scoper
 site_favicon: img/immcantation.ico
-theme: readthedocs
 repo_url: https://bitbucket.org/kleinstein/scoper
-docs_dir: readthedocs
+theme: readthedocs
 markdown_extensions:
   - def_list
   - sane_lists
