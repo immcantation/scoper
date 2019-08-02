@@ -529,7 +529,7 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'                              \code{junction_col}(s) with length less than 7 nts.
 #' @param    mod3               if \code{TRUE} removes \code{junction_col}(s) with number of nucleotides not 
 #'                              modulus of 3.
-#' @param    max_N              The maximum number of N's to permit in the junction sequence before excluding the 
+#' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
 #'                              record from clonal assignment. Note, under model \code{"hierarchical"} and method 
 #'                              \code{"single"} non-informative positions can create artifactual links between 
 #'                              unrelated sequences. Use with caution. Default is set to be \code{"NULL"} for no action.
@@ -607,7 +607,7 @@ defineClonesScoper <- function(db,
                                first = FALSE, 
                                cdr3 = FALSE, 
                                mod3 = FALSE,
-                               max_N = NULL,
+                               max_n = NULL,
                                threshold = NULL,
                                base_sim = 0.95,
                                iter_max = 1000, 
@@ -738,10 +738,10 @@ defineClonesScoper <- function(db,
     
     ### check for N's
     # Count the number of 'N's in junction
-    if (!is.null(max_N)) {
-        n_rmv_N <- sum(str_count(db[[junction_col]], "N") > max_N)
+    if (!is.null(max_n)) {
+        n_rmv_N <- sum(str_count(db[[junction_col]], "N") > max_n)
         db <- db %>% 
-            dplyr::filter(str_count(!!rlang::sym(junction_col), "N") <= max_N)
+            dplyr::filter(str_count(!!rlang::sym(junction_col), "N") <= max_n)
     }
 
     ### Parse V and J columns to get gene
@@ -902,11 +902,11 @@ defineClonesScoper <- function(db,
             }
         }
     }
-    if (!is.null(max_N)) {
+    if (!is.null(max_n)) {
         if (n_rmv_N > 0) {
-            cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_N, ") in the", junction_col, "column removed.", "\n", sep=" ")
+            cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction_col, "column removed.", "\n", sep=" ")
             if (log_verbose)  { 
-                cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_N, ") in the", junction_col, "column removed.", "\n", sep=" ",
+                cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction_col, "column removed.", "\n", sep=" ",
                     file = file.path(out_dir, log_verbose_name), append=TRUE) 
             }
         }

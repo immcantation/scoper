@@ -1,4 +1,4 @@
-Version 0.2.0:  July 20, 2019
+Version 0.2.0:  August 2, 2019
 -------------------------------------------------------------------------------
 
 Deprecated:
@@ -18,10 +18,6 @@ General:
 + New method for spectral-clustering based model has been added through the 
   `vj` in argument `method`.
 
-
-Version 0.1.0.999:  November 5, 2018
--------------------------------------------------------------------------------
-
 Clonal analysis:
 
 + Switched the meaning of the "inter" and "intra" labels in 
@@ -31,8 +27,8 @@ Clonal analysis:
 
 + Changed the `plotInterVsIntra` output from a density plot to a histogram.
 
-+ Changed the way to calculate the effective threshold. Now, desntiy approach is 
-  used.
++ Changed the way to calculate the effective threshold. Now, desntiy approach 
+  is used.
     
 
 Version 0.1.0:  October 4, 2018
