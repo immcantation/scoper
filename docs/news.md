@@ -24,9 +24,7 @@ Clonal analysis:
   `calculateInterVsIntra` function. Now, "inter" is the label used to form 
   distances that mean between clones, and "intra" is the label used to form 
   distances that mean on the inside, within each clone.
-
 + Changed the `plotInterVsIntra` output from a density plot to a histogram.
-
 + Changed the way to calculate the effective threshold. Now, desntiy approach 
   is used.
     
