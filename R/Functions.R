@@ -250,7 +250,7 @@ pairwiseMutions <- function(germ_imgt,
 calculateInterVsIntra <- function(db,
                                   clone_col,
                                   vjl_groups,
-                                  junction_col = "JUNCTION",
+                                  junction_col = "junction",
                                   cdr3 = FALSE,
                                   cdr3_col = NA,
                                   nproc = 1,
@@ -545,12 +545,12 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' @param    log_verbose        if \code{TRUE} write verbose logging to a file in \code{out_dir}.
 #' @param    out_dir            specify the output directory to save \code{log_verbose}. The input 
 #'                              file directory is used if this is not specified.
-#' @param    summerize_clones     if \code{TRUE} performs a series of analysis to assess the clonal landscape.
+#' @param    summarize_clones     if \code{TRUE} performs a series of analysis to assess the clonal landscape.
 #'                              See Value for description.
 #'
 #' @return
-#' For \code{summerize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone_col} column. 
-#' For \code{summerize_clones} = \code{TRUE} returns a list containing:
+#' For \code{summarize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone_col} column. 
+#' For \code{summarize_clones} = \code{TRUE} returns a list containing:
 #' \itemize{
 #'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone_col} column. 
 #'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
@@ -591,16 +591,18 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' @examples
 #' results <- defineClonesScoper(ExampleDb, 
 #'                               model="hierarchical", method="single", 
-#'                               threshold=0.15, summerize_clones=TRUE)
+#'                               germline_col = "GERMLINE_IMGT", sequence_col = "SEQUENCE_IMGT", 
+#'                               junction_col = "JUNCTION", v_call_col = "V_CALL", 
+#'                               j_call_col = "J_CALL", threshold=0.15, summarize_clones=TRUE)
 #' @export
 defineClonesScoper <- function(db,
                                model = c("identical", "hierarchical", "spectral"),
                                method = c("nt", "aa", "single", "average", "complete", "novj", "vj"),
-                               germline_col = "GERMLINE_IMGT",
-                               sequence_col = "SEQUENCE_IMGT",
-                               junction_col = "JUNCTION",
-                               v_call_col = "V_CALL",
-                               j_call_col = "J_CALL",
+                               germline_col = "germline_alignment",
+                               sequence_col = "sequence_alignment",
+                               junction_col = "junction",
+                               v_call_col = "v_call",
+                               j_call_col = "j_call",
                                clone_col = c("clone_id", "CLONE"),
                                targeting_model = NULL,
                                len_limit = NULL,
@@ -616,7 +618,7 @@ defineClonesScoper <- function(db,
                                verbose = FALSE,
                                log_verbose = FALSE,
                                out_dir = ".",
-                               summerize_clones = FALSE) {
+                               summarize_clones = FALSE) {
     
     # Initial checks
     if (!is.data.frame(db)) {
@@ -919,7 +921,7 @@ defineClonesScoper <- function(db,
     }
     
     ### make summary 
-    if (summerize_clones) {
+    if (summarize_clones) {
         if (verbose) { cat("   SUMMARY CLONES> ...", "\n") }
         if (log_verbose)  { 
             cat("   SUMMARY CLONES> ...",  "\n", sep=" ", 
@@ -964,7 +966,7 @@ defineClonesScoper <- function(db,
     db_cloned <- db_cloned[, !(names(db_cloned) %in% temp_cols)]
     
     # return results
-    if (summerize_clones) {
+    if (summarize_clones) {
         return_list <- list("db" = db_cloned,
                             "vjl_group_summ" = vjl_groups,
                             "inter_intra" = results$inter_intra,
@@ -981,15 +983,15 @@ defineClonesScoper <- function(db,
 passToClustering_lev1 <- function (db_gp, 
                                    model = c("identical", "hierarchical", "spectral"),
                                    method = c("nt", "aa", "single", "average", "complete", "novj", "vj"),
-                                   germline_col = "GERMLINE_IMGT",
-                                   sequence_col = "SEQUENCE_IMGT",
-                                   junction_col = "JUNCTION",
+                                   germline_col = "germline_alignment",
+                                   sequence_col = "sequence_alignment",
+                                   junction_col = "junction",
                                    mutabs = NULL,
                                    len_limit = NULL,
                                    cdr3 = FALSE,
                                    cdr3_col = NA,
-                                   v_call_col = "V_CALL",
-                                   j_call_col = "J_CALL",
+                                   v_call_col = "v_call",
+                                   j_call_col = "j_call",
                                    threshold = NULL,
                                    base_sim = 0.95,
                                    iter_max = 1000, 
@@ -1194,8 +1196,17 @@ passToClustering_lev3 <- function(mtx,
         aff_mtx <- makeAffinity(mtx_o = mtx, 
                                 mtx_k = round(krnl_mtx, 3),
                                 thd = threshold*junc_length) 
+        aff_mtx[aff_mtx < 0.02] <- 0
     } else {
         aff_mtx <- round(krnl_mtx, 3)
+        # nearest_dist <- apply(mtx, 2,  function(x) { 
+        #     gt0 <- which(x > 0)
+        #     if (length(gt0) != 0) { min(x[gt0]) } else { NA }
+        # })
+        # aff_mtx <- makeAffinity(mtx_o = mtx, 
+        #                         mtx_k = round(krnl_mtx, 3),
+        #                         thd = max(nearest_dist, na.rm = T)) 
+        aff_mtx[aff_mtx < 0.02] <- 0
     }
     ### affinity matrix is diagonal. Each sequence belongs to a singlton clone.
     if (all(aff_mtx[!diag(nrow(aff_mtx))] == 0)) { 

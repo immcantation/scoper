@@ -63,15 +63,16 @@ defineClonesScoper(db,
                    model = c("identical", "hierarchical", "spectral"),
                    method = c("nt", "aa", "single", "average", "complete", 
                               "novj", "vj"),
-                   germline_col = "GERMLINE_IMGT", sequence_col = "SEQUENCE_IMGT",
-                   junction_col = "JUNCTION", 
-                   v_call_col = "V_CALL", j_call_col = "J_CALL",
+                   germline_col = "germline_alignment", 
+                   sequence_col = "sequence_alignment",
+                   junction_col = "junction", 
+                   v_call_col = "v_call", j_call_col = "j_call",
                    clone_col = c("CLONE", "clone_id"),
                    targeting_model = NULL, len_limit = NULL, first = FALSE, 
                    cdr3 = FALSE, mod3 = FALSE, max_n = NULL, threshold = NULL,
                    base_sim = 0.95, iter_max = 1000, nstart = 1000, nproc = 1,
                    verbose = FALSE, log_verbose = FALSE, out_dir = ".",
-                   summerize_clones = FALSE)
+                   summarize_clones = FALSE)
 ```
 
 The following discussion is applicable for all three models. 
@@ -99,9 +100,9 @@ argument `mod3` should be set as `TRUE` (the default is `FALSE`).
 8. If the argument `log_verbose` be set as `TRUE`, the `verbose` output is written to 
 a file in the current input directory (by default).
 9. If the `out_dir` is specified, then its path will be used to save `log_verbose`. 
-10. If `summerize_clones` set to be `FALSE` (default), the `defineClonesScoper` function 
+10. If `summarize_clones` set to be `FALSE` (default), the `defineClonesScoper` function 
 will return a modified `data.frame` with clone identifiers in the `clone_col` column. 
-Otherwise, if `summerize_clones` set to be `TRUE`, the `defineClonesScoper` function 
+Otherwise, if `summarize_clones` set to be `TRUE`, the `defineClonesScoper` function 
 will perform a series of analyses to assess the clonal landscape and return a list 
 containing summary statistics and visualization of the clonal clustering results:
 
@@ -138,7 +139,19 @@ A small example Change-O database is included in the `scoper` package:
 # Clonal assignment using hierarchical model
 results <- defineClonesScoper(db = ExampleDb, clone_col = "CLONE",
                               model = "hierarchical", method = "single", 
-                              threshold = 0.15, summerize_clones = TRUE)
+                              germline_col = "GERMLINE_IMGT", 
+                              sequence_col = "SEQUENCE_IMGT", 
+                              junction_col = "JUNCTION", 
+                              v_call_col = "V_CALL", j_call_col = "J_CALL",
+                              threshold = 0.15, summarize_clones = TRUE)
+```
+
+```
+## Error in defineClonesScoper(db = ExampleDb, clone_col = "CLONE", model = "hierarchical", : Column(s) 'CLONE' already exist.
+##  Invalid column names are: 'CLONE', 'VJ_GROUP', 'VJL_GROUP', 'JUNCTION_L', 'CDR3', 'CDR3_L', 'CLONE_temp'.
+```
+
+```r
 # cloned data (a data.frame)
 cloned_db <- results$db
 # print effective threshold (a numeric)
@@ -146,7 +159,7 @@ results$eff_threshold
 ```
 
 ```
-## [1] 0.22
+## [1] 0.28
 ```
 
 ```r
@@ -166,10 +179,11 @@ results <- defineClonesScoper(db = ExampleDb, clone_col = "clone_id",
                               model = "spectral", method = "vj", 
                               len_limit = shazam::IMGT_V,
                               targeting_model = shazam::HH_S5F,
-                              sequence_col = "SEQUENCE_IMGT",
+                              sequence_col = "SEQUENCE_IMGT", 
                               germline_col = "GERMLINE_IMGT_D_MASK",
-                              threshold = 0.15, 
-                              summerize_clones = TRUE)
+                              junction_col = "JUNCTION", 
+                              v_call_col = "V_CALL", j_call_col = "J_CALL",
+                              threshold = 0.15, summarize_clones = TRUE)
 # cloned data (a data.frame)
 cloned_db <- results$db
 # print effective threshold (a numeric)

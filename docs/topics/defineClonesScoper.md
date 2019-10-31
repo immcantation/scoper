@@ -12,14 +12,14 @@ Usage
 ```
 defineClonesScoper(db, model = c("identical", "hierarchical",
 "spectral"), method = c("nt", "aa", "single", "average", "complete",
-"novj", "vj"), germline_col = "GERMLINE_IMGT",
-sequence_col = "SEQUENCE_IMGT", junction_col = "JUNCTION",
-v_call_col = "V_CALL", j_call_col = "J_CALL",
+"novj", "vj"), germline_col = "germline_alignment",
+sequence_col = "sequence_alignment", junction_col = "junction",
+v_call_col = "v_call", j_call_col = "j_call",
 clone_col = c("clone_id", "CLONE"), targeting_model = NULL,
 len_limit = NULL, first = FALSE, cdr3 = FALSE, mod3 = FALSE,
 max_n = NULL, threshold = NULL, base_sim = 0.95, iter_max = 1000,
 nstart = 1000, nproc = 1, verbose = FALSE, log_verbose = FALSE,
-out_dir = ".", summerize_clones = FALSE)
+out_dir = ".", summarize_clones = FALSE)
 ```
 
 Arguments
@@ -114,7 +114,7 @@ out_dir
 :   specify the output directory to save `log_verbose`. The input 
 file directory is used if this is not specified.
 
-summerize_clones
+summarize_clones
 :   if `TRUE` performs a series of analysis to assess the clonal landscape.
 See Value for description.
 
@@ -124,8 +124,8 @@ See Value for description.
 Value
 -------------------
 
-For `summerize_clones` = `FALSE`, a modified data.frame with clone identifiers in the `clone_col` column. 
-For `summerize_clones` = `TRUE` returns a list containing:
+For `summarize_clones` = `FALSE`, a modified data.frame with clone identifiers in the `clone_col` column. 
+For `summarize_clones` = `TRUE` returns a list containing:
 
 + `db`:                   modified `db` data.frame with clone identifiers in the `clone_col` column. 
 + `vjl_group_summ`:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
@@ -174,7 +174,9 @@ Examples
 ```R
 results <- defineClonesScoper(ExampleDb, 
 model="hierarchical", method="single", 
-threshold=0.15, summerize_clones=TRUE)
+germline_col = "GERMLINE_IMGT", sequence_col = "SEQUENCE_IMGT", 
+junction_col = "JUNCTION", v_call_col = "V_CALL", 
+j_call_col = "J_CALL", threshold=0.15, summarize_clones=TRUE)
 ```
 
 
