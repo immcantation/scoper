@@ -16,9 +16,9 @@ __identicalClones__: Defines clones among identical junctions. The two available
 
 ```r
 identicalClones(db,
-                method = c("nt", "aa"), junction_col = "junction",
-                v_call_col = "v_call", j_call_col = "j_call",
-                clone_col = c("clone_id", "CLONE"),
+                method = c("nt", "aa"), junction = "junction",
+                v_call = "v_call", j_call = "j_call",
+                clone = "clone_id",
                 first = FALSE, cdr3 = FALSE, mod3 = FALSE,
                 max_n = NULL, nproc = 1, 
                 verbose = FALSE, log_verbose = FALSE, out_dir = ".",
@@ -45,13 +45,14 @@ be found in:
 
 
 ```r
-hierarchicalClones(db,
-                   method = c("nt", "aa"), junction_col = "junction",
-                   v_call_col = "v_call", j_call_col = "j_call",
-                   clone_col = c("clone_id", "CLONE"),
+hierarchicalClones(db, threshold,
+                   method = c("nt", "aa"), junction = "junction",
+                   v_call = "v_call", j_call = "j_call",
+                   clone = "clone_id",
                    first = FALSE, cdr3 = FALSE, mod3 = FALSE,
-                   max_n = NULL, threshold = NULL, nproc = 1, 
+                   max_n = NULL, nproc = 1, 
                    verbose = FALSE, log_verbose = FALSE, out_dir = ".",
+                   summarize_clones = FALSE) 
 ```
 
 __spectralClones__: While hierarchical clustering-based model group sequences using a 
@@ -74,17 +75,33 @@ can be found in:
         identification of B cell clonal families from next-generation sequencing data, 
         bioRxiv doi: 10.1101/788620.
 
+
+```r
+spectralClones(db, 
+               method = c("novj", "vj"),
+               germline = "germline_alignment",
+               sequence = "sequence_alignment",
+               junction = "junction",
+               v_call = "v_call", j_call = "j_call", clone = "clone_id",
+               targeting_model = NULL, len_limit = NULL,
+               first = FALSE, cdr3 = FALSE, mod3 = FALSE,
+               max_n = NULL, threshold = NULL, base_sim = 0.95,
+               iter_max = 1000, nstart = 1000, nproc = 1,
+               verbose = FALSE, log_verbose = FALSE, out_dir = ".",
+               summarize_clones = FALSE)
+```
+
 The following discussion is applicable for all three models. 
 
 1. The data set needs to be passed to the argument `db`, which at the end will be 
 returned as a modified `db` `data.frame` with clone identifiers in the column specified 
-by argument `clone_col`. 
+by argument `clone`. 
 2. The names of the columns containing nucleotide sequences (in the junction region), 
 V-segment allele calls and J-segment allele calls needs to be assigned to the arguments 
-`junction_col`, `v_call_col` and `j_call_col` respectively. 
+`junction`, `v_call` and `j_call` respectively. 
 3. If a genotype has been inferred using the methods in the `tigger` package, and a 
 `V_CALL_GENOTYPED` field has been added to the database, then this column may be used 
-instead of the default `V_CALL` column by specifying the `v_call_col` argument. This will 
+instead of the default `V_CALL` column by specifying the `v_call` argument. This will 
 allow the more accurate V call from `tigger` to be used for grouping of the sequences.
 4. For more leniency toward ambiguous V(D)J segment calls the parameter `first` can be set 
 to `FALSE`. 
@@ -100,12 +117,12 @@ argument `mod3` should be set as `TRUE` (the default is `FALSE`).
 a file in the current input directory (by default).
 9. If the `out_dir` is specified, then its path will be used to save `log_verbose`. 
 10. If `summarize_clones` set to be `FALSE` (default), a modified `data.frame` with clone 
-identifiers in the `clone_col` column will be returned. Otherwise, if `summarize_clones` 
+identifiers in the `clone` column will be returned. Otherwise, if `summarize_clones` 
 set to be `TRUE`, the cloning functions will perform a series of analyses to assess the 
 clonal landscape and return a list containing summary statistics and visualization of 
 the clonal clustering results:
 
-    * __db__: a modified `data.frame` with clone identifiers in the `clone_col` column.
+    * __db__: a modified `data.frame` with clone identifiers in the `clone` column.
     * __vjl_group_summ__: a `data.frame` of clones summary, e.g. size, V-gene, J-gene, junction lentgh, and so on.
     * __inter_intra__: a `data.frame` containing minimum inter (between) and maximum intra (within) clonal distances.
     * __eff_threshold__: effective cut-off separating the inter (between) and intra (within) clonal distances.
@@ -122,10 +139,10 @@ iterations and the number of random sets chosen for kmean clustering initializat
 respectively. The argument `base_sim` is required to be used as the similarity cut-off for 
 sequences in equal distances from each other. It is not mandatory, but the argument `threshold` 
 can also be used for the model `spectral` in order to enforce an upper-limit cut-off. 
-The arguments `germline_col` and `sequence_col` must be provided if method `vj` 
+The arguments `germline` and `sequence` must be provided if method `vj` 
 is used. Therefore, mutation counts are determined by comparing the input sequences 
-(in the column specified by `sequence_col`) to the effective germline sequence 
-(IUPAC representation of sequences sequences in the column specified by `germline_col`). 
+(in the column specified by `sequence`) to the effective germline sequence 
+(IUPAC representation of sequences sequences in the column specified by `germline`). 
 Arguments `len_limit` can be used to focus only on the V segment. It is not mandatory, but the 
 influence of SHM hot- and cold-spot biases in the clonal inference process will be noted if a SHM 
 targeting model is provided through the argument `targeting_model` (see the function `createTargetingModel` 
@@ -142,10 +159,9 @@ Clonal assignment using hierarchical model:
 
 
 ```r
-results <- hierarchicalClones(db = ExampleDb, 
-                              clone_col = "CLONE", method = "single", 
-                              junction_col = "JUNCTION", 
-                              v_call_col = "V_CALL", j_call_col = "J_CALL",
+results <- hierarchicalClones(db = ExampleDb, method = "single", 
+                              junction = "junction", 
+                              v_call = "v_call", j_call = "j_call",
                               threshold = 0.15, summarize_clones = TRUE)
 # cloned data (a data.frame)
 cloned_db <- results$db
@@ -164,7 +180,7 @@ df <- results$inter_intra
 results$plot_inter_intra
 ```
 
-![plot of chunk Scoper-Vignette-4](figure/Scoper-Vignette-4-1.png)
+![plot of chunk Scoper-Vignette-5](figure/Scoper-Vignette-5-1.png)
 
 Clonal assignment using spectral model:
 
@@ -172,12 +188,12 @@ Clonal assignment using spectral model:
 # Clonal assignment using spectral model
 # IMGT_V object from shazam package to identify sequence limit length
 library("shazam")
-results <- spectralClones(db = ExampleDb, clone_col = "clone_id", method = "vj", 
+results <- spectralClones(db = ExampleDb, method = "vj", 
                           len_limit = shazam::IMGT_V, targeting_model = shazam::HH_S5F,
-                          sequence_col = "SEQUENCE_IMGT", 
-                          germline_col = "GERMLINE_IMGT_D_MASK",
-                          junction_col = "JUNCTION", 
-                          v_call_col = "V_CALL", j_call_col = "J_CALL",
+                          sequence = "sequence_alignment", 
+                          germline = "germline_alignment_d_mask",
+                          junction = "junction", 
+                          v_call = "v_call", j_call = "j_call",
                           threshold = 0.15, summarize_clones = TRUE)
 # cloned data (a data.frame)
 cloned_db <- results$db
@@ -196,4 +212,4 @@ df <- results$inter_intra
 results$plot_inter_intra
 ```
 
-![plot of chunk Scoper-Vignette-5](figure/Scoper-Vignette-5-1.png)
+![plot of chunk Scoper-Vignette-6](figure/Scoper-Vignette-6-1.png)

@@ -12,12 +12,11 @@ Usage
 --------------------
 ```
 spectralClones(db, method = c("novj", "vj"),
-germline_col = "germline_alignment",
-sequence_col = "sequence_alignment", junction_col = "junction",
-v_call_col = "v_call", j_call_col = "j_call",
-clone_col = c("clone_id", "CLONE"), targeting_model = NULL,
-len_limit = NULL, first = FALSE, cdr3 = FALSE, mod3 = FALSE,
-max_n = NULL, threshold = NULL, base_sim = 0.95, iter_max = 1000,
+germline = "germline_alignment", sequence = "sequence_alignment",
+junction = "junction", v_call = "v_call", j_call = "j_call",
+clone = "clone_id", targeting_model = NULL, len_limit = NULL,
+first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL,
+threshold = NULL, base_sim = 0.95, iter_max = 1000,
 nstart = 1000, nproc = 1, verbose = FALSE, log_verbose = FALSE,
 out_dir = ".", summarize_clones = FALSE)
 ```
@@ -31,25 +30,24 @@ db
 method
 :   one of the `"novj"` or `"vj"`. See Details for description.
 
-germline_col
+germline
 :   character name of the column containing the germline or reference sequence.
 
-sequence_col
+sequence
 :   character name of the column containing input sequences.
 
-junction_col
+junction
 :   character name of the column containing junction sequences.
 Also used to determine sequence length for grouping.
 
-v_call_col
+v_call
 :   character name of the column containing the V-segment allele calls.
 
-j_call_col
+j_call
 :   character name of the column containing the J-segment allele calls.
 
-clone_col
-:   one of the `"CLONE"` or `"clone_id"` for the output column name 
-containing the clone ids.
+clone
+:   the output column name containing the clone ids.
 
 targeting_model
 :   [TargetingModel](http://www.rdocumentation.org/packages/shazam/topics/TargetingModel-class) object. Only applicable if `method` = `"vj"`. 
@@ -67,12 +65,12 @@ If `FALSE` the union of ambiguous gene assignments is used to
 group all sequences with any overlapping gene calls.
 
 cdr3
-:   if `TRUE` removes 3 nts from both ends of `"junction_col"`
+:   if `TRUE` removes 3 nts from both ends of `"junction"`
 (converts IMGT junction to CDR3 region). if `TRUE` remove 
-`junction_col`(s) with length less than 7 nts.
+`junction`(s) with length less than 7 nts.
 
 mod3
-:   if `TRUE` removes `junction_col`(s) with number of nucleotides not 
+:   if `TRUE` removes `junction`(s) with number of nucleotides not 
 modulus of 3.
 
 max_n
@@ -117,10 +115,10 @@ See Value for description.
 Value
 -------------------
 
-For `summarize_clones` = `FALSE`, a modified data.frame with clone identifiers in the `clone_col` column. 
+For `summarize_clones` = `FALSE`, a modified data.frame with clone identifiers in the `clone` column. 
 For `summarize_clones` = `TRUE` returns a list containing:
 
-+ `db`:                   modified `db` data.frame with clone identifiers in the `clone_col` column. 
++ `db`:                   modified `db` data.frame with clone identifiers in the `clone` column. 
 + `vjl_group_summ`:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
 and so on.
 + `inter_intra`:          data.frame containing minimum inter (between) and maximum intra (within) 
@@ -146,8 +144,8 @@ data sets. Two methods are included to perform clustering among sequences of B c
 indicates the level of similarity among junction sequences in a local neighborhood. 
 +  If `method` = `"vj"`: clonal relationships are inferred not only based on the junction region 
 homology, but also takes into account the mutation profiles in the V and J segments. Mutation counts are 
-determined by comparing the input sequences (in the column specified by `sequence_col`) to the effective 
-germline sequence (IUPAC representation of sequences in the column specified by `germline_col`). 
+determined by comparing the input sequences (in the column specified by `sequence`) to the effective 
+germline sequence (IUPAC representation of sequences in the column specified by `germline`). 
 +  Not mandatory, but the influence of SHM hot- and cold-spot biases in the clonal inference process will be noted 
 if a SHM targeting model is provided through argument `targeting_model` (see [createTargetingModel](http://www.rdocumentation.org/packages/shazam/topics/createTargetingModel) 
 for more technical details). 
@@ -162,9 +160,10 @@ Examples
 
 ```R
 results <- spectralClones(ExampleDb, method = "vj", 
-germline_col = "GERMLINE_IMGT_D_MASK", sequence_col = "SEQUENCE_IMGT", 
-junction_col = "JUNCTION", v_call_col = "V_CALL", 
-j_call_col = "J_CALL", threshold=0.15, summarize_clones = TRUE)
+germline = "germline_alignment_d_mask", 
+sequence = "sequence_alignment", 
+junction = "junction", v_call = "v_call", 
+j_call = "j_call", threshold=0.15, summarize_clones = TRUE)
 ```
 
 

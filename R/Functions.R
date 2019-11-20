@@ -250,9 +250,9 @@ pairwiseMutions <- function(germ_imgt,
 # *****************************************************************************
 # inter-clone-distance vs intra-clone-distance
 calculateInterVsIntra <- function(db,
-                                  clone_col,
+                                  clone,
                                   vjl_groups,
-                                  junction_col = "junction",
+                                  junction = "junction",
                                   cdr3 = FALSE,
                                   cdr3_col = NA,
                                   nproc = 1,
@@ -285,8 +285,8 @@ calculateInterVsIntra <- function(db,
                           clones <- strsplit(vjl_groups$CLONE_ID[k], split=",")[[1]]
                           l <- vjl_groups$JUNCTION_LENGTH[k]
                           n_clones <- length(clones)
-                          seqs <- db[[ifelse(cdr3, cdr3_col, junction_col)]][db[[clone_col]] %in% clones]
-                          names(seqs) <- db[[clone_col]][db[[clone_col]] %in% clones]
+                          seqs <- db[[ifelse(cdr3, cdr3_col, junction)]][db[[clone]] %in% clones]
+                          names(seqs) <- db[[clone]][db[[clone]] %in% clones]
                           ### make a dataframe of unique seqs in each clone
                           seqs_db <- data_frame(value = seqs, name = names(seqs)) %>%
                               dplyr::group_by(!!!rlang::syms(c("name", "value"))) %>% # alternatively: group_by(name) if name value pair is always unique
@@ -506,20 +506,19 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' @param    db                 data.frame containing sequence data.
 #' @param    method             one of the \code{"nt"} for nucleotide based clustering or 
 #'                              \code{"aa"} for amino acid based clustering.
-#' @param    junction_col       character name of the column containing junction sequences.
+#' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
-#' @param    v_call_col         character name of the column containing the V-segment allele calls.
-#' @param    j_call_col         character name of the column containing the J-segment allele calls.
-#' @param    clone_col          one of the \code{"CLONE"} or \code{"clone_id"} for the output column name 
-#'                              containing the clone ids.
+#' @param    v_call             character name of the column containing the V-segment allele calls.
+#' @param    j_call             character name of the column containing the J-segment allele calls.
+#' @param    clone              the output column name containing the clone ids.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
 #'                              group all sequences with any overlapping gene calls.
-#' @param    cdr3               if \code{TRUE} removes 3 nts from both ends of \code{"junction_col"}
+#' @param    cdr3               if \code{TRUE} removes 3 nts from both ends of \code{"junction"}
 #'                              (converts IMGT junction to CDR3 region). if \code{TRUE} remove 
-#'                              \code{junction_col}(s) with length less than 7 nts.
-#' @param    mod3               if \code{TRUE} removes \code{junction_col}(s) with number of nucleotides not 
+#'                              \code{junction}(s) with length less than 7 nts.
+#' @param    mod3               if \code{TRUE} removes \code{junction}(s) with number of nucleotides not 
 #'                              modulus of 3.
 #' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
 #'                              record from clonal assignment. Note, under model \code{"hierarchical"} and method 
@@ -531,14 +530,14 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' @param    log_verbose        if \code{TRUE} write verbose logging to a file in \code{out_dir}.
 #' @param    out_dir            specify the output directory to save \code{log_verbose}. The input 
 #'                              file directory is used if this is not specified.
-#' @param    summarize_clones     if \code{TRUE} performs a series of analysis to assess the clonal landscape.
+#' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
 #'                              See Value for description.
 #'
 #' @return
-#' For \code{summarize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone_col} column. 
+#' For \code{summarize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
 #' For \code{summarize_clones} = \code{TRUE} returns a list containing:
 #' \itemize{
-#'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone_col} column. 
+#'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone} column. 
 #'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
 #'                                           and so on.
 #'      \item   \code{inter_intra}:          data.frame containing minimum inter (between) and maximum intra (within) 
@@ -559,15 +558,15 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'
 #' @examples
 #' results <- identicalClones(ExampleDb, method ="nt", 
-#'                            junction_col = "junction", v_call_col = "v_call", 
-#'                            j_call_col = "j_call", summarize_clones = TRUE)
+#'                            junction = "junction", v_call = "v_call", 
+#'                            j_call = "j_call", summarize_clones = TRUE)
 #' @export
 identicalClones <- function(db,
                             method = c("nt", "aa"),
-                            junction_col = "junction",
-                            v_call_col = "v_call",
-                            j_call_col = "j_call",
-                            clone_col = c("clone_id", "CLONE"),
+                            junction = "junction",
+                            v_call = "v_call",
+                            j_call = "j_call",
+                            clone = "clone_id",
                             first = FALSE, 
                             cdr3 = FALSE, 
                             mod3 = FALSE,
@@ -580,8 +579,8 @@ identicalClones <- function(db,
     
     results <- defineClonesScoper(db,
                                   model = "identical", method = match.arg(method),
-                                  junction_col = junction_col, v_call_col = v_call_col, 
-                                  j_call_col = j_call_col, clone_col = match.arg(clone_col),
+                                  junction = junction, v_call = v_call, 
+                                  j_call = j_call, clone = clone,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,        
                                   verbose = verbose, log_verbose = log_verbose, out_dir = out_dir, 
                                   summarize_clones = summarize_clones)
@@ -609,41 +608,40 @@ identicalClones <- function(db,
 #' junction sequence similarity.
 #'
 #' @param    db                 data.frame containing sequence data.
+#' @param    threshold          a numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
 #' @param    method             availabe agglomerations are: \code{"single"}, \code{"average"}, and \code{"complete"}.
-#' @param    junction_col       character name of the column containing junction sequences.
+#' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
-#' @param    v_call_col         character name of the column containing the V-segment allele calls.
-#' @param    j_call_col         character name of the column containing the J-segment allele calls.
-#' @param    clone_col          one of the \code{"CLONE"} or \code{"clone_id"} for the output column name 
-#'                              containing the clone ids.
+#' @param    v_call             character name of the column containing the V-segment allele calls.
+#' @param    j_call             character name of the column containing the J-segment allele calls.
+#' @param    clone              the output column name containing the clone ids.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
 #'                              group all sequences with any overlapping gene calls.
-#' @param    cdr3               if \code{TRUE} removes 3 nts from both ends of \code{"junction_col"}
+#' @param    cdr3               if \code{TRUE} removes 3 nts from both ends of \code{"junction"}
 #'                              (converts IMGT junction to CDR3 region). if \code{TRUE} remove 
-#'                              \code{junction_col}(s) with length less than 7 nts.
-#' @param    mod3               if \code{TRUE} removes \code{junction_col}(s) with number of nucleotides not 
+#'                              \code{junction}(s) with length less than 7 nts.
+#' @param    mod3               if \code{TRUE} removes \code{junction}(s) with number of nucleotides not 
 #'                              modulus of 3.
 #' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
 #'                              record from clonal assignment. Note, under model \code{"hierarchical"} and method 
 #'                              \code{"single"} non-informative positions can create artifactual links between 
 #'                              unrelated sequences. Use with caution. Default is set to be \code{"NULL"} for no action.
-#' @param    threshold          a numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} report a summary of each step cloning process;
 #'                              if \code{FALSE} process cloning silently.
 #' @param    log_verbose        if \code{TRUE} write verbose logging to a file in \code{out_dir}.
 #' @param    out_dir            specify the output directory to save \code{log_verbose}. The input 
 #'                              file directory is used if this is not specified.
-#' @param    summarize_clones     if \code{TRUE} performs a series of analysis to assess the clonal landscape.
+#' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
 #'                              See Value for description.
 #'
 #' @return
-#' For \code{summarize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone_col} column. 
+#' For \code{summarize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
 #' For \code{summarize_clones} = \code{TRUE} returns a list containing:
 #' \itemize{
-#'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone_col} column. 
+#'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone} column. 
 #'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
 #'                                           and so on.
 #'      \item   \code{inter_intra}:          data.frame containing minimum inter (between) and maximum intra (within) 
@@ -665,21 +663,21 @@ identicalClones <- function(db,
 #'
 #' @examples
 #' results <- hierarchicalClones(ExampleDb, method = "single",
-#'                               junction_col = "junction", v_call_col = "v_call", 
-#'                               j_call_col = "j_call", threshold=0.15,
+#'                               junction = "junction", v_call = "v_call", 
+#'                               j_call = "j_call", threshold=0.15,
 #'                               summarize_clones = TRUE)
 #' @export
 hierarchicalClones <- function(db,
+                               threshold,
                                method = c("single", "average", "complete"),
-                               junction_col = "junction",
-                               v_call_col = "v_call",
-                               j_call_col = "j_call",
-                               clone_col = c("clone_id", "CLONE"),
+                               junction = "junction",
+                               v_call = "v_call",
+                               j_call = "j_call",
+                               clone = "clone_id",
                                first = FALSE, 
                                cdr3 = FALSE, 
                                mod3 = FALSE,
                                max_n = NULL,
-                               threshold = NULL,
                                nproc = 1,
                                verbose = FALSE,
                                log_verbose = FALSE,
@@ -688,8 +686,8 @@ hierarchicalClones <- function(db,
     
     results <- defineClonesScoper(db,
                                   model = "hierarchical", method = match.arg(method),
-                                  junction_col = junction_col, v_call_col = v_call_col, 
-                                  j_call_col = j_call_col, clone_col = match.arg(clone_col),
+                                  junction = junction, v_call = v_call, 
+                                  j_call = j_call, clone = clone,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
                                   threshold = threshold,
                                   verbose = verbose, log_verbose = log_verbose, out_dir = out_dir, 
@@ -718,14 +716,13 @@ hierarchicalClones <- function(db,
 #'
 #' @param    db                 data.frame containing sequence data.
 #' @param    method             one of the \code{"novj"} or \code{"vj"}. See Details for description.
-#' @param    germline_col       character name of the column containing the germline or reference sequence.
-#' @param    sequence_col       character name of the column containing input sequences. 
-#' @param    junction_col       character name of the column containing junction sequences.
+#' @param    germline           character name of the column containing the germline or reference sequence.
+#' @param    sequence           character name of the column containing input sequences. 
+#' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
-#' @param    v_call_col         character name of the column containing the V-segment allele calls.
-#' @param    j_call_col         character name of the column containing the J-segment allele calls.
-#' @param    clone_col          one of the \code{"CLONE"} or \code{"clone_id"} for the output column name 
-#'                              containing the clone ids.
+#' @param    v_call             character name of the column containing the V-segment allele calls.
+#' @param    j_call             character name of the column containing the J-segment allele calls.
+#' @param    clone              the output column name containing the clone ids.
 #' @param    targeting_model    \link{TargetingModel} object. Only applicable if \code{method} = \code{"vj"}. 
 #'                              See Details for description.
 #' @param    len_limit          \link{IMGT_V} object defining the regions and boundaries of the Ig 
@@ -735,10 +732,10 @@ hierarchicalClones <- function(db,
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
 #'                              group all sequences with any overlapping gene calls.
-#' @param    cdr3               if \code{TRUE} removes 3 nts from both ends of \code{"junction_col"}
+#' @param    cdr3               if \code{TRUE} removes 3 nts from both ends of \code{"junction"}
 #'                              (converts IMGT junction to CDR3 region). if \code{TRUE} remove 
-#'                              \code{junction_col}(s) with length less than 7 nts.
-#' @param    mod3               if \code{TRUE} removes \code{junction_col}(s) with number of nucleotides not 
+#'                              \code{junction}(s) with length less than 7 nts.
+#' @param    mod3               if \code{TRUE} removes \code{junction}(s) with number of nucleotides not 
 #'                              modulus of 3.
 #' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
 #'                              record from clonal assignment. Note, under model \code{"hierarchical"} and method 
@@ -754,14 +751,14 @@ hierarchicalClones <- function(db,
 #' @param    log_verbose        if \code{TRUE} write verbose logging to a file in \code{out_dir}.
 #' @param    out_dir            specify the output directory to save \code{log_verbose}. The input 
 #'                              file directory is used if this is not specified.
-#' @param    summarize_clones     if \code{TRUE} performs a series of analysis to assess the clonal landscape.
+#' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
 #'                              See Value for description.
 #'
 #' @return
-#' For \code{summarize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone_col} column. 
+#' For \code{summarize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
 #' For \code{summarize_clones} = \code{TRUE} returns a list containing:
 #' \itemize{
-#'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone_col} column. 
+#'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone} column. 
 #'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
 #'                                           and so on.
 #'      \item   \code{inter_intra}:          data.frame containing minimum inter (between) and maximum intra (within) 
@@ -784,8 +781,8 @@ hierarchicalClones <- function(db,
 #'       indicates the level of similarity among junction sequences in a local neighborhood. 
 #'       \item If \code{method} = \code{"vj"}: clonal relationships are inferred not only based on the junction region 
 #'       homology, but also takes into account the mutation profiles in the V and J segments. Mutation counts are 
-#'       determined by comparing the input sequences (in the column specified by \code{sequence_col}) to the effective 
-#'       germline sequence (IUPAC representation of sequences in the column specified by \code{germline_col}). 
+#'       determined by comparing the input sequences (in the column specified by \code{sequence}) to the effective 
+#'       germline sequence (IUPAC representation of sequences in the column specified by \code{germline}). 
 #'       \item Not mandatory, but the influence of SHM hot- and cold-spot biases in the clonal inference process will be noted 
 #'       if a SHM targeting model is provided through argument \code{targeting_model} (see \link{createTargetingModel} 
 #'       for more technical details). 
@@ -795,18 +792,19 @@ hierarchicalClones <- function(db,
 #'
 #' @examples
 #' results <- spectralClones(ExampleDb, method = "vj", 
-#'                           germline_col = "germline_alignment_d_mask", sequence_col = "sequence_alignment", 
-#'                           junction_col = "junction", v_call_col = "v_call", 
-#'                           j_call_col = "j_call", threshold=0.15, summarize_clones = TRUE)
+#'                           germline = "germline_alignment_d_mask", 
+#'                           sequence = "sequence_alignment", 
+#'                           junction = "junction", v_call = "v_call", 
+#'                           j_call = "j_call", threshold=0.15, summarize_clones = TRUE)
 #' @export
 spectralClones <- function(db,
                            method = c("novj", "vj"),
-                           germline_col = "germline_alignment",
-                           sequence_col = "sequence_alignment",
-                           junction_col = "junction",
-                           v_call_col = "v_call",
-                           j_call_col = "j_call",
-                           clone_col = c("clone_id", "CLONE"),
+                           germline = "germline_alignment",
+                           sequence = "sequence_alignment",
+                           junction = "junction",
+                           v_call = "v_call",
+                           j_call = "j_call",
+                           clone = "clone_id",
                            targeting_model = NULL,
                            len_limit = NULL,
                            first = FALSE, 
@@ -825,9 +823,9 @@ spectralClones <- function(db,
     
     results <- defineClonesScoper(db,
                                   model = "spectral", method = match.arg(method),
-                                  germline_col = germline_col, sequence_col = sequence_col,
-                                  junction_col = junction_col, v_call_col = v_call_col, j_call_col = j_call_col,
-                                  clone_col = match.arg(clone_col), targeting_model = targeting_model,
+                                  germline = germline, sequence = sequence,
+                                  junction = junction, v_call = v_call, j_call = j_call,
+                                  clone = clone, targeting_model = targeting_model,
                                   len_limit = len_limit,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n,
                                   threshold = threshold, base_sim = base_sim,
@@ -853,12 +851,12 @@ spectralClones <- function(db,
 defineClonesScoper <- function(db,
                                model = c("identical", "hierarchical", "spectral"),
                                method = c("nt", "aa", "single", "average", "complete", "novj", "vj"),
-                               germline_col = "germline_alignment",
-                               sequence_col = "sequence_alignment",
-                               junction_col = "junction",
-                               v_call_col = "v_call",
-                               j_call_col = "j_call",
-                               clone_col = c("clone_id", "CLONE"),
+                               germline = "germline_alignment",
+                               sequence = "sequence_alignment",
+                               junction = "junction",
+                               v_call = "v_call",
+                               j_call = "j_call",
+                               clone = "clone_id",
                                targeting_model = NULL,
                                len_limit = NULL,
                                first = FALSE, 
@@ -896,8 +894,8 @@ defineClonesScoper <- function(db,
         if (!method %in% c("single", "average", "complete")) { 
             stop(paste0("'method' should be one of 'single', 'average', or 'complete' for model '", model, "'.")) 
         }
-        if  (is.null(threshold)) {
-            stop(paste0("'threshold' should be defined for model '", model, "'.")) 
+        if (is.null(threshold) | threshold > 1) {
+            stop(paste0("'threshold' should be a positive value less than 1 for model '", model, "'.")) 
         }
     } else if (model == "spectral") {
         if (!method %in% c("novj", "vj")) { 
@@ -907,19 +905,13 @@ defineClonesScoper <- function(db,
         stop(paste0("'model' shoubd be one of 'identical', 'hierarchical', or 'spectral'.")) 
     }
     
-    ### get clone column name
-    clone_col <- match.arg(clone_col)
-    if (!(clone_col %in% c("CLONE", "clone_id"))) {
-        stop(paste0("'clone_col' should be one of 'CLONE' or 'clone_id'", ".")) 
-    }
-    
     ### Check for invalid characters
     valid_chars <- colnames(getDNAMatrix(gap = 0))
     .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
-    valid_seq <- sapply(db[[junction_col]], .validateSeq)
+    valid_seq <- sapply(db[[junction]], .validateSeq)
     not_valid_seq <- which(!valid_seq)
     if (length(not_valid_seq) > 0) {
-        stop("invalid sequence characters in the ", junction_col, " column. ",
+        stop("invalid sequence characters in the ", junction, " column. ",
              length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'")
     }
     
@@ -938,14 +930,14 @@ defineClonesScoper <- function(db,
     temp_cols <- c("VJ_GROUP", "VJL_GROUP", "JUNCTION_L",  "CDR3", "CDR3_L", "CLONE_temp")
     
     ### check for invalid columns
-    invalid_cols <- c(clone_col, temp_cols)
+    invalid_cols <- c(clone, temp_cols)
     if (any(invalid_cols %in% colnames(db))) {
         stop("Column(s) '", paste(invalid_cols[invalid_cols %in% colnames(db)], collapse = "', '"), "' already exist.",
              "\n Invalid column names are: '", paste(invalid_cols, collapse = "', '"), "'.")
     }
     
     ### Check general required columns
-    columns <- c(junction_col, v_call_col, j_call_col) #, fields
+    columns <- c(junction, v_call, j_call) #, fields
     columns <- columns[!is.null(columns)]
     check <- checkColumns(db, columns)
     if (!check) { 
@@ -954,7 +946,7 @@ defineClonesScoper <- function(db,
     
     ### Check required columns for method "vj"
     if (model == "spectral" & method == "vj") {
-        columns <- c(germline_col, sequence_col) #, fields
+        columns <- c(germline, sequence) #, fields
         columns <- columns[!is.null(columns)]
         check_ham_mut <- checkColumns(db, columns)
         if (!check_ham_mut) { 
@@ -971,7 +963,7 @@ defineClonesScoper <- function(db,
     }
     
     # add junction length column
-    db$JUNCTION_L <- stri_length(db[[junction_col]])
+    db$JUNCTION_L <- stri_length(db[[junction]])
     junction_l <- "JUNCTION_L"
     
     ### check for mod3
@@ -989,16 +981,16 @@ defineClonesScoper <- function(db,
         db <- db %>% 
             dplyr::filter(!!rlang::sym(junction_l) > 6)
         # add cdr3 column
-        db$CDR3 <- substr(db[[junction_col]], 4, db[[junction_l]]-3)
+        db$CDR3 <- substr(db[[junction]], 4, db[[junction_l]]-3)
         cdr3_col <- "CDR3"
     }
     
     ### check for N's
     # Count the number of 'N's in junction
     if (!is.null(max_n)) {
-        n_rmv_N <- sum(str_count(db[[junction_col]], "N") > max_n)
+        n_rmv_N <- sum(str_count(db[[junction]], "N") > max_n)
         db <- db %>% 
-            dplyr::filter(str_count(!!rlang::sym(junction_col), "N") <= max_n)
+            dplyr::filter(str_count(!!rlang::sym(junction), "N") <= max_n)
     }
 
     ### Parse V and J columns to get gene
@@ -1010,8 +1002,8 @@ defineClonesScoper <- function(db,
             file = file.path(out_dir, log_verbose_name), append=TRUE) 
     }
     db <- groupGenes(db,
-                     v_call = v_call_col,
-                     j_call = j_call_col,
+                     v_call = v_call,
+                     j_call = j_call,
                      first = first)
     
     ### groups to use
@@ -1025,8 +1017,8 @@ defineClonesScoper <- function(db,
     ### summary of the groups
     vjl_groups <- db %>% 
         dplyr::group_by(!!rlang::sym("VJL_GROUP")) %>% 
-        dplyr::summarise(GROUP_V_CALL = paste(unique(!!rlang::sym(v_call_col)), collapse=","),
-                         GROUP_J_CALL = paste(unique(!!rlang::sym(j_call_col)), collapse=","),
+        dplyr::summarise(GROUP_V_CALL = paste(unique(!!rlang::sym(v_call)), collapse=","),
+                         GROUP_J_CALL = paste(unique(!!rlang::sym(j_call)), collapse=","),
                          GROUP_JUNCTION_LENGTH = unique(!!rlang::sym(junction_l)),
                          GROUP_SIZE = n())
     vjl_groups$GROUP_V_CALL <- sapply(1:nrow(vjl_groups), 
@@ -1076,14 +1068,14 @@ defineClonesScoper <- function(db,
                              # pre-check each group
                              passToClust <- TRUE
                              if (method %in% c("novj", "single", "complete", "average")) {
-                                 if (length(unique(db_gp[[ifelse(cdr3, cdr3_col, junction_col)]])) == 1) {
+                                 if (length(unique(db_gp[[ifelse(cdr3, cdr3_col, junction)]])) == 1) {
                                      idCluster <- rep(1, nrow(db_gp))
                                      n_cluster <- 1 
                                      passToClust <- FALSE
                                  }
                              }
                              if (method == "vj") {
-                                 if (length(unique(db_gp[[sequence_col]])) == 1) {
+                                 if (length(unique(db_gp[[sequence]])) == 1) {
                                      idCluster <- rep(1, nrow(db_gp))
                                      n_cluster <- 1  
                                      passToClust <- FALSE
@@ -1095,15 +1087,15 @@ defineClonesScoper <- function(db,
                                  results <- passToClustering_lev1(db_gp,
                                                                   model = model,
                                                                   method = method,
-                                                                  germline_col = germline_col,
-                                                                  sequence_col = sequence_col,
-                                                                  junction_col = junction_col,
+                                                                  germline = germline,
+                                                                  sequence = sequence,
+                                                                  junction = junction,
                                                                   mutabs = mutabs,
                                                                   len_limit = len_limit,
                                                                   cdr3 = cdr3,
                                                                   cdr3_col = ifelse(cdr3, cdr3_col, NA),
-                                                                  v_call_col = v_call_col,
-                                                                  j_call_col = j_call_col,
+                                                                  v_call = v_call,
+                                                                  j_call = j_call,
                                                                   threshold = threshold,
                                                                   base_sim = base_sim,
                                                                   iter_max = iter_max, 
@@ -1130,7 +1122,7 @@ defineClonesScoper <- function(db,
                                                            gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) }
                              
                              # attache clones
-                             db_gp[[clone_col]] <- paste(vjl_group, idCluster, sep="_")   
+                             db_gp[[clone]] <- paste(vjl_group, idCluster, sep="_")   
                              
                              # return result from each proc
                              return(db_gp)
@@ -1141,36 +1133,36 @@ defineClonesScoper <- function(db,
     if (nproc > 1) { parallel::stopCluster(cluster) }
     
     db_cloned$CLONE_temp <- db_cloned %>%
-        dplyr::group_by(!!rlang::sym(clone_col)) %>%
+        dplyr::group_by(!!rlang::sym(clone)) %>%
         dplyr::group_indices()
-    db_cloned[[clone_col]] <- db_cloned$CLONE_temp
-    db_cloned <- db_cloned[order(db_cloned[[clone_col]]), ]
-    db_cloned[[clone_col]] <- as.character(db_cloned[[clone_col]])
+    db_cloned[[clone]] <- db_cloned$CLONE_temp
+    db_cloned <- db_cloned[order(db_cloned[[clone]]), ]
+    db_cloned[[clone]] <- as.character(db_cloned[[clone]])
     
     ### report removed sequences
     if (mod3) {
         if (n_rmv_mod3 > 0) {
-            cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction_col, "column removed.", "\n", sep=" ")
+            cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ")
             if (log_verbose)  { 
-                cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction_col, "column removed.", "\n", sep=" ",
+                cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ",
                     file = file.path(out_dir, log_verbose_name), append=TRUE) 
             }
         }
     }
     if (cdr3) {
         if (n_rmv_cdr3 > 0) {
-            cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction_col, "column removed.", "\n", sep=" ")
+            cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ")
             if (log_verbose)  { 
-                cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction_col, "column removed.", "\n", sep=" ",
+                cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ",
                     file = file.path(out_dir, log_verbose_name), append=TRUE) 
             }
         }
     }
     if (!is.null(max_n)) {
         if (n_rmv_N > 0) {
-            cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction_col, "column removed.", "\n", sep=" ")
+            cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ")
             if (log_verbose)  { 
-                cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction_col, "column removed.", "\n", sep=" ",
+                cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ",
                     file = file.path(out_dir, log_verbose_name), append=TRUE) 
             }
         }
@@ -1194,11 +1186,11 @@ defineClonesScoper <- function(db,
         vjl_groups <- db_cloned %>%
             dplyr::group_by(!!rlang::sym("VJL_GROUP")) %>%
             dplyr::summarise(SIZE = n(),
-                             V_CALL = paste(unique(!!rlang::sym(v_call_col)), collapse=","),
-                             J_CALL = paste(unique(!!rlang::sym(j_call_col)), collapse=","),
+                             V_CALL = paste(unique(!!rlang::sym(v_call)), collapse=","),
+                             J_CALL = paste(unique(!!rlang::sym(j_call)), collapse=","),
                              JUNCTION_LENGTH = unique(!!rlang::sym(junction_l)),
-                             NUMBER_OF_CLONE = length(unique(!!rlang::sym(clone_col))),
-                             CLONE_ID = paste(unique(!!rlang::sym(clone_col)), collapse = ","))
+                             NUMBER_OF_CLONE = length(unique(!!rlang::sym(clone))),
+                             CLONE_ID = paste(unique(!!rlang::sym(clone)), collapse = ","))
         vjl_groups$V_CALL <- sapply(1:nrow(vjl_groups),
                                     function(i){ paste(unique(strsplit(vjl_groups$V_CALL[i], split=",")[[1]]), collapse=",") })
         vjl_groups$J_CALL <- sapply(1:nrow(vjl_groups),
@@ -1206,9 +1198,9 @@ defineClonesScoper <- function(db,
         
         ### calculate inter and intra distances
         results <- calculateInterVsIntra(db = db_cloned,
-                                         clone_col = clone_col,
+                                         clone = clone,
                                          vjl_groups = vjl_groups,
-                                         junction_col = junction_col,
+                                         junction = junction,
                                          cdr3 = cdr3,
                                          cdr3_col = ifelse(cdr3, cdr3_col, NA),
                                          nproc = nproc,
@@ -1245,15 +1237,15 @@ defineClonesScoper <- function(db,
 passToClustering_lev1 <- function (db_gp, 
                                    model = c("identical", "hierarchical", "spectral"),
                                    method = c("nt", "aa", "single", "average", "complete", "novj", "vj"),
-                                   germline_col = "germline_alignment",
-                                   sequence_col = "sequence_alignment",
-                                   junction_col = "junction",
+                                   germline = "germline_alignment",
+                                   sequence = "sequence_alignment",
+                                   junction = "junction",
                                    mutabs = NULL,
                                    len_limit = NULL,
                                    cdr3 = FALSE,
                                    cdr3_col = NA,
-                                   v_call_col = "v_call",
-                                   j_call_col = "j_call",
+                                   v_call = "v_call",
+                                   j_call = "j_call",
                                    threshold = NULL,
                                    base_sim = 0.95,
                                    iter_max = 1000, 
@@ -1270,7 +1262,7 @@ passToClustering_lev1 <- function (db_gp,
     ### begin clustering
     if (model == "identical") {
         #*************************
-        seq_col <- ifelse(cdr3, cdr3_col, junction_col)
+        seq_col <- ifelse(cdr3, cdr3_col, junction)
         if (method == "aa") {
             db_gp[[seq_col]] <- translateDNA(db_gp[[seq_col]])
         }
@@ -1283,7 +1275,7 @@ passToClustering_lev1 <- function (db_gp,
     } else if (model == "hierarchical") {
         #*************************
         # get sequences
-        seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction_col)]]
+        seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
         # find unique seqs
         df <- as.data.table(seqs)[, list(list(.I)), by = seqs]
         n_unq <- nrow(df)
@@ -1310,9 +1302,9 @@ passToClustering_lev1 <- function (db_gp,
         #*************************
         if (method == "vj") {
             # get required info based on the method
-            germs <- db_gp[[germline_col]]
-            seqs <- db_gp[[sequence_col]]
-            juncs <- db_gp[[ifelse(cdr3, cdr3_col, junction_col)]]
+            germs <- db_gp[[germline]]
+            seqs <- db_gp[[sequence]]
+            juncs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
             junc_length <- unique(stri_length(juncs))
             # find unique seqs
             df <- as.data.table(seqs)[, list(list(.I)), by = seqs]
@@ -1345,7 +1337,7 @@ passToClustering_lev1 <- function (db_gp,
             # check if one of the rows is all zeros, meaning vj mathod cannot decide (a highly rare case)
             if (all(disim_mtx == dist_mtx) | any(rowSums(disim_mtx) == 0)) {
                 # get required info based on the method
-                seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction_col)]]
+                seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
                 junc_length <- unique(stri_length(seqs))
                 # find unique seqs
                 df <- as.data.table(seqs)[, list(list(.I)), by = seqs]
@@ -1358,7 +1350,7 @@ passToClustering_lev1 <- function (db_gp,
             } 
         } else if (method == "novj") {
             # get required info based on the method
-            seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction_col)]]
+            seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
             junc_length <- unique(stri_length(seqs))
             # find unique seqs
             df <- as.data.table(seqs)[, list(list(.I)), by = seqs]
