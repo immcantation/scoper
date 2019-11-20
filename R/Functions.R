@@ -559,8 +559,8 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'
 #' @examples
 #' results <- identicalClones(ExampleDb, method ="nt", 
-#'                            junction_col = "JUNCTION", v_call_col = "V_CALL", 
-#'                            j_call_col = "J_CALL", summarize_clones = TRUE)
+#'                            junction_col = "junction", v_call_col = "v_call", 
+#'                            j_call_col = "j_call", summarize_clones = TRUE)
 #' @export
 identicalClones <- function(db,
                             method = c("nt", "aa"),
@@ -665,8 +665,8 @@ identicalClones <- function(db,
 #'
 #' @examples
 #' results <- hierarchicalClones(ExampleDb, method = "single",
-#'                               junction_col = "JUNCTION", v_call_col = "V_CALL", 
-#'                               j_call_col = "J_CALL", threshold=0.15,
+#'                               junction_col = "junction", v_call_col = "v_call", 
+#'                               j_call_col = "j_call", threshold=0.15,
 #'                               summarize_clones = TRUE)
 #' @export
 hierarchicalClones <- function(db,
@@ -795,9 +795,9 @@ hierarchicalClones <- function(db,
 #'
 #' @examples
 #' results <- spectralClones(ExampleDb, method = "vj", 
-#'                           germline_col = "GERMLINE_IMGT_D_MASK", sequence_col = "SEQUENCE_IMGT", 
-#'                           junction_col = "JUNCTION", v_call_col = "V_CALL", 
-#'                           j_call_col = "J_CALL", threshold=0.15, summarize_clones = TRUE)
+#'                           germline_col = "germline_alignment_d_mask", sequence_col = "sequence_alignment", 
+#'                           junction_col = "junction", v_call_col = "v_call", 
+#'                           j_call_col = "j_call", threshold=0.15, summarize_clones = TRUE)
 #' @export
 spectralClones <- function(db,
                            method = c("novj", "vj"),
