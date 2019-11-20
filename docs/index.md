@@ -40,6 +40,11 @@ data.” _Bioinformatics_, i341-i349. doi:
 10.1093/bioinformatics/bty235 (URL:
 https://doi.org/10.1093/bioinformatics/bty235).
 
+Nouri N, Kleinstein S (2019). “Somatic hypermutation analysis for
+improved identification of B cell clonal families from
+next-generation sequencing data.” _bioRxiv_. doi: 10.1101/788620
+(URL: https://doi.org/10.1101/788620).
+
 To cite the hierarchical clustering-based model in publications,
 please use:
 

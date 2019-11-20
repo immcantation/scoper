@@ -1,10 +1,11 @@
-Version 0.2.0.999 Oct 31, 2019
+Version 0.2.0.999 Nov 20, 2019
 -------------------------------------------------------------------------------
 
 General:
 
++ splitted `defineClonesScoper` function to three functions: `identicalClones`, 
+  `hierarchicalClones`, and `spectralClones`.
 + AIRR
-
 + added largest-distance-to-nearest filter to clustering process.
 
 
