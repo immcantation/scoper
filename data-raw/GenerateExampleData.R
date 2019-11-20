@@ -7,23 +7,23 @@ library(alakazam)
 
 # Load data
 ExampleDb <- readChangeoDb("data-raw/ExampleDb.gz")
-ExampleDb <- ExampleDb[c("SEQUENCE_ID",
-                         "SEQUENCE_IMGT",
-                         "GERMLINE_IMGT_D_MASK",
-                         "V_CALL",
-                         "V_CALL_GENOTYPED",
-                         "D_CALL",
-                         "J_CALL",
-                         "JUNCTION",
-                         "JUNCTION_LENGTH",
-                         "NP1_LENGTH",
-                         "NP2_LENGTH",
-                         "SAMPLE",
-                         "ISOTYPE",
-                         "DUPCOUNT")]
+ExampleDb <- ExampleDb[c("sequence_id",
+                         "sequence_alignment",
+                         "germline_alignment_d_mask",
+                         "v_call",
+                         "v_call_genotyped",
+                         "d_call",
+                         "j_call",
+                         "junction",
+                         "junction_length",
+                         "np1_length",
+                         "np2_length",
+                         "sample_id",
+                         "c_call",
+                         "duplicate_count")]
 
 # Save
-devtools::use_data(ExampleDb, overwrite=TRUE)
+use_this::use_data(ExampleDb, overwrite=TRUE)
 
 #### Generate example clones ####
 # ClonedExampleDb <- defineClonesScoper(db,

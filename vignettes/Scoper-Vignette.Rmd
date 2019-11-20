@@ -160,9 +160,9 @@ Clonal assignment using hierarchical model:
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE}
 results <- hierarchicalClones(db = ExampleDb, 
-                              clone_col = "CLONE", method = "single", 
-                              junction_col = "JUNCTION", 
-                              v_call_col = "V_CALL", j_call_col = "J_CALL",
+                              clone_col = "clone_id", method = "single", 
+                              junction_col = "junction", 
+                              v_call_col = "v_call", j_call_col = "j_call",
                               threshold = 0.15, summarize_clones = TRUE)
 # cloned data (a data.frame)
 cloned_db <- results$db
@@ -181,10 +181,10 @@ Clonal assignment using spectral model:
 library("shazam")
 results <- spectralClones(db = ExampleDb, clone_col = "clone_id", method = "vj", 
                           len_limit = shazam::IMGT_V, targeting_model = shazam::HH_S5F,
-                          sequence_col = "SEQUENCE_IMGT", 
-                          germline_col = "GERMLINE_IMGT_D_MASK",
-                          junction_col = "JUNCTION", 
-                          v_call_col = "V_CALL", j_call_col = "J_CALL",
+                          sequence_col = "sequence_alignment", 
+                          germline_col = "germline_alignment_d_mask",
+                          junction_col = "junction", 
+                          v_call_col = "v_call", j_call_col = "j_call",
                           threshold = 0.15, summarize_clones = TRUE)
 # cloned data (a data.frame)
 cloned_db <- results$db
