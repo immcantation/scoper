@@ -46,8 +46,8 @@ be found in:
 
 ```r
 hierarchicalClones(db, threshold,
-                   method = c("nt", "aa"), junction = "junction",
-                   v_call = "v_call", j_call = "j_call",
+                   method = c("single", "average", "complete"), 
+                   junction = "junction", v_call = "v_call", j_call = "j_call",
                    clone = "clone_id",
                    first = FALSE, cdr3 = FALSE, mod3 = FALSE,
                    max_n = NULL, nproc = 1, 
