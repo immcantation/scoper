@@ -11,11 +11,11 @@ junction sequence similarity.
 Usage
 --------------------
 ```
-hierarchicalClones(db, threshold, method = c("single", "average",
-"complete"), junction = "junction", v_call = "v_call",
-j_call = "j_call", clone = "clone_id", first = FALSE,
-cdr3 = FALSE, mod3 = FALSE, max_n = NULL, nproc = 1,
-verbose = FALSE, log_verbose = FALSE, out_dir = ".",
+hierarchicalClones(db, threshold, method = c("nt", "aa"),
+linkage = c("single", "average", "complete"), junction = "junction",
+v_call = "v_call", j_call = "j_call", clone = "clone_id",
+first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL,
+nproc = 1, verbose = FALSE, log_verbose = FALSE, out_dir = ".",
 summarize_clones = FALSE)
 ```
 
@@ -29,6 +29,10 @@ threshold
 :   a numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
 
 method
+:   one of the `"nt"` for nucleotide based clustering or 
+`"aa"` for amino acid based clustering.
+
+linkage
 :   availabe agglomerations are: `"single"`, `"average"`, and `"complete"`.
 
 junction
@@ -61,7 +65,7 @@ modulus of 3.
 
 max_n
 :   The maximum number of N's to permit in the junction sequence before excluding the 
-record from clonal assignment. Note, under model `"hierarchical"` and method 
+record from clonal assignment. Note, under model `"hierarchical"` and linkage 
 `"single"` non-informative positions can create artifactual links between 
 unrelated sequences. Use with caution. Default is set to be `"NULL"` for no action.
 
@@ -121,9 +125,10 @@ Examples
 -------------------
 
 ```R
-results <- hierarchicalClones(ExampleDb, method = "single",
-junction = "junction", v_call = "v_call", 
-j_call = "j_call", threshold=0.15,
+results <- hierarchicalClones(ExampleDb, threshold = 0.15,
+method = "nt", linkage = "single",
+junction = "junction", 
+v_call = "v_call", j_call = "j_call", 
 summarize_clones = TRUE)
 ```
 

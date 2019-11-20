@@ -57,9 +57,7 @@ modulus of 3.
 
 max_n
 :   The maximum number of N's to permit in the junction sequence before excluding the 
-record from clonal assignment. Note, under model `"hierarchical"` and method 
-`"single"` non-informative positions can create artifactual links between 
-unrelated sequences. Use with caution. Default is set to be `"NULL"` for no action.
+record from clonal assignment. Default is set to be `"NULL"` for no action.
 
 nproc
 :   number of cores to distribute the function over.

@@ -521,9 +521,7 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' @param    mod3               if \code{TRUE} removes \code{junction}(s) with number of nucleotides not 
 #'                              modulus of 3.
 #' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
-#'                              record from clonal assignment. Note, under model \code{"hierarchical"} and method 
-#'                              \code{"single"} non-informative positions can create artifactual links between 
-#'                              unrelated sequences. Use with caution. Default is set to be \code{"NULL"} for no action.
+#'                              record from clonal assignment. Default is set to be \code{"NULL"} for no action.
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} report a summary of each step cloning process;
 #'                              if \code{FALSE} process cloning silently.
@@ -609,7 +607,9 @@ identicalClones <- function(db,
 #'
 #' @param    db                 data.frame containing sequence data.
 #' @param    threshold          a numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
-#' @param    method             availabe agglomerations are: \code{"single"}, \code{"average"}, and \code{"complete"}.
+#' @param    method             one of the \code{"nt"} for nucleotide based clustering or 
+#'                              \code{"aa"} for amino acid based clustering.
+#' @param    linkage            availabe agglomerations are: \code{"single"}, \code{"average"}, and \code{"complete"}.
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
 #' @param    v_call             character name of the column containing the V-segment allele calls.
@@ -625,7 +625,7 @@ identicalClones <- function(db,
 #' @param    mod3               if \code{TRUE} removes \code{junction}(s) with number of nucleotides not 
 #'                              modulus of 3.
 #' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
-#'                              record from clonal assignment. Note, under model \code{"hierarchical"} and method 
+#'                              record from clonal assignment. Note, under model \code{"hierarchical"} and linkage 
 #'                              \code{"single"} non-informative positions can create artifactual links between 
 #'                              unrelated sequences. Use with caution. Default is set to be \code{"NULL"} for no action.
 #' @param    nproc              number of cores to distribute the function over.
@@ -662,14 +662,16 @@ identicalClones <- function(db,
 #' based on the junction sequence similarity: 
 #'
 #' @examples
-#' results <- hierarchicalClones(ExampleDb, method = "single",
-#'                               junction = "junction", v_call = "v_call", 
-#'                               j_call = "j_call", threshold=0.15,
+#' results <- hierarchicalClones(ExampleDb, threshold = 0.15,
+#'                               method = "nt", linkage = "single",
+#'                               junction = "junction", 
+#'                               v_call = "v_call", j_call = "j_call", 
 #'                               summarize_clones = TRUE)
 #' @export
 hierarchicalClones <- function(db,
                                threshold,
-                               method = c("single", "average", "complete"),
+                               method = c("nt", "aa"),
+                               linkage = c("single", "average", "complete"),
                                junction = "junction",
                                v_call = "v_call",
                                j_call = "j_call",
@@ -684,12 +686,12 @@ hierarchicalClones <- function(db,
                                out_dir = ".",
                                summarize_clones = FALSE) {
     
-    results <- defineClonesScoper(db,
-                                  model = "hierarchical", method = match.arg(method),
+    results <- defineClonesScoper(db, 
+                                  model = "hierarchical", threshold = threshold,
+                                  method = match.arg(method), linkage = match.arg(linkage), 
                                   junction = junction, v_call = v_call, 
                                   j_call = j_call, clone = clone,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
-                                  threshold = threshold,
                                   verbose = verbose, log_verbose = log_verbose, out_dir = out_dir, 
                                   summarize_clones = summarize_clones)
     
@@ -738,9 +740,7 @@ hierarchicalClones <- function(db,
 #' @param    mod3               if \code{TRUE} removes \code{junction}(s) with number of nucleotides not 
 #'                              modulus of 3.
 #' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
-#'                              record from clonal assignment. Note, under model \code{"hierarchical"} and method 
-#'                              \code{"single"} non-informative positions can create artifactual links between 
-#'                              unrelated sequences. Use with caution. Default is set to be \code{"NULL"} for no action.
+#'                              record from clonal assignment. Default is set to be \code{"NULL"} for no action.
 #' @param    threshold          the upper-limit cut-off for clonal grouping.
 #' @param    base_sim           required similarity cut-off for sequences in equal distances from each other.
 #' @param    iter_max	        the maximum number of iterations allowed for kmean clustering step.
@@ -850,7 +850,8 @@ spectralClones <- function(db,
 # *****************************************************************************
 defineClonesScoper <- function(db,
                                model = c("identical", "hierarchical", "spectral"),
-                               method = c("nt", "aa", "single", "average", "complete", "novj", "vj"),
+                               method = c("nt", "aa", "novj", "vj"),
+                               linkage = c("single", "average", "complete"),
                                germline = "germline_alignment",
                                sequence = "sequence_alignment",
                                junction = "junction",
@@ -884,15 +885,17 @@ defineClonesScoper <- function(db,
     ### get method
     method <- match.arg(method)
     
+    ### get linkage
+    linkage <- match.arg(linkage)
+    
     ### check model andmethod
     if (model == "identical") {
         if (!(method %in% c("nt", "aa"))) {
             stop(paste0("'method' should be one of 'nt' or 'aa' for model '", model, "'.")) 
         }
     } else if (model == "hierarchical") {
-        method <- match.arg(method)
-        if (!method %in% c("single", "average", "complete")) { 
-            stop(paste0("'method' should be one of 'single', 'average', or 'complete' for model '", model, "'.")) 
+        if (!linkage %in% c("single", "average", "complete")) { 
+            stop(paste0("'linkage' should be one of 'single', 'average', or 'complete' for model '", model, "'.")) 
         }
         if (is.null(threshold) | threshold > 1) {
             stop(paste0("'threshold' should be a positive value less than 1 for model '", model, "'.")) 
@@ -901,9 +904,7 @@ defineClonesScoper <- function(db,
         if (!method %in% c("novj", "vj")) { 
             stop(paste0("'method' should be one of 'novj' or 'vj' for model '", model, "'.")) 
         }
-    } else {
-        stop(paste0("'model' shoubd be one of 'identical', 'hierarchical', or 'spectral'.")) 
-    }
+    } 
     
     ### Check for invalid characters
     valid_chars <- colnames(getDNAMatrix(gap = 0))
@@ -1065,45 +1066,28 @@ defineClonesScoper <- function(db,
                                  dplyr::filter(!!rlang::sym("VJL_GROUP") == vjl_group)
                              
                              idCluster <- NA
-                             # pre-check each group
-                             passToClust <- TRUE
-                             if (method %in% c("novj", "single", "complete", "average")) {
-                                 if (length(unique(db_gp[[ifelse(cdr3, cdr3_col, junction)]])) == 1) {
-                                     idCluster <- rep(1, nrow(db_gp))
-                                     n_cluster <- 1 
-                                     passToClust <- FALSE
-                                 }
-                             }
-                             if (method == "vj") {
-                                 if (length(unique(db_gp[[sequence]])) == 1) {
-                                     idCluster <- rep(1, nrow(db_gp))
-                                     n_cluster <- 1  
-                                     passToClust <- FALSE
-                                 }
-                             }
                              # pass the group for clustering
-                             if (passToClust) {
-                                 # cat(paste(vjl_group, "here"), sep="\n")  # for tests
-                                 results <- passToClustering_lev1(db_gp,
-                                                                  model = model,
-                                                                  method = method,
-                                                                  germline = germline,
-                                                                  sequence = sequence,
-                                                                  junction = junction,
-                                                                  mutabs = mutabs,
-                                                                  len_limit = len_limit,
-                                                                  cdr3 = cdr3,
-                                                                  cdr3_col = ifelse(cdr3, cdr3_col, NA),
-                                                                  v_call = v_call,
-                                                                  j_call = j_call,
-                                                                  threshold = threshold,
-                                                                  base_sim = base_sim,
-                                                                  iter_max = iter_max, 
-                                                                  nstart = nstart)
-                                 idCluster <- results$idCluster
-                                 n_cluster <- results$n_cluster
-                                 # cat(paste(vjl_group), sep="\n")  # for tests
-                             }
+                             # cat(paste(vjl_group, "here"), sep="\n")  # for tests
+                             results <- passToClustering_lev1(db_gp,
+                                                              model = model,
+                                                              method = method,
+                                                              linkage = linkage,
+                                                              germline = germline,
+                                                              sequence = sequence,
+                                                              junction = junction,
+                                                              mutabs = mutabs,
+                                                              len_limit = len_limit,
+                                                              cdr3 = cdr3,
+                                                              cdr3_col = ifelse(cdr3, cdr3_col, NA),
+                                                              v_call = v_call,
+                                                              j_call = j_call,
+                                                              threshold = threshold,
+                                                              base_sim = base_sim,
+                                                              iter_max = iter_max, 
+                                                              nstart = nstart)
+                             idCluster <- results$idCluster
+                             n_cluster <- results$n_cluster
+                             # cat(paste(vjl_group), sep="\n")  # for tests
                              
                              if (length(idCluster) == 0 | any(is.na(idCluster))) {
                                  stop(printVerbose(n_groups, vjl_group, model, method, cdr3,
@@ -1236,7 +1220,8 @@ defineClonesScoper <- function(db,
 # *****************************************************************************
 passToClustering_lev1 <- function (db_gp, 
                                    model = c("identical", "hierarchical", "spectral"),
-                                   method = c("nt", "aa", "single", "average", "complete", "novj", "vj"),
+                                   method = c("nt", "aa", "novj", "vj"),
+                                   linkage = c("single", "average", "complete"),
                                    germline = "germline_alignment",
                                    sequence = "sequence_alignment",
                                    junction = "junction",
@@ -1261,7 +1246,6 @@ passToClustering_lev1 <- function (db_gp,
     
     ### begin clustering
     if (model == "identical") {
-        #*************************
         seq_col <- ifelse(cdr3, cdr3_col, junction)
         if (method == "aa") {
             db_gp[[seq_col]] <- translateDNA(db_gp[[seq_col]])
@@ -1271,23 +1255,38 @@ passToClustering_lev1 <- function (db_gp,
             group_indices()
         n_cluster <- length(unique(idCluster))
         eigen_vals <- rep(0, n)
-        #*************************
     } else if (model == "hierarchical") {
-        #*************************
+        # get linkage
+        linkage <- match.arg(linkage)
         # get sequences
-        seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
+        if (method == "nt") {
+            seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]   
+        } else if (method == "aa") {
+            # translate amino acid for method "aa"
+            seqs <- translateDNA(db_gp[[ifelse(cdr3, cdr3_col, junction)]])
+        }
         # find unique seqs
         df <- as.data.table(seqs)[, list(list(.I)), by = seqs]
         n_unq <- nrow(df)
         ind_unq <- df$V1
         seqs_unq <- df$seqs
+        if (n_unq == 1) {
+            return(list("model" = model, "method" = method,
+                        "n_cluster" = 1, "idCluster" = rep(1, n), 
+                        "eigen_vals" = rep(0, n)))
+        }
         # calculate distance matrix
-        dist_mtx <- pairwiseDist(seq = seqs_unq, 
-                                 dist_mat = getDNAMatrix(gap = 0))
+        if (method == "nt") {
+            dist_mtx <- pairwiseDist(seq = seqs_unq, 
+                                     dist_mat = getDNAMatrix(gap = 0))
+        } else if (method == "aa") {
+            dist_mtx <- pairwiseDist(seq = seqs_unq, 
+                                     dist_mat = getAAMatrix(gap = 0))
+        }
         # calculate normalization factor
         junc_length <- unique(stri_length(seqs_unq))
         # perform hierarchical clustering
-        hc <- hclust(as.dist(dist_mtx/junc_length), method = method)
+        hc <- hclust(as.dist(dist_mtx/junc_length), method = linkage)
         # cut the tree
         idCluster_unq <- cutree(hc, h = threshold)
         # back to reality
@@ -1297,9 +1296,7 @@ passToClustering_lev1 <- function (db_gp,
         }
         n_cluster <- length(unique(idCluster))
         eigen_vals <- rep(0, n)
-        #*************************
     } else if (model == "spectral") {
-        #*************************
         if (method == "vj") {
             # get required info based on the method
             germs <- db_gp[[germline]]
@@ -1311,6 +1308,11 @@ passToClustering_lev1 <- function (db_gp,
             n_unq <- nrow(df)
             ind_unq <- df$V1
             seqs_unq <- df$seqs
+            if (n_unq == 1) {
+                return(list("model" = model, "method" = method,
+                            "n_cluster" = 1, "idCluster" = rep(1, n), 
+                            "eigen_vals" = rep(0, n)))
+            }
             # find corresponding unique germs and junctions
             germs_unq <- sapply(1:n_unq, function(x){ unique(germs[ind_unq[[x]]]) })
             juncs_unq <- sapply(1:n_unq, function(x){ unique(juncs[ind_unq[[x]]]) })
@@ -1344,6 +1346,11 @@ passToClustering_lev1 <- function (db_gp,
                 n_unq <- nrow(df)
                 ind_unq <- df$V1
                 seqs_unq <- df$seqs
+                if (n_unq == 1) {
+                    return(list("model" = model, "method" = method,
+                                "n_cluster" = 1, "idCluster" = rep(1, n), 
+                                "eigen_vals" = rep(0, n)))
+                }
                 # calculate unique seuences distance matrix
                 disim_mtx <- pairwiseDist(seq = seqs_unq, 
                                           dist_mat = getDNAMatrix(gap = 0))
@@ -1357,6 +1364,11 @@ passToClustering_lev1 <- function (db_gp,
             n_unq <- nrow(df)
             ind_unq <- df$V1
             seqs_unq <- df$seqs
+            if (n_unq == 1) {
+                return(list("model" = model, "method" = method,
+                            "n_cluster" = 1, "idCluster" = rep(1, n), 
+                            "eigen_vals" = rep(0, n)))
+            }
             # calculate unique seuences distance matrix
             disim_mtx <- pairwiseDist(seq = seqs_unq, 
                                       dist_mat = getDNAMatrix(gap = 0))
@@ -1376,7 +1388,6 @@ passToClustering_lev1 <- function (db_gp,
             idCluster[ind_unq[[i]]] <- idCluster_unq[i]
         }
         n_cluster <- length(unique(idCluster))
-        #*************************
     }
     
     ### retrun results

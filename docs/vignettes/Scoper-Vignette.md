@@ -26,8 +26,9 @@ identicalClones(db,
 ```
 
 __hierarchicalClones__: Groups sequences using a fixed distance supervised threshold at which 
-to cut the hierarchy. The three available agglomeration methods are: (1) `single`, (2) 
-`average`, and (3) `complete`. It is important to determine an appropriate threshold 
+to cut the hierarchy. The three available agglomeration linkages are: (1) `single`, (2) 
+`average`, and (3) `complete`. The hierarchical clustering can be performed either on nucleotide 
+or amino acide bases. It is important to determine an appropriate threshold 
 for trimming the hierarchical clustering into B cell clones before using this model. 
 The ideal threshold for separating clonal groups is the value that separates the two 
 modes of the distance-to-nearest distribution and can be found using the `findThreshold` 
@@ -46,7 +47,8 @@ be found in:
 
 ```r
 hierarchicalClones(db, threshold,
-                   method = c("single", "average", "complete"), 
+                   method = c("nt", "aa"), 
+                   linkage = c("single", "average", "complete"), 
                    junction = "junction", v_call = "v_call", j_call = "j_call",
                    clone = "clone_id",
                    first = FALSE, cdr3 = FALSE, mod3 = FALSE,
@@ -159,10 +161,11 @@ Clonal assignment using hierarchical model:
 
 
 ```r
-results <- hierarchicalClones(db = ExampleDb, method = "single", 
+results <- hierarchicalClones(db = ExampleDb, threshold = 0.15,
+                              method = "nt", linkage = "single", 
                               junction = "junction", 
                               v_call = "v_call", j_call = "j_call",
-                              threshold = 0.15, summarize_clones = TRUE)
+                              summarize_clones = TRUE)
 # cloned data (a data.frame)
 cloned_db <- results$db
 # print effective threshold (a numeric)
