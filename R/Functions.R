@@ -455,8 +455,9 @@ plotInterVsIntra <- function(data) {
 
 # *****************************************************************************
 ### Define verbose reporting function
-printVerbose <- function(n_groups, vjl_group, model, method, cdr3,
+printVerbose <- function(n_groups, vjl_group, model, method, linkage, cdr3,
                          gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) {
+    method <- ifelse(model == "hierarchical", paste(linkage, "linkage", method, sep="-"), method)
     cat("     TOTAL GROUPS> ", n_groups,  "\n", sep=" ")
     cat("            GROUP> ", vjl_group, "\n", sep=" ")
     cat("             SIZE> ", gp_size,   "\n", sep=" ")
@@ -473,8 +474,9 @@ printVerbose <- function(n_groups, vjl_group, model, method, cdr3,
 
 # *****************************************************************************
 logVerbose <- function(out_dir, log_verbose_name,
-                       n_groups, vjl_group, model, method, cdr3,
+                       n_groups, vjl_group, model, method, linkage, cdr3,
                        gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) {
+    method <- ifelse(model == "hierarchical", paste(linkage, "linkage", method, sep="-"), method)
     cat("     TOTAL GROUPS> ", n_groups,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("            GROUP> ", vjl_group, "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("             SIZE> ", gp_size,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
@@ -561,24 +563,14 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' @export
 identicalClones <- function(db,
                             method = c("nt", "aa"),
-                            junction = "junction",
-                            v_call = "v_call",
-                            j_call = "j_call",
-                            clone = "clone_id",
-                            first = FALSE, 
-                            cdr3 = FALSE, 
-                            mod3 = FALSE,
-                            max_n = NULL,
-                            nproc = 1,
-                            verbose = FALSE,
-                            log_verbose = FALSE,
-                            out_dir = ".",
+                            junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
+                            first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, nproc = 1,
+                            verbose = FALSE, log_verbose = FALSE, out_dir = ".", 
                             summarize_clones = FALSE) {
     
-    results <- defineClonesScoper(db,
-                                  model = "identical", method = match.arg(method),
-                                  junction = junction, v_call = v_call, 
-                                  j_call = j_call, clone = clone,
+    results <- defineClonesScoper(db = db,
+                                  method = match.arg(method), model = "identical", 
+                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,        
                                   verbose = verbose, log_verbose = log_verbose, out_dir = out_dir, 
                                   summarize_clones = summarize_clones)
@@ -592,7 +584,7 @@ identicalClones <- function(db,
                             "plot_inter_intra" = results$plot_inter_intra)    
         return(return_list)
     } else {
-        return(results$db)
+        return(results)
     }
 }
 
@@ -610,6 +602,8 @@ identicalClones <- function(db,
 #' @param    method             one of the \code{"nt"} for nucleotide based clustering or 
 #'                              \code{"aa"} for amino acid based clustering.
 #' @param    linkage            availabe agglomerations are: \code{"single"}, \code{"average"}, and \code{"complete"}.
+#' @param    normalize	        method of normalization. The default is "len", which divides the distance by the length 
+#'                              of the sequence group. If "none" then no normalization if performed.
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
 #' @param    v_call             character name of the column containing the V-segment allele calls.
@@ -668,29 +662,16 @@ identicalClones <- function(db,
 #'                               v_call = "v_call", j_call = "j_call", 
 #'                               summarize_clones = TRUE)
 #' @export
-hierarchicalClones <- function(db,
-                               threshold,
-                               method = c("nt", "aa"),
-                               linkage = c("single", "average", "complete"),
-                               junction = "junction",
-                               v_call = "v_call",
-                               j_call = "j_call",
-                               clone = "clone_id",
-                               first = FALSE, 
-                               cdr3 = FALSE, 
-                               mod3 = FALSE,
-                               max_n = NULL,
-                               nproc = 1,
-                               verbose = FALSE,
-                               log_verbose = FALSE,
-                               out_dir = ".",
+hierarchicalClones <- function(db, threshold,
+                               method = c("nt", "aa"), linkage = c("single", "average", "complete"), normalize = c("len", "none"),
+                               junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
+                               first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, nproc = 1,
+                               verbose = FALSE, log_verbose = FALSE, out_dir = ".",
                                summarize_clones = FALSE) {
     
-    results <- defineClonesScoper(db, 
-                                  model = "hierarchical", threshold = threshold,
-                                  method = match.arg(method), linkage = match.arg(linkage), 
-                                  junction = junction, v_call = v_call, 
-                                  j_call = j_call, clone = clone,
+    results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
+                                  method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
+                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
                                   verbose = verbose, log_verbose = log_verbose, out_dir = out_dir, 
                                   summarize_clones = summarize_clones)
@@ -704,7 +685,7 @@ hierarchicalClones <- function(db,
                             "plot_inter_intra" = results$plot_inter_intra)    
         return(return_list)
     } else {
-        return(results$db)
+        return(results)
     }
 }
 
@@ -797,36 +778,20 @@ hierarchicalClones <- function(db,
 #'                           junction = "junction", v_call = "v_call", 
 #'                           j_call = "j_call", threshold=0.15, summarize_clones = TRUE)
 #' @export
-spectralClones <- function(db,
-                           method = c("novj", "vj"),
-                           germline = "germline_alignment",
-                           sequence = "sequence_alignment",
-                           junction = "junction",
-                           v_call = "v_call",
-                           j_call = "j_call",
-                           clone = "clone_id",
-                           targeting_model = NULL,
-                           len_limit = NULL,
-                           first = FALSE, 
-                           cdr3 = FALSE, 
-                           mod3 = FALSE,
-                           max_n = NULL,
-                           threshold = NULL,
-                           base_sim = 0.95,
-                           iter_max = 1000, 
-                           nstart = 1000, 
-                           nproc = 1,
-                           verbose = FALSE,
-                           log_verbose = FALSE,
-                           out_dir = ".",
+spectralClones <- function(db, method = c("novj", "vj"),
+                           germline = "germline_alignment", sequence = "sequence_alignment",
+                           junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
+                           targeting_model = NULL, len_limit = NULL,
+                           first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, 
+                           threshold = NULL, base_sim = 0.95, 
+                           iter_max = 1000,  nstart = 1000, nproc = 1,
+                           verbose = FALSE, log_verbose = FALSE, out_dir = ".",
                            summarize_clones = FALSE) {
     
-    results <- defineClonesScoper(db,
-                                  model = "spectral", method = match.arg(method),
+    results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
                                   germline = germline, sequence = sequence,
-                                  junction = junction, v_call = v_call, j_call = j_call,
-                                  clone = clone, targeting_model = targeting_model,
-                                  len_limit = len_limit,
+                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone, 
+                                  targeting_model = targeting_model, len_limit = len_limit,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n,
                                   threshold = threshold, base_sim = base_sim,
                                   iter_max = iter_max, nstart = nstart, nproc = nproc,
@@ -842,7 +807,7 @@ spectralClones <- function(db,
                             "plot_inter_intra" = results$plot_inter_intra)    
         return(return_list)
     } else {
-        return(results$db)
+        return(results)
     }
 }
 
@@ -851,27 +816,14 @@ spectralClones <- function(db,
 defineClonesScoper <- function(db,
                                model = c("identical", "hierarchical", "spectral"),
                                method = c("nt", "aa", "novj", "vj"),
-                               linkage = c("single", "average", "complete"),
-                               germline = "germline_alignment",
-                               sequence = "sequence_alignment",
-                               junction = "junction",
-                               v_call = "v_call",
-                               j_call = "j_call",
-                               clone = "clone_id",
-                               targeting_model = NULL,
-                               len_limit = NULL,
-                               first = FALSE, 
-                               cdr3 = FALSE, 
-                               mod3 = FALSE,
-                               max_n = NULL,
-                               threshold = NULL,
-                               base_sim = 0.95,
-                               iter_max = 1000, 
-                               nstart = 1000, 
-                               nproc = 1,
-                               verbose = FALSE,
-                               log_verbose = FALSE,
-                               out_dir = ".",
+                               linkage = c("single", "average", "complete"), normalize = c("len", "none"),
+                               germline = "germline_alignment", sequence = "sequence_alignment",
+                               junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
+                               targeting_model = NULL, len_limit = NULL,
+                               first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, 
+                               threshold = NULL, base_sim = 0.95,
+                               iter_max = 1000, nstart = 1000, nproc = 1,
+                               verbose = FALSE, log_verbose = FALSE, out_dir = ".",
                                summarize_clones = FALSE) {
     
     # Initial checks
@@ -885,18 +837,23 @@ defineClonesScoper <- function(db,
     ### get method
     method <- match.arg(method)
     
-    ### get linkage
-    linkage <- match.arg(linkage)
-    
     ### check model andmethod
     if (model == "identical") {
         if (!(method %in% c("nt", "aa"))) {
             stop(paste0("'method' should be one of 'nt' or 'aa' for model '", model, "'.")) 
         }
     } else if (model == "hierarchical") {
+        ### get normalize
+        normalize <- match.arg(normalize)
+        if (!normalize %in% c("len", "none")) { 
+            stop(paste0("'normalize' should be one of 'len' or 'none for model '", model, "'.")) 
+        }
+        ### get linkage
+        linkage <- match.arg(linkage)
         if (!linkage %in% c("single", "average", "complete")) { 
             stop(paste0("'linkage' should be one of 'single', 'average', or 'complete' for model '", model, "'.")) 
         }
+        ### check threshold
         if (is.null(threshold) | threshold > 1) {
             stop(paste0("'threshold' should be a positive value less than 1 for model '", model, "'.")) 
         }
@@ -1065,22 +1022,22 @@ defineClonesScoper <- function(db,
                              db_gp <- db %>%
                                  dplyr::filter(!!rlang::sym("VJL_GROUP") == vjl_group)
                              
-                             idCluster <- NA
                              # pass the group for clustering
                              # cat(paste(vjl_group, "here"), sep="\n")  # for tests
                              results <- passToClustering_lev1(db_gp,
                                                               model = model,
                                                               method = method,
-                                                              linkage = linkage,
+                                                              linkage = ifelse(model == "hierarchical", linkage, NA),
+                                                              normalize = ifelse(model == "hierarchical", normalize, NA),
                                                               germline = germline,
                                                               sequence = sequence,
                                                               junction = junction,
+                                                              v_call = v_call,
+                                                              j_call = j_call,
                                                               mutabs = mutabs,
                                                               len_limit = len_limit,
                                                               cdr3 = cdr3,
                                                               cdr3_col = ifelse(cdr3, cdr3_col, NA),
-                                                              v_call = v_call,
-                                                              j_call = j_call,
                                                               threshold = threshold,
                                                               base_sim = base_sim,
                                                               iter_max = iter_max, 
@@ -1090,19 +1047,18 @@ defineClonesScoper <- function(db,
                              # cat(paste(vjl_group), sep="\n")  # for tests
                              
                              if (length(idCluster) == 0 | any(is.na(idCluster))) {
-                                 stop(printVerbose(n_groups, vjl_group, model, method, cdr3,
+                                 stop(printVerbose(n_groups, vjl_group, model, method, linkage, cdr3,
                                                    gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) )  
                              } 
                              
-                             
                              # check verbose
-                             if (verbose) { printVerbose(n_groups, vjl_group, model, method, cdr3,
+                             if (verbose) { printVerbose(n_groups, vjl_group, model, method, linkage, cdr3,
                                                          gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) 
                              }
                              
                              # check log verbose
                              if (log_verbose) { logVerbose(out_dir, log_verbose_name,
-                                                           n_groups, vjl_group, model, method, cdr3,
+                                                           n_groups, vjl_group, model, method, linkage, cdr3,
                                                            gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) }
                              
                              # attache clones
@@ -1222,6 +1178,7 @@ passToClustering_lev1 <- function (db_gp,
                                    model = c("identical", "hierarchical", "spectral"),
                                    method = c("nt", "aa", "novj", "vj"),
                                    linkage = c("single", "average", "complete"),
+                                   normalize = c("len", "none"),
                                    germline = "germline_alignment",
                                    sequence = "sequence_alignment",
                                    junction = "junction",
@@ -1258,6 +1215,8 @@ passToClustering_lev1 <- function (db_gp,
     } else if (model == "hierarchical") {
         # get linkage
         linkage <- match.arg(linkage)
+        # get normalize
+        normalize <- match.arg(normalize)
         # get sequences
         if (method == "nt") {
             seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]   
@@ -1271,8 +1230,8 @@ passToClustering_lev1 <- function (db_gp,
         ind_unq <- df$V1
         seqs_unq <- df$seqs
         if (n_unq == 1) {
-            return(list("model" = model, "method" = method,
-                        "n_cluster" = 1, "idCluster" = rep(1, n), 
+            return(list("idCluster" = rep(1, n), 
+                        "n_cluster" = 1, 
                         "eigen_vals" = rep(0, n)))
         }
         # calculate distance matrix
@@ -1283,10 +1242,14 @@ passToClustering_lev1 <- function (db_gp,
             dist_mtx <- pairwiseDist(seq = seqs_unq, 
                                      dist_mat = getAAMatrix(gap = 0))
         }
-        # calculate normalization factor
-        junc_length <- unique(stri_length(seqs_unq))
         # perform hierarchical clustering
-        hc <- hclust(as.dist(dist_mtx/junc_length), method = linkage)
+        if (normalize == "len") {
+            # calculate normalization factor
+            junc_length <- unique(stri_length(seqs_unq))
+            hc <- hclust(as.dist(dist_mtx/junc_length), method = linkage)    
+        } else if (normalize == "none") {
+            hc <- hclust(as.dist(dist_mtx), method = linkage)    
+        }
         # cut the tree
         idCluster_unq <- cutree(hc, h = threshold)
         # back to reality
@@ -1309,8 +1272,8 @@ passToClustering_lev1 <- function (db_gp,
             ind_unq <- df$V1
             seqs_unq <- df$seqs
             if (n_unq == 1) {
-                return(list("model" = model, "method" = method,
-                            "n_cluster" = 1, "idCluster" = rep(1, n), 
+                return(list("idCluster" = rep(1, n), 
+                            "n_cluster" = 1, 
                             "eigen_vals" = rep(0, n)))
             }
             # find corresponding unique germs and junctions
@@ -1347,8 +1310,8 @@ passToClustering_lev1 <- function (db_gp,
                 ind_unq <- df$V1
                 seqs_unq <- df$seqs
                 if (n_unq == 1) {
-                    return(list("model" = model, "method" = method,
-                                "n_cluster" = 1, "idCluster" = rep(1, n), 
+                    return(list("idCluster" = rep(1, n), 
+                                "n_cluster" = 1, 
                                 "eigen_vals" = rep(0, n)))
                 }
                 # calculate unique seuences distance matrix
@@ -1365,8 +1328,8 @@ passToClustering_lev1 <- function (db_gp,
             ind_unq <- df$V1
             seqs_unq <- df$seqs
             if (n_unq == 1) {
-                return(list("model" = model, "method" = method,
-                            "n_cluster" = 1, "idCluster" = rep(1, n), 
+                return(list("idCluster" = rep(1, n), 
+                            "n_cluster" = 1, 
                             "eigen_vals" = rep(0, n)))
             }
             # calculate unique seuences distance matrix
@@ -1391,10 +1354,8 @@ passToClustering_lev1 <- function (db_gp,
     }
     
     ### retrun results
-    return_list <- list("model" = model,
-                        "method" = method,
+    return_list <- list("idCluster" = idCluster, 
                         "n_cluster" = n_cluster, 
-                        "idCluster" = idCluster, 
                         "eigen_vals" = eigen_vals)
     return(return_list)
 }

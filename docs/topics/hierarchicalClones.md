@@ -12,10 +12,11 @@ Usage
 --------------------
 ```
 hierarchicalClones(db, threshold, method = c("nt", "aa"),
-linkage = c("single", "average", "complete"), junction = "junction",
-v_call = "v_call", j_call = "j_call", clone = "clone_id",
-first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL,
-nproc = 1, verbose = FALSE, log_verbose = FALSE, out_dir = ".",
+linkage = c("single", "average", "complete"), normalize = c("len",
+"none"), junction = "junction", v_call = "v_call",
+j_call = "j_call", clone = "clone_id", first = FALSE,
+cdr3 = FALSE, mod3 = FALSE, max_n = NULL, nproc = 1,
+verbose = FALSE, log_verbose = FALSE, out_dir = ".",
 summarize_clones = FALSE)
 ```
 
@@ -34,6 +35,10 @@ method
 
 linkage
 :   availabe agglomerations are: `"single"`, `"average"`, and `"complete"`.
+
+normalize
+:   method of normalization. The default is "len", which divides the distance by the length 
+of the sequence group. If "none" then no normalization if performed.
 
 junction
 :   character name of the column containing junction sequences.

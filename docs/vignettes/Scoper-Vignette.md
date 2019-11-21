@@ -27,8 +27,7 @@ identicalClones(db,
 
 __hierarchicalClones__: Groups sequences using a fixed distance supervised threshold at which 
 to cut the hierarchy. The three available agglomeration linkages are: (1) `single`, (2) 
-`average`, and (3) `complete`. The hierarchical clustering can be performed either on nucleotide 
-or amino acide bases. It is important to determine an appropriate threshold 
+`average`, and (3) `complete`. It is important to determine an appropriate threshold 
 for trimming the hierarchical clustering into B cell clones before using this model. 
 The ideal threshold for separating clonal groups is the value that separates the two 
 modes of the distance-to-nearest distribution and can be found using the `findThreshold` 
@@ -48,7 +47,8 @@ be found in:
 ```r
 hierarchicalClones(db, threshold,
                    method = c("nt", "aa"), 
-                   linkage = c("single", "average", "complete"), 
+                   linkage = c("single", "average", "complete"),
+                   normalize = c("len", "none"),
                    junction = "junction", v_call = "v_call", j_call = "j_call",
                    clone = "clone_id",
                    first = FALSE, cdr3 = FALSE, mod3 = FALSE,
@@ -134,7 +134,10 @@ the clonal clustering results:
 **Note:** Functions specific arguments:
 
 1. __hierarchicalClones__: The argument `threshold` (a numeric scalar where the tree should be cut) 
-must be provided.
+must be provided. The hierarchical clustering can be performed either on nucleotide (`nt`)
+or amino acide (`aa`) bases, decided by the argument `method`. Normalization can be 
+decided by argument `normalize`. The default is `len`, which divides the distance by the length 
+of the sequence group. If `none` then no normalization if performed.
 2. __spectralClones__: The arguments `iter_max` and `nstart` are required to perform the k-means 
 clustering step of the pipeline. They will pass the maximum allowed number of kmean clustering 
 iterations and the number of random sets chosen for kmean clustering initialization 
