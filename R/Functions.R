@@ -375,7 +375,7 @@ plotInterVsIntra <- function(data) {
     
     ### find effective threshold
     eff_threshold <- NA
-    if (nrow(data_intra) > 0 & nrow(data_inter) > 0) {
+    if (nrow(data_intra) > 10 & nrow(data_inter) > 10) {
         a <- data_intra$DISTANCE
         b <- data_inter$DISTANCE
         xlim = c(min(c(a,b)), max(c(a,b)))
