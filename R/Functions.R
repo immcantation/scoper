@@ -492,6 +492,74 @@ logVerbose <- function(out_dir, log_verbose_name,
 # *****************************************************************************
 
 # *****************************************************************************
+prepare_db <- function(db, 
+                       junction = "junction", v_call = "v_call", j_call = "j_call",
+                       first = FALSE, cdr3 = FALSE, 
+                       mod3 = FALSE, max_n = NULL) {
+    # add junction length column
+    db$JUNCTION_L <- stri_length(db[[junction]])
+    junction_l <- "JUNCTION_L"
+    
+    ### check for mod3
+    # filter mod 3 junction lengths
+    if (mod3) {
+        n_rmv_mod3 <- sum(db[[junction_l]]%%3 != 0)
+        db <- db %>% 
+            dplyr::filter(!!rlang::sym(junction_l)%%3 == 0)
+    } else {
+        n_rmv_mod3 <- 0
+    }
+    
+    ### check for cdr3
+    # filter junctions with length > 6
+    if (cdr3) {
+        n_rmv_cdr3 <- sum(db[[junction_l]] <= 6)
+        db <- db %>% 
+            dplyr::filter(!!rlang::sym(junction_l) > 6)
+        # add cdr3 column
+        db$CDR3 <- substr(db[[junction]], 4, db[[junction_l]]-3)
+        cdr3_col <- "CDR3"
+    } else {
+        n_rmv_cdr3 <- 0
+        cdr3_col <- NA
+    }
+    
+    ### check for N's
+    # Count the number of 'N's in junction
+    if (!is.null(max_n)) {
+        n_rmv_N <- sum(str_count(db[[junction]], "N") > max_n)
+        db <- db %>% 
+            dplyr::filter(str_count(!!rlang::sym(junction), "N") <= max_n)
+    } else {
+        n_rmv_N <- 0
+    }
+    
+    ### Parse V and J columns to get gene
+    db <- groupGenes(db,
+                     v_call = v_call,
+                     j_call = j_call,
+                     first = first)
+    
+    ### groups to use
+    groupBy <- c("VJ_GROUP", junction_l)
+    
+    ### assign group ids to db
+    db$VJL_GROUP <- db %>%
+        dplyr::group_by(!!!rlang::syms(groupBy)) %>%
+        dplyr::group_indices()
+    
+    ### retrun results
+    return_list <- list("db" = db, 
+                        "n_rmv_mod3" = n_rmv_mod3, 
+                        "n_rmv_cdr3" = n_rmv_cdr3,
+                        "n_rmv_N" = n_rmv_N,
+                        "junction_l" = junction_l,
+                        "cdr3_col" =  cdr3_col)
+    return(return_list)
+}
+# *****************************************************************************
+
+# *****************************************************************************
 # @export
 pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
     pairwiseMutMatrixRcpp(informative_pos, mutMtx, motifMtx)
@@ -825,17 +893,17 @@ defineClonesScoper <- function(db,
                                iter_max = 1000, nstart = 1000, nproc = 1,
                                verbose = FALSE, log_verbose = FALSE, out_dir = ".",
                                summarize_clones = FALSE) {
-    
-    # Initial checks
-    if (!is.data.frame(db)) {
-        stop("'db' must be a data frame")
-    }
-    
+
     ### get model
     model <- match.arg(model)
     
     ### get method
     method <- match.arg(method)
+
+    # Initial checks
+    if (!is.data.frame(db)) {
+        stop("'db' must be a data frame")
+    }
     
     ### check model andmethod
     if (model == "identical") {
@@ -873,17 +941,6 @@ defineClonesScoper <- function(db,
              length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'")
     }
     
-    ### check targeting model
-    if (!is.null(targeting_model)) { 
-        mutabs <- targeting_model@mutability 
-    } else {
-        mutabs <- NULL
-    }
-    
-    ### check verbose and log
-    verbose <- ifelse(verbose, 1, 0)
-    log_verbose <- ifelse(log_verbose, 1, 0)
-    
     ### temp columns
     temp_cols <- c("VJ_GROUP", "VJL_GROUP", "JUNCTION_L",  "CDR3", "CDR3_L", "CLONE_temp")
     
@@ -912,7 +969,9 @@ defineClonesScoper <- function(db,
         }
     } 
     
-    ### check log verbose
+    ### check verbose and log
+    verbose <- ifelse(verbose, 1, 0)
+    log_verbose <- ifelse(log_verbose, 1, 0)
     if (log_verbose) {
         if (is.null(out_dir)) stop("out_dir must be specified.")
         if (!dir.exists(out_dir)) stop("out_dir '", out_dir, "' does not exist.")
@@ -920,57 +979,24 @@ defineClonesScoper <- function(db,
         cat(file=file.path(out_dir, log_verbose_name), append=FALSE)
     }
     
-    # add junction length column
-    db$JUNCTION_L <- stri_length(db[[junction]])
-    junction_l <- "JUNCTION_L"
-    
-    ### check for mod3
-    # filter mod 3 junction lengths
-    if (mod3) {
-        n_rmv_mod3 <- sum(db[[junction_l]]%%3 != 0)
-        db <- db %>% 
-            dplyr::filter(!!rlang::sym(junction_l)%%3 == 0)
-    }
-    
-    ### check for cdr3
-    # filter junctions with length > 6
-    if (cdr3) {
-        n_rmv_cdr3 <- sum(db[[junction_l]] <= 6)
-        db <- db %>% 
-            dplyr::filter(!!rlang::sym(junction_l) > 6)
-        # add cdr3 column
-        db$CDR3 <- substr(db[[junction]], 4, db[[junction_l]]-3)
-        cdr3_col <- "CDR3"
-    }
-    
-    ### check for N's
-    # Count the number of 'N's in junction
-    if (!is.null(max_n)) {
-        n_rmv_N <- sum(str_count(db[[junction]], "N") > max_n)
-        db <- db %>% 
-            dplyr::filter(str_count(!!rlang::sym(junction), "N") <= max_n)
-    }
-
-    ### Parse V and J columns to get gene
-    if (verbose) { cat("ASSIGN VJL GROUPS>", "\n", sep=" ") }
+    ### Prepare db
+    if (verbose) { cat("       PREPARE DB> ", "\n", sep=" ") }
     if (log_verbose) {
-        cat("ASSIGN VJL GROUPS>", "\n", sep=" ",
+        cat("       PREPARE DB> ", "\n", sep=" ",
             file = file.path(out_dir, log_verbose_name), append=TRUE) 
         cat("", "\n", sep=" ",
             file = file.path(out_dir, log_verbose_name), append=TRUE) 
     }
-    db <- groupGenes(db,
-                     v_call = v_call,
-                     j_call = j_call,
-                     first = first)
-    
-    ### groups to use
-    groupBy <- c("VJ_GROUP", junction_l)
-    
-    ### assign group ids to db
-    db$VJL_GROUP <- db %>%
-        dplyr::group_by(!!!rlang::syms(groupBy)) %>%
-        dplyr::group_indices()
+    results_prep <- prepare_db(db = db, 
+                               junction = junction, v_call = v_call, j_call = j_call,
+                               first = first, cdr3 = cdr3, 
+                               mod3 = mod3, max_n = max_n)
+    db <- results_prep$db
+    n_rmv_mod3 <- results_prep$n_rmv_mod3
+    n_rmv_cdr3 <- results_prep$n_rmv_cdr3
+    n_rmv_N <- results_prep$n_rmv_N
+    junction_l <- results_prep$junction_l
+    cdr3_col <-  results_prep$cdr3_col
     
     ### summary of the groups
     vjl_groups <- db %>% 
@@ -1034,10 +1060,10 @@ defineClonesScoper <- function(db,
                                                               junction = junction,
                                                               v_call = v_call,
                                                               j_call = j_call,
-                                                              mutabs = mutabs,
+                                                              mutabs = targeting_model,
                                                               len_limit = len_limit,
                                                               cdr3 = cdr3,
-                                                              cdr3_col = ifelse(cdr3, cdr3_col, NA),
+                                                              cdr3_col = cdr3_col,
                                                               threshold = threshold,
                                                               base_sim = base_sim,
                                                               iter_max = iter_max, 
@@ -1081,30 +1107,24 @@ defineClonesScoper <- function(db,
     
     ### report removed sequences
     if (mod3) {
-        if (n_rmv_mod3 > 0) {
-            cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ")
-            if (log_verbose)  { 
-                cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ",
-                    file = file.path(out_dir, log_verbose_name), append=TRUE) 
-            }
+        cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ")
+        if (log_verbose)  { 
+            cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ",
+                file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
     }
     if (cdr3) {
-        if (n_rmv_cdr3 > 0) {
-            cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ")
-            if (log_verbose)  { 
-                cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ",
-                    file = file.path(out_dir, log_verbose_name), append=TRUE) 
-            }
+        cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ")
+        if (log_verbose)  { 
+            cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ",
+                file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
     }
     if (!is.null(max_n)) {
-        if (n_rmv_N > 0) {
-            cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ")
-            if (log_verbose)  { 
-                cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ",
-                    file = file.path(out_dir, log_verbose_name), append=TRUE) 
-            }
+        cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ")
+        if (log_verbose)  { 
+            cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ",
+                file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
     }
     ### print ending message
@@ -1142,7 +1162,7 @@ defineClonesScoper <- function(db,
                                          vjl_groups = vjl_groups,
                                          junction = junction,
                                          cdr3 = cdr3,
-                                         cdr3_col = ifelse(cdr3, cdr3_col, NA),
+                                         cdr3_col = cdr3_col,
                                          nproc = nproc,
                                          verbose = verbose)
         
@@ -1261,6 +1281,12 @@ passToClustering_lev1 <- function (db_gp,
         eigen_vals <- rep(0, n)
     } else if (model == "spectral") {
         if (method == "vj") {
+            ### check targeting model
+            if (!is.null(mutabs)) { 
+                mutabs <- mutabs@mutability 
+            } else {
+                mutabs <- NULL
+            }
             # get required info based on the method
             germs <- db_gp[[germline]]
             seqs <- db_gp[[sequence]]
