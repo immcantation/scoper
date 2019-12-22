@@ -11,13 +11,26 @@ junction sequence similarity.
 Usage
 --------------------
 ```
-hierarchicalClones(db, threshold, method = c("nt", "aa"),
-linkage = c("single", "average", "complete"), normalize = c("len",
-"none"), junction = "junction", v_call = "v_call",
-j_call = "j_call", clone = "clone_id", first = FALSE,
-cdr3 = FALSE, mod3 = FALSE, max_n = NULL, nproc = 1,
-verbose = FALSE, log_verbose = FALSE, out_dir = ".",
-summarize_clones = FALSE)
+hierarchicalClones(
+db,
+threshold,
+method = c("nt", "aa"),
+linkage = c("single", "average", "complete"),
+normalize = c("len", "none"),
+junction = "junction",
+v_call = "v_call",
+j_call = "j_call",
+clone = "clone_id",
+first = FALSE,
+cdr3 = FALSE,
+mod3 = FALSE,
+max_n = NULL,
+nproc = 1,
+verbose = FALSE,
+log_verbose = FALSE,
+out_dir = ".",
+summarize_clones = FALSE
+)
 ```
 
 Arguments
@@ -136,6 +149,10 @@ junction = "junction",
 v_call = "v_call", j_call = "j_call", 
 summarize_clones = TRUE)
 ```
+
+
+
+
 
 
 

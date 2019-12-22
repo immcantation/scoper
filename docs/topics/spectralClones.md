@@ -11,14 +11,31 @@ junction sequence similarity and shared mutations in V and J segments.
 Usage
 --------------------
 ```
-spectralClones(db, method = c("novj", "vj"),
-germline = "germline_alignment", sequence = "sequence_alignment",
-junction = "junction", v_call = "v_call", j_call = "j_call",
-clone = "clone_id", targeting_model = NULL, len_limit = NULL,
-first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL,
-threshold = NULL, base_sim = 0.95, iter_max = 1000,
-nstart = 1000, nproc = 1, verbose = FALSE, log_verbose = FALSE,
-out_dir = ".", summarize_clones = FALSE)
+spectralClones(
+db,
+method = c("novj", "vj"),
+germline = "germline_alignment",
+sequence = "sequence_alignment",
+junction = "junction",
+v_call = "v_call",
+j_call = "j_call",
+clone = "clone_id",
+targeting_model = NULL,
+len_limit = NULL,
+first = FALSE,
+cdr3 = FALSE,
+mod3 = FALSE,
+max_n = NULL,
+threshold = NULL,
+base_sim = 0.95,
+iter_max = 1000,
+nstart = 1000,
+nproc = 1,
+verbose = FALSE,
+log_verbose = FALSE,
+out_dir = ".",
+summarize_clones = FALSE
+)
 ```
 
 Arguments
@@ -163,6 +180,10 @@ sequence = "sequence_alignment",
 junction = "junction", v_call = "v_call", 
 j_call = "j_call", threshold=0.15, summarize_clones = TRUE)
 ```
+
+
+
+
 
 
 

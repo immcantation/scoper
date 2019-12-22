@@ -10,11 +10,23 @@ sequences into clonal groups sharing same V gene, J gene, and identical junction
 Usage
 --------------------
 ```
-identicalClones(db, method = c("nt", "aa"), junction = "junction",
-v_call = "v_call", j_call = "j_call", clone = "clone_id",
-first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL,
-nproc = 1, verbose = FALSE, log_verbose = FALSE, out_dir = ".",
-summarize_clones = FALSE)
+identicalClones(
+db,
+method = c("nt", "aa"),
+junction = "junction",
+v_call = "v_call",
+j_call = "j_call",
+clone = "clone_id",
+first = FALSE,
+cdr3 = FALSE,
+mod3 = FALSE,
+max_n = NULL,
+nproc = 1,
+verbose = FALSE,
+log_verbose = FALSE,
+out_dir = ".",
+summarize_clones = FALSE
+)
 ```
 
 Arguments
@@ -118,6 +130,10 @@ results <- identicalClones(ExampleDb, method ="nt",
 junction = "junction", v_call = "v_call", 
 j_call = "j_call", summarize_clones = TRUE)
 ```
+
+
+
+
 
 
 
