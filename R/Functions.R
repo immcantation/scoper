@@ -629,9 +629,8 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'                            junction = "junction", v_call = "v_call", 
 #'                            j_call = "j_call", summarize_clones = TRUE)
 #' @export
-identicalClones <- function(db,
-                            method = c("nt", "aa"),
-                            junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
+identicalClones <- function(db, method = c("nt", "aa"), junction = "junction", 
+                            v_call = "v_call", j_call = "j_call", clone = "clone_id",
                             first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, nproc = 1,
                             verbose = FALSE, log_verbose = FALSE, out_dir = ".", 
                             summarize_clones = FALSE) {
@@ -730,9 +729,9 @@ identicalClones <- function(db,
 #'                               v_call = "v_call", j_call = "j_call", 
 #'                               summarize_clones = TRUE)
 #' @export
-hierarchicalClones <- function(db, threshold,
-                               method = c("nt", "aa"), linkage = c("single", "average", "complete"), normalize = c("len", "none"),
-                               junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
+hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = c("single", "average", "complete"), 
+                               normalize = c("len", "none"), junction = "junction", 
+                               v_call = "v_call", j_call = "j_call", clone = "clone_id",
                                first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, nproc = 1,
                                verbose = FALSE, log_verbose = FALSE, out_dir = ".",
                                summarize_clones = FALSE) {
@@ -846,13 +845,10 @@ hierarchicalClones <- function(db, threshold,
 #'                           junction = "junction", v_call = "v_call", 
 #'                           j_call = "j_call", threshold=0.15, summarize_clones = TRUE)
 #' @export
-spectralClones <- function(db, method = c("novj", "vj"),
-                           germline = "germline_alignment", sequence = "sequence_alignment",
+spectralClones <- function(db, method = c("novj", "vj"), germline = "germline_alignment", sequence = "sequence_alignment",
                            junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
-                           targeting_model = NULL, len_limit = NULL,
-                           first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, 
-                           threshold = NULL, base_sim = 0.95, 
-                           iter_max = 1000,  nstart = 1000, nproc = 1,
+                           targeting_model = NULL, len_limit = NULL, first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, 
+                           threshold = NULL, base_sim = 0.95, iter_max = 1000,  nstart = 1000, nproc = 1,
                            verbose = FALSE, log_verbose = FALSE, out_dir = ".",
                            summarize_clones = FALSE) {
     
