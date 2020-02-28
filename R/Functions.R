@@ -1165,8 +1165,8 @@ defineClonesScoper <- function(db,
         ### plot inter and intra distances
         p_results <- plotInterVsIntra(data = results$inter_intra)
         
-        if (verbose)  { cat("   SUMMARY CLONES> DONE.", "\n") }
-        if (log_verbose)  { 
+        if (verbose) { cat("   SUMMARY CLONES> DONE.", "\n") }
+        if (log_verbose) { 
             cat("   SUMMARY CLONES> DONE.",  "\n", sep=" ", 
                 file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }

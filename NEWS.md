@@ -1,8 +1,9 @@
-Version 0.2.0.999 Nov 20, 2019
+Version 0.2.0.999 Feb 28, 2020
 -------------------------------------------------------------------------------
 
 General:
 
++ Added unit tests
 + splitted `defineClonesScoper` function to three functions: `identicalClones`, 
   `hierarchicalClones`, and `spectralClones`.
 + AIRR
