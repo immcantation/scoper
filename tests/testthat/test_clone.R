@@ -40,6 +40,7 @@ test_that("Test spectralClones - novj", {
     db <- spectralClones(ExampleDb, method = "novj", 
                          junction = "junction", v_call = "v_call", 
                          j_call = "j_call", threshold=0.15, 
+                         iter_max = 2000, nstart = 2000,
                          summarize_clones = FALSE)
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
     expects <- as.integer(c(7, 7, 7, 7, 8, 9, 10, 12, 192, 491))
@@ -56,6 +57,7 @@ test_that("Test spectralClones - vj", {
                          sequence = "sequence_alignment", 
                          junction = "junction", v_call = "v_call", 
                          j_call = "j_call", threshold=0.15, 
+                         iter_max = 2000, nstart = 2000,
                          summarize_clones = FALSE)
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
     expects <- as.integer(c(12, 12, 13, 13, 14, 15, 16, 29, 35, 667))
