@@ -107,11 +107,11 @@ instead of the default `V_CALL` column by specifying the `v_call` argument. This
 allow the more accurate V call from `tigger` to be used for grouping of the sequences.
 4. For more leniency toward ambiguous V(D)J segment calls the parameter `first` can be set 
 to `FALSE`. 
-5. To remove $3$ nucleotides from both ends of the junction region (i.e., converting an 
-IMGT junction to a Complementarity-Determining Region $3$ region) the logical argument 
+5. To remove `3` nucleotides from both ends of the junction region (i.e., converting an 
+IMGT junction to a Complementarity-Determining Region `3` region) the logical argument 
 `cdr3` needs to be set as `TRUE` (the default is `FALSE`). This also leads to the removal 
-of junctions with length less than $7$ nucleotides from the original `db` dataset. 
-6. To remove a junction(s) with a number of nucleotides not modulus of $3$, the logical 
+of junctions with length less than `7` nucleotides from the original `db` dataset. 
+6. To remove a junction(s) with a number of nucleotides not divisible by `3`, the logical 
 argument `mod3` should be set as `TRUE` (the default is `FALSE`).
 7. A summary of each step cloning process would be reported if `verbose` set to `TRUE` 
 (the default is `FALSE`). 

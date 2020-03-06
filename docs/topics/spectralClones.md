@@ -82,13 +82,14 @@ If `FALSE` the union of ambiguous gene assignments is used to
 group all sequences with any overlapping gene calls.
 
 cdr3
-:   if `TRUE` removes 3 nts from both ends of `"junction"`
-(converts IMGT junction to CDR3 region). if `TRUE` remove 
-`junction`(s) with length less than 7 nts.
+:   if `TRUE` removes 3 nucleotides from both ends of `"junction"` 
+prior to clustering (converts IMGT junction to CDR3 region). 
+If `TRUE` this will also remove records with a junction length 
+less than 7 nucleotides.
 
 mod3
-:   if `TRUE` removes `junction`(s) with number of nucleotides not 
-modulus of 3.
+:   if `TRUE` removes records with a `junction` length that is not divisible by 
+3 in nucleotide space.
 
 max_n
 :   The maximum number of N's to permit in the junction sequence before excluding the 
@@ -130,8 +131,8 @@ See Value for description.
 Value
 -------------------
 
-For `summarize_clones` = `FALSE`, a modified data.frame with clone identifiers in the `clone` column. 
-For `summarize_clones` = `TRUE` returns a list containing:
+For `summarize_clones=FALSE`, a modified data.frame with clone identifiers in the `clone` column. 
+For `summarize_clones=TRUE` returns a list containing:
 
 + `db`:                   modified `db` data.frame with clone identifiers in the `clone` column. 
 + `vjl_group_summ`:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
@@ -143,7 +144,7 @@ distances.
 + `plot_inter_intra`:     ggplot histogram of inter (between) versus intra (within) clonal distances. The 
 effective threshold is shown with a horizental dashed-line.
 
-If `log_verbose` = `TRUE`, it will write verbose logging to a file in the current directory or 
+If `log_verboseTRUE`, it will write verbose logging to a file in the current directory or 
 the specified `out_dir`.
 
 
@@ -153,7 +154,7 @@ Details
 `spectralClones` provides a computational platform to explore the B cell clonal 
 relationships in high-throughput Adaptive Immune Receptor Repertoire sequencing (AIRR-seq) 
 data sets. Two methods are included to perform clustering among sequences of B cell receptors 
-(BCRs, also referred to as Immunoglobulins, (Igs)) that share the same V gene, J gene and junction length: 
+(BCRs, immunoglobulins, Ig) that share the same V gene, J gene and junction length: 
 
 +  If `method` = `"novj"`: clonal relationships are inferred using an adaptive threshold that 
 indicates the level of similarity among junction sequences in a local neighborhood. 
@@ -174,11 +175,11 @@ Examples
 -------------------
 
 ```R
-results <- spectralClones(ExampleDb, method = "vj", 
-germline = "germline_alignment_d_mask", 
-sequence = "sequence_alignment", 
-junction = "junction", v_call = "v_call", 
-j_call = "j_call", threshold=0.15, summarize_clones = TRUE)
+results <- spectralClones(ExampleDb, method="vj", 
+germline="germline_alignment_d_mask", 
+sequence="sequence_alignment", 
+junction="junction", v_call="v_call", 
+j_call="j_call", threshold=0.15, summarize_clones=TRUE, log_verbose=T)
 ```
 
 

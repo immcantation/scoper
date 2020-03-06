@@ -580,16 +580,17 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'                              Also used to determine sequence length for grouping.
 #' @param    v_call             character name of the column containing the V-segment allele calls.
 #' @param    j_call             character name of the column containing the J-segment allele calls.
-#' @param    clone              the output column name containing the clone ids.
+#' @param    clone              the output column name containing the clonal clustering identifiers.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
 #'                              group all sequences with any overlapping gene calls.
-#' @param    cdr3               if \code{TRUE} removes 3 nts from both ends of \code{"junction"}
-#'                              (converts IMGT junction to CDR3 region). if \code{TRUE} remove 
-#'                              \code{junction}(s) with length less than 7 nts.
-#' @param    mod3               if \code{TRUE} removes \code{junction}(s) with number of nucleotides not 
-#'                              modulus of 3.
+#' @param    cdr3               if \code{TRUE} removes 3 nucleotides from both ends of \code{"junction"} 
+#'                              prior to clustering (converts IMGT junction to CDR3 region). 
+#'                              If \code{TRUE} this will also remove records with a junction length 
+#'                              less than 7 nucleotides.
+#' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
+#'                              3 in nucleotide space.
 #' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
 #'                              record from clonal assignment. Default is set to be \code{"NULL"} for no action.
 #' @param    nproc              number of cores to distribute the function over.
@@ -602,8 +603,8 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'                              See Value for description.
 #'
 #' @return
-#' For \code{summarize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
-#' For \code{summarize_clones} = \code{TRUE} returns a list containing:
+#' For \code{summarize_clones=FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
+#' For \code{summarize_clones=TRUE} returns a list containing:
 #' \itemize{
 #'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone} column. 
 #'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
@@ -615,25 +616,25 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'      \item   \code{plot_inter_intra}:     ggplot histogram of inter (between) versus intra (within) clonal distances. The 
 #'                                           effective threshold is shown with a horizental dashed-line.
 #' }
-#' If \code{log_verbose} = \code{TRUE}, it will write verbose logging to a file in the current directory or 
+#' If \code{log_verbose=TRUE}, it will write verbose logging to a file in the current directory or 
 #' the specified \code{out_dir}.
 #'
 #' @details
 #' \code{identicalClones} provides a computational platform to explore the B cell clonal 
 #' relationships in high-throughput Adaptive Immune Receptor Repertoire sequencing (AIRR-seq) 
 #' data sets. This function performs clustering among sequences of B cell receptors 
-#' (BCRs, also referred to as Immunoglobulins, (Igs)) that share the same V gene, J gene, and identical junction: 
+#' (BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and identical junction: 
 #'
 #' @examples
-#' results <- identicalClones(ExampleDb, method ="nt", 
-#'                            junction = "junction", v_call = "v_call", 
-#'                            j_call = "j_call", summarize_clones = TRUE)
+#' results <- identicalClones(ExampleDb, method="nt", 
+#'                            junction="junction", v_call="v_call", 
+#'                            j_call="j_call", summarize_clones=TRUE)
 #' @export
-identicalClones <- function(db, method = c("nt", "aa"), junction = "junction", 
-                            v_call = "v_call", j_call = "j_call", clone = "clone_id",
-                            first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, nproc = 1,
-                            verbose = FALSE, log_verbose = FALSE, out_dir = ".", 
-                            summarize_clones = FALSE) {
+identicalClones <- function(db, method=c("nt", "aa"), junction="junction", 
+                            v_call="v_call", j_call="j_call", clone="clone_id",
+                            first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=NULL, nproc = 1,
+                            verbose=FALSE, log_verbose=FALSE, out_dir=".", 
+                            summarize_clones=FALSE) {
     
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
@@ -668,27 +669,29 @@ identicalClones <- function(db, method = c("nt", "aa"), junction = "junction",
 #' @param    threshold          a numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
 #' @param    method             one of the \code{"nt"} for nucleotide based clustering or 
 #'                              \code{"aa"} for amino acid based clustering.
-#' @param    linkage            availabe agglomerations are: \code{"single"}, \code{"average"}, and \code{"complete"}.
-#' @param    normalize	        method of normalization. The default is "len", which divides the distance by the length 
-#'                              of the sequence group. If "none" then no normalization if performed.
+#' @param    linkage            available linkage are \code{"single"}, \code{"average"}, and \code{"complete"}.
+#' @param    normalize	        method of normalization. The default is \code{"len"}, which divides the distance by the length 
+#'                              of the sequence group. If \code{"none"} then no normalization if performed.
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
 #' @param    v_call             character name of the column containing the V-segment allele calls.
 #' @param    j_call             character name of the column containing the J-segment allele calls.
-#' @param    clone              the output column name containing the clone ids.
+#' @param    clone              the output column name containing the clonal cluster identifiers.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
 #'                              group all sequences with any overlapping gene calls.
-#' @param    cdr3               if \code{TRUE} removes 3 nts from both ends of \code{"junction"}
-#'                              (converts IMGT junction to CDR3 region). if \code{TRUE} remove 
-#'                              \code{junction}(s) with length less than 7 nts.
-#' @param    mod3               if \code{TRUE} removes \code{junction}(s) with number of nucleotides not 
-#'                              modulus of 3.
-#' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
-#'                              record from clonal assignment. Note, under model \code{"hierarchical"} and linkage 
-#'                              \code{"single"} non-informative positions can create artifactual links between 
-#'                              unrelated sequences. Use with caution. Default is set to be \code{"NULL"} for no action.
+#' @param    cdr3               if \code{TRUE} removes 3 nucleotides from both ends of \code{"junction"} 
+#'                              prior to clustering (converts IMGT junction to CDR3 region). 
+#'                              If \code{TRUE} this will also remove records with a junction length 
+#'                              less than 7 nucleotides.
+#' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
+#'                              3 in nucleotide space.
+#' @param    max_n              The maximum number of \code{N} characters to permit in the junction sequence 
+#'                              before excluding the record from clonal assignment. Note, with 
+#'                              \code{linkage="single"} non-informative positions can create artifactual 
+#'                              links between unrelated sequences. Use with caution. 
+#'                              Default is set to be \code{"NULL"} for no action.
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} report a summary of each step cloning process;
 #'                              if \code{FALSE} process cloning silently.
@@ -699,12 +702,11 @@ identicalClones <- function(db, method = c("nt", "aa"), junction = "junction",
 #'                              See Value for description.
 #'
 #' @return
-#' For \code{summarize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
-#' For \code{summarize_clones} = \code{TRUE} returns a list containing:
+#' For \code{summarize_clones=FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
+#' For \code{summarize_clones=TRUE} returns a list containing:
 #' \itemize{
 #'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone} column. 
-#'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
-#'                                           and so on.
+#'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction length, and so on.
 #'      \item   \code{inter_intra}:          data.frame containing minimum inter (between) and maximum intra (within) 
 #'                                           clonal distances.
 #'      \item   \code{eff_threshold}:        effective cut-off separating the inter (between) and intra (within) clonal 
@@ -712,29 +714,29 @@ identicalClones <- function(db, method = c("nt", "aa"), junction = "junction",
 #'      \item   \code{plot_inter_intra}:     ggplot histogram of inter (between) versus intra (within) clonal distances. The 
 #'                                           effective threshold is shown with a horizental dashed-line.
 #' }
-#' If \code{log_verbose} = \code{TRUE}, it will write verbose logging to a file in the current directory or 
+#' If \code{log_verbose=TRUE}, it will write verbose logging to a file in the current directory or 
 #' the specified \code{out_dir}.
 #'
 #' @details
 #' \code{hierarchicalClones} provides a computational platform to explore the B cell clonal 
 #' relationships in high-throughput Adaptive Immune Receptor Repertoire sequencing (AIRR-seq) 
 #' data sets. This function performs hierarchical clustering among sequences of B cell receptors 
-#' (BCRs, also referred to as Immunoglobulins, (Igs)) that share the same V gene, J gene, and junction length 
+#' (BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and junction length 
 #' based on the junction sequence similarity: 
 #'
 #' @examples
-#' results <- hierarchicalClones(ExampleDb, threshold = 0.15,
-#'                               method = "nt", linkage = "single",
-#'                               junction = "junction", 
-#'                               v_call = "v_call", j_call = "j_call", 
-#'                               summarize_clones = TRUE)
+#' results <- hierarchicalClones(ExampleDb, threshold=0.15,
+#'                               method="nt", linkage="single",
+#'                               junction="junction", 
+#'                               v_call="v_call", j_call="j_call", 
+#'                               summarize_clones=TRUE)
 #' @export
-hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = c("single", "average", "complete"), 
-                               normalize = c("len", "none"), junction = "junction", 
-                               v_call = "v_call", j_call = "j_call", clone = "clone_id",
-                               first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, nproc = 1,
-                               verbose = FALSE, log_verbose = FALSE, out_dir = ".",
-                               summarize_clones = FALSE) {
+hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("single", "average", "complete"), 
+                               normalize=c("len", "none"), junction="junction", 
+                               v_call="v_call", j_call="j_call", clone="clone_id",
+                               first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=NULL, nproc=1,
+                               verbose=FALSE, log_verbose=FALSE, out_dir=".",
+                               summarize_clones=FALSE) {
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
                                   method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
@@ -782,11 +784,12 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
 #'                              group all sequences with any overlapping gene calls.
-#' @param    cdr3               if \code{TRUE} removes 3 nts from both ends of \code{"junction"}
-#'                              (converts IMGT junction to CDR3 region). if \code{TRUE} remove 
-#'                              \code{junction}(s) with length less than 7 nts.
-#' @param    mod3               if \code{TRUE} removes \code{junction}(s) with number of nucleotides not 
-#'                              modulus of 3.
+#' @param    cdr3               if \code{TRUE} removes 3 nucleotides from both ends of \code{"junction"} 
+#'                              prior to clustering (converts IMGT junction to CDR3 region). 
+#'                              If \code{TRUE} this will also remove records with a junction length 
+#'                              less than 7 nucleotides.
+#' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
+#'                              3 in nucleotide space.
 #' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
 #'                              record from clonal assignment. Default is set to be \code{"NULL"} for no action.
 #' @param    threshold          the upper-limit cut-off for clonal grouping.
@@ -803,8 +806,8 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
 #'                              See Value for description.
 #'
 #' @return
-#' For \code{summarize_clones} = \code{FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
-#' For \code{summarize_clones} = \code{TRUE} returns a list containing:
+#' For \code{summarize_clones=FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
+#' For \code{summarize_clones=TRUE} returns a list containing:
 #' \itemize{
 #'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone} column. 
 #'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
@@ -816,14 +819,14 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
 #'      \item   \code{plot_inter_intra}:     ggplot histogram of inter (between) versus intra (within) clonal distances. The 
 #'                                           effective threshold is shown with a horizental dashed-line.
 #' }
-#' If \code{log_verbose} = \code{TRUE}, it will write verbose logging to a file in the current directory or 
+#' If \code{log_verboseTRUE}, it will write verbose logging to a file in the current directory or 
 #' the specified \code{out_dir}.
 #'
 #' @details
 #' \code{spectralClones} provides a computational platform to explore the B cell clonal 
 #' relationships in high-throughput Adaptive Immune Receptor Repertoire sequencing (AIRR-seq) 
 #' data sets. Two methods are included to perform clustering among sequences of B cell receptors 
-#' (BCRs, also referred to as Immunoglobulins, (Igs)) that share the same V gene, J gene and junction length: 
+#' (BCRs, immunoglobulins, Ig) that share the same V gene, J gene and junction length: 
 #' \itemize{
 #'       \item If \code{method} = \code{"novj"}: clonal relationships are inferred using an adaptive threshold that 
 #'       indicates the level of similarity among junction sequences in a local neighborhood. 
@@ -839,18 +842,18 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
 #' }
 #'
 #' @examples
-#' results <- spectralClones(ExampleDb, method = "vj", 
-#'                           germline = "germline_alignment_d_mask", 
-#'                           sequence = "sequence_alignment", 
-#'                           junction = "junction", v_call = "v_call", 
-#'                           j_call = "j_call", threshold=0.15, summarize_clones = TRUE)
+#' results <- spectralClones(ExampleDb, method="vj", 
+#'                           germline="germline_alignment_d_mask", 
+#'                           sequence="sequence_alignment", 
+#'                           junction="junction", v_call="v_call", 
+#'                           j_call="j_call", threshold=0.15, summarize_clones=TRUE, log_verbose=T)
 #' @export
-spectralClones <- function(db, method = c("novj", "vj"), germline = "germline_alignment", sequence = "sequence_alignment",
-                           junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
-                           targeting_model = NULL, len_limit = NULL, first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, 
-                           threshold = NULL, base_sim = 0.95, iter_max = 1000,  nstart = 1000, nproc = 1,
-                           verbose = FALSE, log_verbose = FALSE, out_dir = ".",
-                           summarize_clones = FALSE) {
+spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignment", sequence="sequence_alignment",
+                           junction="junction", v_call="v_call", j_call="j_call", clone="clone_id",
+                           targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=NULL, 
+                           threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
+                           verbose=FALSE, log_verbose=FALSE, out_dir=".",
+                           summarize_clones=FALSE) {
     
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
                                   germline = germline, sequence = sequence,
