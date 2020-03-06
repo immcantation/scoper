@@ -819,7 +819,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'      \item   \code{plot_inter_intra}:     ggplot histogram of inter (between) versus intra (within) clonal distances. The 
 #'                                           effective threshold is shown with a horizental dashed-line.
 #' }
-#' If \code{log_verboseTRUE}, it will write verbose logging to a file in the current directory or 
+#' If \code{log_verbose=TRUE}, it will write verbose logging to a file in the current directory or 
 #' the specified \code{out_dir}.
 #'
 #' @details
