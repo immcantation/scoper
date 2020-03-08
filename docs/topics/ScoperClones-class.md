@@ -1,11 +1,11 @@
-**ScoperClones-class** - *Output of `spectralClones`, `identicalClones`, and `hierarchicalClones`, 
+**ScoperClones-class** - *Output of `identicalClones`, `hierarchicalClones`, and `spectralClones`, 
 if `summarize_clones=TRUE`*
 
 Description
 --------------------
 
-`ScoperClones` contains output from [spectralClones](spectralClones.md), [identicalClones](identicalClones.md), 
-and [hierarchicalClones](hierarchicalClones.md) functions, if argument `summarize_clones` is `TRUE`.
+`ScoperClones` contains output from [identicalClones](identicalClones.md), [hierarchicalClones](hierarchicalClones.md), and
+[spectralClones](spectralClones.md) functions, if argument `summarize_clones` is `TRUE`.
 
 
 Usage
@@ -59,7 +59,7 @@ distances.
 See also
 -------------------
 
-[spectralClones](spectralClones.md), [identicalClones](identicalClones.md), and [hierarchicalClones](hierarchicalClones.md)
+[identicalClones](identicalClones.md), [hierarchicalClones](hierarchicalClones.md), and [spectralClones](spectralClones.md)
 
 
 

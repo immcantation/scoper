@@ -1,10 +1,10 @@
 #### Classes ####
 
-#' Output of \code{spectralClones}, \code{identicalClones}, and \code{hierarchicalClones}, 
+#' Output of \code{identicalClones}, \code{hierarchicalClones}, and \code{spectralClones}, 
 #' if \code{summarize_clones=TRUE}
 #' 
-#' \code{ScoperClones} contains output from \link{spectralClones}, \link{identicalClones}, 
-#' and \link{hierarchicalClones} functions, if argument \code{summarize_clones} is \code{TRUE}. 
+#' \code{ScoperClones} contains output from \link{identicalClones}, \link{hierarchicalClones}, and
+#' \link{spectralClones} functions, if argument \code{summarize_clones} is \code{TRUE}. 
 #'
 #' @slot   db              modified input \code{db} data.frame with clone identifiers in the \code{clone} 
 #'                         column.
@@ -15,7 +15,7 @@
 #' @slot   eff_threshold   effective cut-off separating the inter (between) and intra (within) clonal 
 #'                         distances.
 #'
-#' @seealso      \link{spectralClones}, \link{identicalClones}, and \link{hierarchicalClones}
+#' @seealso      \link{identicalClones}, \link{hierarchicalClones}, and \link{spectralClones}
 #'
 #' @name         ScoperClones-class
 #' @rdname       ScoperClones-class
