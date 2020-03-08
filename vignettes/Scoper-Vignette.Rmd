@@ -193,7 +193,7 @@ results <- hierarchicalClones(db = ExampleDb, threshold = 0.15,
                               method = "nt", linkage = "single", 
                               junction = "junction", 
                               v_call = "v_call", j_call = "j_call",
-                              max_n = NULL,
+                              max_n = NULL, log = NULL,
                               summarize_clones = TRUE)
 # cloned data (a data.frame)
 cloned_db <- results@db
@@ -216,7 +216,7 @@ results <- spectralClones(db = ExampleDb, method = "vj",
                           germline = "germline_alignment_d_mask",
                           junction = "junction", 
                           v_call = "v_call", j_call = "j_call",
-                          max_n = NULL,
+                          max_n = NULL, log = NULL,
                           threshold = 0.15, summarize_clones = TRUE)
 # cloned data (a data.frame)
 cloned_db <- results@db
