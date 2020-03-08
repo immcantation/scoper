@@ -21,7 +21,7 @@ identicalClones(db,
                 clone = "clone_id",
                 first = FALSE, cdr3 = FALSE, mod3 = FALSE,
                 max_n = 0, nproc = 1, 
-                verbose = FALSE, log = "log_verbose.txt",
+                verbose = FALSE, log = NULL,
                 summarize_clones = FALSE) 
 ```
 
@@ -53,7 +53,7 @@ hierarchicalClones(db, threshold,
                    clone = "clone_id",
                    first = FALSE, cdr3 = FALSE, mod3 = FALSE,
                    max_n = 0, nproc = 1, 
-                   verbose = FALSE, log = "log_verbose.txt",
+                   verbose = FALSE, log = NULL,
                    summarize_clones = FALSE) 
 ```
 
@@ -89,7 +89,7 @@ spectralClones(db,
                first = FALSE, cdr3 = FALSE, mod3 = FALSE,
                max_n = 0, threshold = NULL, base_sim = 0.95,
                iter_max = 1000, nstart = 1000, nproc = 1,
-               verbose = FALSE, log = "log_verbose.txt",
+               verbose = FALSE, log = NULL,
                summarize_clones = FALSE)
 ```
 
@@ -115,8 +115,8 @@ of junctions with length less than `7` nucleotides from the original `db` datase
 argument `mod3` should be set as `TRUE` (the default is `FALSE`).
 7. A summary of each step cloning process would be reported if `verbose` set to `TRUE` 
 (the default is `FALSE`). 
-8. specify the output path/filename.txt to save 'verbose'. The input file directory is used 
-if path is not specified. Pass `NULL` for no action.
+8. specify `log` by output path/filename.txt to save `verbose`. The input file directory is used 
+if path is not specified.  The default is `NULL` for no action.
 10. If `summarize_clones` set to be `FALSE` (default), a modified `data.frame` with clone 
 identifiers in the `clone` column will be returned. Otherwise, if `summarize_clones` 
 set to be `TRUE`, the cloning functions will perform a series of analyses to assess the 

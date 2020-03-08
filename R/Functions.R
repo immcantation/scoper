@@ -686,7 +686,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              if \code{FALSE} (default) process cloning silently.
 #' @param    log                specify the output path/filename.txt to save \code{verbose}. 
 #'                              The input file directory is used if path is not specified.
-#'                              The default is \code{log_verbose.txt}. Pass \code{NULL} for no action.
+#'                              The default is \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
 #'                              See Value for description.
 #'
@@ -695,7 +695,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' For \code{summarize_clones=TRUE} returns a \link{ScoperClones} object including the modified \code{db} 
 #'                                  with clone identifiers, and other clones summary information.
 #' If \code{log} is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
-#' If \code{log} is specified as only a filename.txt, current directory is used.
+#' If \code{log} is specified as only a filename.txt, current directory is used. The default is \code{NULL} for no action.
 #'
 #' @details
 #' \code{identicalClones} provides a computational platform to explore the B cell clonal 
@@ -719,7 +719,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 identicalClones <- function(db, method=c("nt", "aa"), junction="junction", 
                             v_call="v_call", j_call="j_call", clone="clone_id",
                             first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc = 1,
-                            verbose=FALSE, log="log_verbose.txt", 
+                            verbose=FALSE, log=NULL, 
                             summarize_clones=FALSE) {
     
     results <- defineClonesScoper(db = db,
@@ -784,7 +784,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              if \code{FALSE} (default) process cloning silently.
 #' @param    log                specify the output path/filename.txt to save \code{verbose}. 
 #'                              The input file directory is used if path is not specified.
-#'                              The default is \code{log_verbose.txt}. Pass \code{NULL} for no action.
+#'                              The default is \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
 #'                              See Value for description.
 #'
@@ -793,7 +793,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' For \code{summarize_clones=TRUE} returns a \link{ScoperClones} object including the modified \code{db} 
 #'                                  with clone identifiers, and other clones summary information.
 #' If \code{log} is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
-#' If \code{log} is specified as only a filename.txt, current directory is used.
+#' If \code{log} is specified as only a filename.txt, current directory is used. The default is \code{NULL} for no action.
 #'
 #' @details
 #' \code{hierarchicalClones} provides a computational platform to explore the B cell clonal 
@@ -821,7 +821,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
                                normalize=c("len", "none"), junction="junction", 
                                v_call="v_call", j_call="j_call", clone="clone_id",
                                first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
-                               verbose=FALSE, log="log_verbose.txt",
+                               verbose=FALSE, log=NULL,
                                summarize_clones=FALSE) {
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
@@ -888,7 +888,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              if \code{FALSE} (default) process cloning silently.
 #' @param    log                specify the output path/filename.txt to save \code{verbose}. 
 #'                              The input file directory is used if path is not specified.
-#'                              The default is \code{log_verbose.txt}. Pass \code{NULL} for no action.
+#'                              The default is \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
 #'                              See Value for description.
 #'
@@ -897,7 +897,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' For \code{summarize_clones=TRUE} returns a \link{ScoperClones} object including the modified \code{db} 
 #'                                  with clone identifiers, and other clones summary information.
 #' If \code{log} is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
-#' If \code{log} is specified as only a filename.txt, current directory is used.
+#' If \code{log} is specified as only a filename.txt, current directory is used. The default is \code{NULL} for no action.
 #'
 #' @details
 #' \code{spectralClones} provides a computational platform to explore the B cell clonal 
@@ -938,7 +938,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
                            junction="junction", v_call="v_call", j_call="j_call", clone="clone_id",
                            targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, 
                            threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
-                           verbose=FALSE, log="log_verbose.txt",
+                           verbose=FALSE, log=NULL,
                            summarize_clones=FALSE) {
     
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
@@ -976,7 +976,7 @@ defineClonesScoper <- function(db,
                                first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = 0, 
                                threshold = NULL, base_sim = 0.95,
                                iter_max = 1000, nstart = 1000, nproc = 1,
-                               verbose = FALSE, log = "log_verbose.txt",
+                               verbose = FALSE, log = NULL,
                                summarize_clones = FALSE) {
 
     ### get model

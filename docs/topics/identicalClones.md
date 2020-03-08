@@ -23,7 +23,7 @@ mod3 = FALSE,
 max_n = 0,
 nproc = 1,
 verbose = FALSE,
-log = "log_verbose.txt",
+log = NULL,
 summarize_clones = FALSE
 )
 ```
@@ -82,7 +82,7 @@ if `FALSE` (default) process cloning silently.
 log
 :   specify the output path/filename.txt to save `verbose`. 
 The input file directory is used if path is not specified.
-The default is `log_verbose.txt`. Pass `NULL` for no action.
+The default is `NULL` for no action.
 
 summarize_clones
 :   if `TRUE` performs a series of analysis to assess the clonal landscape.
@@ -98,7 +98,7 @@ For `summarize_clones=FALSE`, a modified data.frame with clone identifiers in th
 For `summarize_clones=TRUE` returns a [ScoperClones](ScoperClones-class.md) object including the modified `db` 
 with clone identifiers, and other clones summary information.
 If `log` is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
-If `log` is specified as only a filename.txt, current directory is used.
+If `log` is specified as only a filename.txt, current directory is used. The default is `NULL` for no action.
 
 
 Details
