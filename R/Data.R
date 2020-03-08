@@ -6,16 +6,17 @@
 #'
 #' @format   A data.frame with the following Change-O style columns:
 #'   \itemize{
-#'     \item  \code{sequence_id}:           Sequence identifier
+#'     \item  \code{sequence_id}:                Sequence identifier
 #'     \item  \code{sequence_alignment}:         IMGT-gapped observed sequence.
+#'     \item  \code{germline_alignment}:         IMGT-gapped germline sequence.
 #'     \item  \code{germline_alignment_d_mask}:  IMGT-gapped germline sequence with N, P and
-#'                                          D regions masked.
-#'     \item  \code{v_call}:                V region allele assignments.
-#'     \item  \code{v_call_genotyped}:      TIgGER corrected V region allele assignment.
-#'     \item  \code{d_call}:                D region allele assignments.
-#'     \item  \code{j_call}:                J region allele assignments.
-#'     \item  \code{junction}:              Junction region sequence.
-#'     \item  \code{junction_length}:       Length of the junction region in nucleotides.
+#'                                               D regions masked.
+#'     \item  \code{v_call}:                     V region allele assignments.
+#'     \item  \code{v_call_genotyped}:           TIgGER corrected V region allele assignment.
+#'     \item  \code{d_call}:                     D region allele assignments.
+#'     \item  \code{j_call}:                     J region allele assignments.
+#'     \item  \code{junction}:                   Junction region sequence.
+#'     \item  \code{junction_length}:            Length of the junction region in nucleotides.
 #' }
 #'
 #'

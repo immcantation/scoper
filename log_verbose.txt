@@ -5,7 +5,7 @@
         J CALL(s)>  Homsap IGHJ4*02 F,Homsap IGHJ4*03 F,Homsap IGHJ4*01 F 
   JUNCTION LENGTH>  81 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  19 
  
@@ -16,7 +16,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  81 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -27,7 +27,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -38,7 +38,7 @@
         J CALL(s)>  Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  102 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -49,7 +49,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F,Homsap IGHJ5*01 F 
   JUNCTION LENGTH>  69 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  6 
  
@@ -60,7 +60,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  66 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  7 
  
@@ -71,7 +71,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  84 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -82,7 +82,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  96 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -93,7 +93,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  66 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  11 
  
@@ -104,7 +104,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  4 
  
@@ -115,9 +115,9 @@
         J CALL(s)>  Homsap IGHJ3*01 F,Homsap IGHJ3*02 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  9 
+         CLONE(s)>  36 
  
      TOTAL GROUPS>  156 
             GROUP>  12 
@@ -126,7 +126,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  84 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  4 
  
@@ -137,7 +137,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  93 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -148,7 +148,7 @@
         J CALL(s)>  Homsap IGHJ5*01 F,Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  7 
  
@@ -159,7 +159,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  5 
  
@@ -170,7 +170,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  87 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  9 
  
@@ -181,9 +181,9 @@
         J CALL(s)>  Homsap IGHJ3*02 F,Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  54 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  4 
+         CLONE(s)>  5 
  
      TOTAL GROUPS>  156 
             GROUP>  18 
@@ -192,9 +192,9 @@
         J CALL(s)>  Homsap IGHJ3*02 F,Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  63 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  3 
+         CLONE(s)>  4 
  
      TOTAL GROUPS>  156 
             GROUP>  19 
@@ -203,9 +203,9 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*01 F 
   JUNCTION LENGTH>  51 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  3 
+         CLONE(s)>  5 
  
      TOTAL GROUPS>  156 
             GROUP>  20 
@@ -214,7 +214,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -225,7 +225,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -236,7 +236,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -247,7 +247,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  69 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -258,7 +258,7 @@
         J CALL(s)>  Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  57 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -269,7 +269,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  57 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -280,7 +280,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  78 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -291,9 +291,9 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  54 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  21 
+         CLONE(s)>  20 
  
      TOTAL GROUPS>  156 
             GROUP>  28 
@@ -302,9 +302,9 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  63 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  11 
+         CLONE(s)>  25 
  
      TOTAL GROUPS>  156 
             GROUP>  29 
@@ -313,9 +313,9 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  78 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  4 
+         CLONE(s)>  6 
  
      TOTAL GROUPS>  156 
             GROUP>  30 
@@ -324,7 +324,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  87 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -335,7 +335,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  72 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -346,7 +346,7 @@
         J CALL(s)>  Homsap IGHJ4*02 F,Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  90 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -357,7 +357,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  10 
  
@@ -368,7 +368,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  36 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -379,9 +379,9 @@
         J CALL(s)>  Homsap IGHJ3*01 F,Homsap IGHJ3*02 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  4 
+         CLONE(s)>  15 
  
      TOTAL GROUPS>  156 
             GROUP>  36 
@@ -390,9 +390,9 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  72 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  11 
+         CLONE(s)>  22 
  
      TOTAL GROUPS>  156 
             GROUP>  37 
@@ -401,7 +401,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  81 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -412,7 +412,7 @@
         J CALL(s)>  Homsap IGHJ3*02 F,Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  14 
  
@@ -423,9 +423,9 @@
         J CALL(s)>  Homsap IGHJ3*02 F,Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  69 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  21 
+         CLONE(s)>  32 
  
      TOTAL GROUPS>  156 
             GROUP>  40 
@@ -434,7 +434,7 @@
         J CALL(s)>  Homsap IGHJ3*02 F,Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  72 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -445,7 +445,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  69 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  4 
  
@@ -456,7 +456,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  90 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -467,9 +467,9 @@
         J CALL(s)>  Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  48 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  3 
+         CLONE(s)>  13 
  
      TOTAL GROUPS>  156 
             GROUP>  44 
@@ -478,7 +478,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  93 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -489,7 +489,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F,Homsap IGHJ5*01 F 
   JUNCTION LENGTH>  51 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  4 
  
@@ -500,7 +500,7 @@
         J CALL(s)>  Homsap IGHJ4*02 F,Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  84 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  10 
  
@@ -511,7 +511,7 @@
         J CALL(s)>  Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  39 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -522,7 +522,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  78 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -533,7 +533,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  57 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -544,7 +544,7 @@
         J CALL(s)>  Homsap IGHJ4*02 F,Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  33 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  4 
  
@@ -555,7 +555,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  87 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -566,9 +566,9 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  78 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  25 
+         CLONE(s)>  24 
  
      TOTAL GROUPS>  156 
             GROUP>  53 
@@ -577,7 +577,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  66 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -588,7 +588,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -599,7 +599,7 @@
         J CALL(s)>  Homsap IGHJ3*01 F,Homsap IGHJ3*02 F 
   JUNCTION LENGTH>  78 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -610,9 +610,9 @@
         J CALL(s)>  Homsap IGHJ3*01 F,Homsap IGHJ3*02 F 
   JUNCTION LENGTH>  87 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  6 
+         CLONE(s)>  37 
  
      TOTAL GROUPS>  156 
             GROUP>  57 
@@ -621,9 +621,9 @@
         J CALL(s)>  Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  90 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  5 
+         CLONE(s)>  8 
  
      TOTAL GROUPS>  156 
             GROUP>  58 
@@ -632,7 +632,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  87 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  6 
  
@@ -643,7 +643,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  78 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -654,7 +654,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  96 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -665,7 +665,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F,Homsap IGHJ5*01 F 
   JUNCTION LENGTH>  45 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  11 
  
@@ -676,7 +676,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  36 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -687,7 +687,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  45 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -698,9 +698,9 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  72 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  5 
+         CLONE(s)>  7 
  
      TOTAL GROUPS>  156 
             GROUP>  65 
@@ -709,9 +709,9 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  42 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  27 
+         CLONE(s)>  26 
  
      TOTAL GROUPS>  156 
             GROUP>  66 
@@ -720,7 +720,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  96 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -731,7 +731,7 @@
         J CALL(s)>  Homsap IGHJ5*01 F,Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  90 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -742,7 +742,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F,Homsap IGHJ6*01 F 
   JUNCTION LENGTH>  87 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  10 
  
@@ -753,7 +753,7 @@
         J CALL(s)>  Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  108 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -764,7 +764,7 @@
         J CALL(s)>  Homsap IGHJ4*01 F,Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  87 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  10 
  
@@ -775,7 +775,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  105 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -786,7 +786,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  78 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -797,7 +797,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  69 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  5 
  
@@ -808,7 +808,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  72 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  18 
  
@@ -819,7 +819,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*01 F 
   JUNCTION LENGTH>  81 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  4 
  
@@ -830,7 +830,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  21 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -841,7 +841,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  84 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -852,7 +852,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  66 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  7 
  
@@ -863,7 +863,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  5 
  
@@ -874,7 +874,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  48 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -885,7 +885,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  57 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  12 
  
@@ -896,9 +896,9 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  84 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  6 
+         CLONE(s)>  5 
  
      TOTAL GROUPS>  156 
             GROUP>  83 
@@ -907,9 +907,9 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  51 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  4 
+         CLONE(s)>  11 
  
      TOTAL GROUPS>  156 
             GROUP>  84 
@@ -918,7 +918,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  5 
  
@@ -929,9 +929,9 @@
         J CALL(s)>  Homsap IGHJ5*01 F,Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  7 
+         CLONE(s)>  6 
  
      TOTAL GROUPS>  156 
             GROUP>  86 
@@ -940,7 +940,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F,Homsap IGHJ5*01 F 
   JUNCTION LENGTH>  69 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  6 
  
@@ -951,7 +951,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  57 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  7 
  
@@ -962,7 +962,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -973,7 +973,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  54 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -984,7 +984,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  39 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -995,7 +995,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  69 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  8 
  
@@ -1006,7 +1006,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  66 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1017,7 +1017,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -1028,9 +1028,9 @@
         J CALL(s)>  Homsap IGHJ3*01 F,Homsap IGHJ3*02 F 
   JUNCTION LENGTH>  72 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  5 
+         CLONE(s)>  13 
  
      TOTAL GROUPS>  156 
             GROUP>  95 
@@ -1039,7 +1039,7 @@
         J CALL(s)>  Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  81 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  7 
  
@@ -1050,7 +1050,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  81 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  4 
  
@@ -1061,7 +1061,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  57 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1072,7 +1072,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  42 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -1083,7 +1083,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  66 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  5 
  
@@ -1094,7 +1094,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -1105,7 +1105,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F,Homsap IGHJ5*01 F 
   JUNCTION LENGTH>  54 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -1116,7 +1116,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  63 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1127,7 +1127,7 @@
         J CALL(s)>  Homsap IGHJ5*01 F,Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  81 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -1138,7 +1138,7 @@
         J CALL(s)>  Homsap IGHJ5*01 F 
   JUNCTION LENGTH>  90 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -1149,7 +1149,7 @@
         J CALL(s)>  Homsap IGHJ3*02 F,Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  51 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  6 
  
@@ -1160,7 +1160,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  51 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  10 
  
@@ -1171,7 +1171,7 @@
         J CALL(s)>  Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  72 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1182,7 +1182,7 @@
         J CALL(s)>  Homsap IGHJ5*01 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1193,7 +1193,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  39 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  4 
  
@@ -1204,9 +1204,9 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  5 
+         CLONE(s)>  8 
  
      TOTAL GROUPS>  156 
             GROUP>  111 
@@ -1215,7 +1215,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  51 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -1226,7 +1226,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  57 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -1237,7 +1237,7 @@
         J CALL(s)>  Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  39 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -1248,7 +1248,7 @@
         J CALL(s)>  Homsap IGHJ4*02 F,Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  63 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  9 
  
@@ -1259,7 +1259,7 @@
         J CALL(s)>  Homsap IGHJ4*02 F,Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  66 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  6 
  
@@ -1270,7 +1270,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  42 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1281,7 +1281,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  36 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -1292,9 +1292,9 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  54 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  6 
+         CLONE(s)>  11 
  
      TOTAL GROUPS>  156 
             GROUP>  119 
@@ -1303,9 +1303,9 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  57 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  4 
+         CLONE(s)>  6 
  
      TOTAL GROUPS>  156 
             GROUP>  120 
@@ -1314,9 +1314,9 @@
         J CALL(s)>  Homsap IGHJ3*02 F,Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  66 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  9 
+         CLONE(s)>  15 
  
      TOTAL GROUPS>  156 
             GROUP>  121 
@@ -1325,7 +1325,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  11 
  
@@ -1336,7 +1336,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  42 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1347,7 +1347,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  51 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  9 
  
@@ -1358,9 +1358,9 @@
         J CALL(s)>  Homsap IGHJ4*02 F,Homsap IGHJ4*03 F,Homsap IGHJ4*01 F 
   JUNCTION LENGTH>  45 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  30 
+         CLONE(s)>  31 
  
      TOTAL GROUPS>  156 
             GROUP>  125 
@@ -1369,7 +1369,7 @@
         J CALL(s)>  Homsap IGHJ3*01 F,Homsap IGHJ3*02 F 
   JUNCTION LENGTH>  48 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -1380,9 +1380,9 @@
         J CALL(s)>  Homsap IGHJ3*01 F,Homsap IGHJ3*02 F 
   JUNCTION LENGTH>  57 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  4 
+         CLONE(s)>  6 
  
      TOTAL GROUPS>  156 
             GROUP>  127 
@@ -1391,9 +1391,9 @@
         J CALL(s)>  Homsap IGHJ5*02 F,Homsap IGHJ5*01 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  7 
+         CLONE(s)>  6 
  
      TOTAL GROUPS>  156 
             GROUP>  128 
@@ -1402,7 +1402,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  54 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  11 
  
@@ -1413,7 +1413,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F,Homsap IGHJ6*01 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  30 
  
@@ -1424,7 +1424,7 @@
         J CALL(s)>  Homsap IGHJ3*02 F 
   JUNCTION LENGTH>  81 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1435,9 +1435,9 @@
         J CALL(s)>  Homsap IGHJ4*02 F,Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  54 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  4 
+         CLONE(s)>  3 
  
      TOTAL GROUPS>  156 
             GROUP>  132 
@@ -1446,7 +1446,7 @@
         J CALL(s)>  Homsap IGHJ4*02 F,Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  93 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -1457,7 +1457,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F,Homsap IGHJ5*01 F 
   JUNCTION LENGTH>  66 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  31 
  
@@ -1468,7 +1468,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  66 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  11 
  
@@ -1479,7 +1479,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  96 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  9 
  
@@ -1490,7 +1490,7 @@
         J CALL(s)>  Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  111 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1501,7 +1501,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  84 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  15 
  
@@ -1512,7 +1512,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  11 
  
@@ -1523,9 +1523,9 @@
         J CALL(s)>  Homsap IGHJ3*02 F,Homsap IGHJ3*01 F 
   JUNCTION LENGTH>  54 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  10 
+         CLONE(s)>  13 
  
      TOTAL GROUPS>  156 
             GROUP>  140 
@@ -1534,7 +1534,7 @@
         J CALL(s)>  Homsap IGHJ3*02 F 
   JUNCTION LENGTH>  99 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1545,7 +1545,7 @@
         J CALL(s)>  Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  30 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -1556,7 +1556,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  84 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  11 
  
@@ -1567,7 +1567,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F 
   JUNCTION LENGTH>  102 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1578,7 +1578,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  60 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  6 
  
@@ -1589,9 +1589,9 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  16 
+         CLONE(s)>  15 
  
      TOTAL GROUPS>  156 
             GROUP>  146 
@@ -1600,7 +1600,7 @@
         J CALL(s)>  Homsap IGHJ4*03 F,Homsap IGHJ4*02 F 
   JUNCTION LENGTH>  90 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -1611,9 +1611,9 @@
         J CALL(s)>  Homsap IGHJ5*02 F,Homsap IGHJ5*01 F 
   JUNCTION LENGTH>  48 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  11 
+         CLONE(s)>  10 
  
      TOTAL GROUPS>  156 
             GROUP>  148 
@@ -1622,7 +1622,7 @@
         J CALL(s)>  Homsap IGHJ5*01 F,Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  63 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  6 
  
@@ -1633,7 +1633,7 @@
         J CALL(s)>  Homsap IGHJ5*02 F 
   JUNCTION LENGTH>  84 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1644,7 +1644,7 @@
         J CALL(s)>  Homsap IGHJ6*02 F 
   JUNCTION LENGTH>  102 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  1 
  
@@ -1655,9 +1655,9 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  84 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  3 
+         CLONE(s)>  9 
  
      TOTAL GROUPS>  156 
             GROUP>  152 
@@ -1666,7 +1666,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  93 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  2 
  
@@ -1677,7 +1677,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  75 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  16 
  
@@ -1688,7 +1688,7 @@
         J CALL(s)>  Homsap IGHJ1*01 F 
   JUNCTION LENGTH>  45 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  16 
  
@@ -1699,7 +1699,7 @@
         J CALL(s)>  Homsap IGHJ2*01 F 
   JUNCTION LENGTH>  84 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
          CLONE(s)>  3 
  
@@ -1710,8 +1710,8 @@
         J CALL(s)>  Homsap IGHJ3*01 F,Homsap IGHJ3*02 F 
   JUNCTION LENGTH>  51 
             MODEL>  spectral 
-           METHOD>  vj 
+           METHOD>  novj 
              CDR3>  FALSE 
-         CLONE(s)>  13 
+         CLONE(s)>  25 
  
      MAX N FILTER>  0 invalid junction(s) ( # of N > 0 ) in the junction column removed. 
