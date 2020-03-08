@@ -19,23 +19,16 @@ Format
 -------------------
 A data.frame with the following Change-O style columns:
 
-+ `SEQUENCE_ID`:           Sequence identifier
-+ `SEQUENCE_IMGT`:         IMGT-gapped observed sequence.
-+ `GERMLINE_IMGT_D_MASK`:  IMGT-gapped germline sequence with N, P and
++ `sequence_id`:           Sequence identifier
++ `sequence_alignment`:         IMGT-gapped observed sequence.
++ `germline_alignment_d_mask`:  IMGT-gapped germline sequence with N, P and
 D regions masked.
-+ `V_CALL`:                V region allele assignments.
-+ `V_CALL_GENOTYPED`:      TIgGER corrected V region allele assignment.
-+ `D_CALL`:                D region allele assignments.
-+ `J_CALL`:                J region allele assignments.
-+ `JUNCTION`:              Junction region sequence.
-+ `JUNCTION_LENGTH`:       Length of the junction region in nucleotides.
-+ `NP1_LENGTH`:            Combined length of the N and P regions proximal
-to the V region.
-+ `NP2_LENGTH`:            Combined length of the N and P regions proximal
-to the J region.
-+ `SAMPLE`:                Sample identifier. Time in relation to vaccination.
-+ `ISOTYPE`:               Isotype assignment.
-+ `DUPCOUNT`:              Copy count (number of duplicates) of the sequence.
++ `v_call`:                V region allele assignments.
++ `v_call_genotyped`:      TIgGER corrected V region allele assignment.
++ `d_call`:                D region allele assignments.
++ `j_call`:                J region allele assignments.
++ `junction`:              Junction region sequence.
++ `junction_length`:       Length of the junction region in nucleotides.
 
 
 References
