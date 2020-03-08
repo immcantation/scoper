@@ -1,3 +1,50 @@
+#### Classes ####
+
+#' Output of \code{spectralClones}, \code{identicalClones}, and \code{hierarchicalClones}, 
+#' if \code{summarize_clones=TRUE}
+#' 
+#' \code{ScoperClones} contains output from \link{spectralClones}, \link{identicalClones}, 
+#' and \link{hierarchicalClones} functions, if argument \code{summarize_clones} is \code{TRUE}. 
+#'
+#' @slot   db              modified input \code{db} data.frame with clone identifiers in the \code{clone} 
+#'                         column.
+#' @slot   vjl_group_summ  data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
+#'                         and so on.
+#' @slot   inter_intra     data.frame containing minimum inter (between) and maximum intra (within) 
+#'                         clonal distances.
+#' @slot   eff_threshold   effective cut-off separating the inter (between) and intra (within) clonal 
+#'                         distances.
+#'
+#' @seealso      \link{spectralClones}, \link{identicalClones}, and \link{hierarchicalClones}
+#'
+#' @name         ScoperClones-class
+#' @rdname       ScoperClones-class
+#' @aliases      ScoperClones
+#' @exportClass  ScoperClones
+setClass("ScoperClones",
+         slots=c(db="data.frame",
+                 vjl_group_summ="data.frame",
+                 inter_intra="data.frame",
+                 eff_threshold="numeric"))
+
+#### Methods ####
+
+#' @param    x    ScoperClones object
+#' 
+#' @rdname   ScoperClones-class
+#' @aliases  ScoperClones-method
+#' @export
+setMethod("print", c(x="ScoperClones"), function(x) { print(x@eff_threshold) })
+
+#' @param    y    ignored.
+#' @param    ...  arguments to pass to \link{plotCloneSummary}.
+#' 
+#' @rdname   ScoperClones-class
+#' @aliases  ScoperClones-method
+#' @export
+setMethod("plot", c(x="ScoperClones", y="missing"),
+          function(x, y, ...) { plotCloneSummary(x, ...) })
+
 
 # find density gap
 findGapSmooth <- function(vec) {
@@ -350,109 +397,9 @@ calculateInterVsIntra <- function(db,
     colnames(db_dff)[colnames(db_dff) == "X2"] <- "CLONE_Y"
     db_dff$X3 <- NULL
     
-    # return results list
-    return_list <- list("inter_intra" = db_dff)
-    
-    return(return_list)
+    # return results
+    return(db_dff)
 }
-# *****************************************************************************
-
-# *****************************************************************************
-### plot inter-clone-distance vs intra-clone-distance
-plotInterVsIntra <- function(data) {
-    
-    data <- select(data, c("DISTANCE", "LABEL"))
-    data_intra <- data %>% 
-        dplyr::filter(!!rlang::sym("LABEL") == "intra", !!rlang::sym("DISTANCE") > 0)
-    data_inter <- data %>%
-        dplyr::filter(!!rlang::sym("LABEL") == "inter", !!rlang::sym("DISTANCE") > 0)
-    
-    # fill color
-    fill_manual <- c("intra"="grey30",
-                     "inter"="grey60")
-    
-    hline_size <- 0.75
-    
-    ### find effective threshold
-    eff_threshold <- NA
-    if (nrow(data_intra) > 10 & nrow(data_inter) > 10) {
-        a <- data_intra$DISTANCE
-        b <- data_inter$DISTANCE
-        xlim = c(min(c(a,b)), max(c(a,b)))
-        df <- merge(
-            as.data.frame(density(a, from = xlim[1], to = xlim[2])[c("x", "y")]),
-            as.data.frame(density(b, from = xlim[1], to = xlim[2])[c("x", "y")]),
-            by = "x", suffixes = c(".a", ".b")
-        )
-        df$comp <- as.numeric(df$y.a > df$y.b)
-        df$cross <- c(NA, diff(df$comp))
-        df <- df[which(df$cross != 0), c("x", "y.a")]
-        if (nrow(df) > 0) {
-            eff_th <- df$x
-            eff_th <- eff_th[mean(a) - sd(a) < eff_th & eff_th < mean(b) + sd(b)]
-            if (length(eff_th) > 0) {
-                eff_threshold <- round(mean(eff_th), 2)
-            } 
-        }    
-    }
-    
-    ### plot p1
-    p1 <- ggplot() +
-        baseTheme() +
-        theme(plot.title = element_text(size = 13, hjust = 0.5),
-              axis.title.x = element_blank(),
-              axis.title = element_text(size=13),
-              axis.text.x=element_text(size=12),
-              axis.text.y=element_text(size=12),
-              legend.position = "bottom",
-              legend.text=element_text(size=12)) +
-        xlab("Normalized hamming distance") +
-        ylab("Density") +
-        scale_y_continuous(labels = abs) +
-        scale_fill_manual(name="",
-                          values=fill_manual,
-                          labels=c("intra"="maximum-distance within clones  ",
-                                   "inter"="minimum-distance between clones  "))
-    
-    if (nrow(data_intra) > 0) {
-        p1 <- p1 + 
-            geom_histogram(data = data_intra,
-                           aes_string(x = "DISTANCE", y = "..density..", fill = "LABEL"),
-                           binwidth = 0.02, color = "white", alpha = 0.85) +
-            geom_density(data = data_intra, 
-                         aes_string(x = "DISTANCE"),
-                         size = hline_size, color = "grey30")
-    }
-    
-    if (nrow(data_inter) > 0) {
-        p1 <- p1 + 
-            geom_histogram(data = data_inter,
-                           aes_string(x = "DISTANCE", y = "..density..", fill = "LABEL"),
-                           binwidth=0.02, color = "white", alpha = 0.75) +
-            geom_density(data = data_inter, 
-                         aes_string(x = "DISTANCE"),
-                         size = hline_size, color = "grey60")
-    } else {
-        warning("No inter clonal distance is detected. Each group of sequences with same V-gene, J-gene, and junction length may contain only one clone.")
-    }
-    
-    if (!is.na(eff_threshold)) {
-        p1 <- p1 + 
-            ggtitle(paste("Effective threshold=", eff_threshold)) +
-            geom_vline(xintercept=eff_threshold, color="grey30", linetype=2, size=hline_size)
-    } else {
-        p1 <- p1 + 
-            ggtitle(paste("Effective threshold not found"))
-    }
-    
-    # return results list
-    return_list <- list("eff_threshold" = eff_threshold,
-                        "plot_inter_intra" = p1)
-    
-    return(return_list)
-}
-# *****************************************************************************
-
 # *****************************************************************************
 ### Define verbose reporting function
 printVerbose <- function(n_groups, vjl_group, model, method, linkage, cdr3,
@@ -495,7 +442,7 @@ logVerbose <- function(out_dir, log_verbose_name,
 prepare_db <- function(db, 
                        junction = "junction", v_call = "v_call", j_call = "j_call",
                        first = FALSE, cdr3 = FALSE, 
-                       mod3 = FALSE, max_n = NULL) {
+                       mod3 = FALSE, max_n = 0) {
     # add junction length column
     db$JUNCTION_L <- stri_length(db[[junction]])
     junction_l <- "JUNCTION_L"
@@ -566,6 +513,146 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 }
 # *****************************************************************************
 
+#### plotCloneSummary ####
+
+#' Plot ScoperClones object for the summarize_clones=TRUE
+#' 
+#' \code{plotCloneSummary} plots the results from \code{summarize_clones=TRUE} method of 
+#' \code{spectralClones}, \code{identicalClones}, and \code{hierarchicalClones} functions, 
+#' including the minimum inter (between) and maximum intra (within) clonal distances, 
+#' and the calculated efective threshold.
+#'
+#' @param    data      \link{ScoperClones} object output by the \link{spectralClones}, 
+#'                     \link{identicalClones}, and \link{hierarchicalClones} functions, 
+#'                     if argument \code{summarize_clones} assigned to be \code{TRUE}.
+#' @param    xmin      minimum limit for plotting the x-axis. If \code{NULL} the limit will 
+#'                     be set automatically.
+#' @param    xmax      maximum limit for plotting the x-axis. If \code{NULL} the limit will 
+#'                     be set automatically.
+#' @param    breaks    number of breaks to show on the x-axis. If \code{NULL} the breaks will 
+#'                     be set automatically.
+#' @param    binwidth  binwidth for the histogram. If \code{NULL} the binwidth 
+#'                     will be set automatically.
+#' @param    title     string defining the plot title.
+#' @param    size      numeric value for lines in the plot.
+#' @param    silent    if \code{TRUE} do not draw the plot and just return the ggplot2 
+#'                     object; if \code{FALSE} draw the plot.
+#' @param    ...       additional arguments to pass to ggplot2::theme.
+#' 
+#' @return   A ggplot object defining the plot.
+#'
+#' @seealso  See \link{ScoperClones} for the the input object definition and \link{spectralClones}, 
+#'           \link{identicalClones}, and \link{hierarchicalClones} functions for generating the input object.
+#'
+#' @examples
+#' \donttest{
+#' results <- hierarchicalClones(ExampleDb, threshold=0.15,
+#'                               method="nt", linkage="single",
+#'                               junction="junction", 
+#'                               v_call="v_call", j_call="j_call", 
+#'                               summarize_clones=TRUE)
+#' 
+#' # Plot clonal summaries 
+#' p <- plotCloneSummary(results, binwidth=0.02)
+#' plot(p)
+#' }
+#' @export
+plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL, 
+                             binwidth=NULL, title=NULL, size=0.75, silent=FALSE, 
+                             ...) {
+    
+    eff_threshold <- data@eff_threshold
+    xdf <- select(data@inter_intra, c("DISTANCE", "LABEL"))
+    data_intra <- xdf %>% 
+        dplyr::filter(!!rlang::sym("LABEL") == "intra", !!rlang::sym("DISTANCE") > 0)
+    data_inter <- xdf %>%
+        dplyr::filter(!!rlang::sym("LABEL") == "inter", !!rlang::sym("DISTANCE") > 0)
+    
+    # fill color
+    fill_manual <- c("intra"="grey30",
+                     "inter"="grey60")
+    
+    # ggplot workaround
+    if (is.null(xmin)) { xmin <- NA }
+    if (is.null(xmax)) { xmax <- NA }
+    
+    ### plot
+    p <- ggplot() +
+        baseTheme() +
+        theme(plot.title = element_text(size = 13, hjust = 0.5),
+              axis.title.x = element_blank(),
+              axis.title = element_text(size=13),
+              axis.text.x=element_text(size=12),
+              axis.text.y=element_text(size=12),
+              legend.position = "bottom",
+              legend.text=element_text(size=12)) +
+        xlab("Normalized hamming distance") +
+        ylab("Density") +
+        scale_y_continuous(labels = abs) +
+        scale_fill_manual(name="",
+                          values=fill_manual,
+                          labels=c("intra"="maximum-distance within clones  ",
+                                   "inter"="minimum-distance between clones  "))
+    
+    # Plot within clonal distances
+    if (nrow(data_intra) > 0) {
+        p <- p + 
+            geom_histogram(data = data_intra,
+                           aes_string(x = "DISTANCE", y = "..density..", fill = "LABEL"),
+                           binwidth = binwidth, color = "white", alpha = 0.85) +
+            geom_density(data = data_intra, 
+                         aes_string(x = "DISTANCE"),
+                         size = size, color = "grey30")
+    }
+    
+    # Plot between clonal distances
+    if (nrow(data_inter) > 0) {
+        p <- p + 
+            geom_histogram(data = data_inter,
+                           aes_string(x = "DISTANCE", y = "..density..", fill = "LABEL"),
+                           binwidth = binwidth, color = "white", alpha = 0.75) +
+            geom_density(data = data_inter, 
+                         aes_string(x = "DISTANCE"),
+                         size = size, color = "grey60")
+    } else {
+        warning("No inter clonal distance is detected. Each group of sequences with same V-gene, J-gene, and junction length may contain only one clone.")
+    }
+    
+    # Plot vertical treshold line
+    if (!is.na(eff_threshold)) {
+        p <- p + 
+            ggtitle(paste("Effective threshold=", eff_threshold)) +
+            geom_vline(xintercept=eff_threshold, color="grey30", linetype=2, size=size)
+    } else {
+        p <- p + 
+            ggtitle(paste("Effective threshold not found"))
+    }
+    
+    # Add x limits
+    if (is.null(breaks) & (!is.na(xmin) | !is.na(xmax))) {
+        p <- p + coord_cartesian(xlim = c(xmin, xmax))
+    }
+    # Set breaks
+    if (!is.null(breaks)) {
+        p <- p + scale_x_continuous(breaks=pretty_breaks(n=breaks),
+                                    limits=c(xmin, xmax))
+    }
+    # Add Title
+    if (!is.null(title)) {
+        p <- p + ggtitle(title)
+    }
+    
+    # Add additional theme elements
+    p <- p + do.call(theme, list(...))
+    
+    # Plot
+    if (!silent) {
+        plot(p)
+    } else {
+        return(p)
+    }
+}
+
 #### identicalClones ####
 
 #' Identical clustering-based method for partitioning Ig sequences into clones.
@@ -592,32 +679,23 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
 #' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
-#'                              record from clonal assignment. Default is set to be \code{"NULL"} for no action.
+#'                              record from clonal assignment. Default is set to be zero. Set it as \code{"NULL"} for no 
+#'                              action.
 #' @param    nproc              number of cores to distribute the function over.
-#' @param    verbose            if \code{TRUE} report a summary of each step cloning process;
-#'                              if \code{FALSE} process cloning silently.
-#' @param    log_verbose        if \code{TRUE} write verbose logging to a file in \code{out_dir}.
-#' @param    out_dir            specify the output directory to save \code{log_verbose}. The input 
-#'                              file directory is used if this is not specified.
+#' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
+#'                              if \code{FALSE} (default) process cloning silently.
+#' @param    log                specify the output path/filename.txt to save \code{verbose}. 
+#'                              The input file directory is used if path is not specified.
+#'                              The default is \code{log_verbose.txt}. Pass \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
 #'                              See Value for description.
 #'
 #' @return
 #' For \code{summarize_clones=FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
-#' For \code{summarize_clones=TRUE} returns a list containing:
-#' \itemize{
-#'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone} column. 
-#'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
-#'                                           and so on.
-#'      \item   \code{inter_intra}:          data.frame containing minimum inter (between) and maximum intra (within) 
-#'                                           clonal distances.
-#'      \item   \code{eff_threshold}:        effective cut-off separating the inter (between) and intra (within) clonal 
-#'                                           distances.
-#'      \item   \code{plot_inter_intra}:     ggplot histogram of inter (between) versus intra (within) clonal distances. The 
-#'                                           effective threshold is shown with a horizental dashed-line.
-#' }
-#' If \code{log_verbose=TRUE}, it will write verbose logging to a file in the current directory or 
-#' the specified \code{out_dir}.
+#' For \code{summarize_clones=TRUE} returns a \link{ScoperClones} object including the modified \code{db} 
+#'                                  with clone identifiers, and other clones summary information.
+#' If \code{log} is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
+#' If \code{log} is specified as only a filename.txt, current directory is used.
 #'
 #' @details
 #' \code{identicalClones} provides a computational platform to explore the B cell clonal 
@@ -625,31 +703,40 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' data sets. This function performs clustering among sequences of B cell receptors 
 #' (BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and identical junction: 
 #'
+#' @seealso  See \link{plotCloneSummary} for generating a ggplot object from \code{summarize_clones=TRUE}
+#'           method.
+#'
 #' @examples
 #' results <- identicalClones(ExampleDb, method="nt", 
 #'                            junction="junction", v_call="v_call", 
 #'                            j_call="j_call", summarize_clones=TRUE)
+#' 
+#' # Plot clonal summaries 
+#' p <- plotCloneSummary(results, binwidth=0.02)
+#' plot(p)
+#' 
 #' @export
 identicalClones <- function(db, method=c("nt", "aa"), junction="junction", 
                             v_call="v_call", j_call="j_call", clone="clone_id",
-                            first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=NULL, nproc = 1,
-                            verbose=FALSE, log_verbose=FALSE, out_dir=".", 
+                            first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc = 1,
+                            verbose=FALSE, log="log_verbose.txt", 
                             summarize_clones=FALSE) {
     
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,        
-                                  verbose = verbose, log_verbose = log_verbose, out_dir = out_dir, 
+                                  verbose = verbose, log = log, 
                                   summarize_clones = summarize_clones)
     
     ### return results
     if (summarize_clones) {
-        return_list <- list("db" = results$db,
-                            "vjl_group_summ" = results$vjl_group_summ,
-                            "inter_intra" = results$inter_intra,
-                            "eff_threshold" = results$eff_threshold,
-                            "plot_inter_intra" = results$plot_inter_intra)    
+        return_list <- new("ScoperClones",
+                           db = results$db,
+                           vjl_group_summ = results$vjl_group_summ,
+                           inter_intra = results$inter_intra,
+                           eff_threshold = results$eff_threshold)    
+        
         return(return_list)
     } else {
         return(results)
@@ -691,31 +778,22 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              before excluding the record from clonal assignment. Note, with 
 #'                              \code{linkage="single"} non-informative positions can create artifactual 
 #'                              links between unrelated sequences. Use with caution. 
-#'                              Default is set to be \code{"NULL"} for no action.
+#'                              Default is set to be zero. Set it as \code{"NULL"} for no action.
 #' @param    nproc              number of cores to distribute the function over.
-#' @param    verbose            if \code{TRUE} report a summary of each step cloning process;
-#'                              if \code{FALSE} process cloning silently.
-#' @param    log_verbose        if \code{TRUE} write verbose logging to a file in \code{out_dir}.
-#' @param    out_dir            specify the output directory to save \code{log_verbose}. The input 
-#'                              file directory is used if this is not specified.
+#' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
+#'                              if \code{FALSE} (default) process cloning silently.
+#' @param    log                specify the output path/filename.txt to save \code{verbose}. 
+#'                              The input file directory is used if path is not specified.
+#'                              The default is \code{log_verbose.txt}. Pass \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
 #'                              See Value for description.
 #'
 #' @return
 #' For \code{summarize_clones=FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
-#' For \code{summarize_clones=TRUE} returns a list containing:
-#' \itemize{
-#'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone} column. 
-#'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction length, and so on.
-#'      \item   \code{inter_intra}:          data.frame containing minimum inter (between) and maximum intra (within) 
-#'                                           clonal distances.
-#'      \item   \code{eff_threshold}:        effective cut-off separating the inter (between) and intra (within) clonal 
-#'                                           distances.
-#'      \item   \code{plot_inter_intra}:     ggplot histogram of inter (between) versus intra (within) clonal distances. The 
-#'                                           effective threshold is shown with a horizental dashed-line.
-#' }
-#' If \code{log_verbose=TRUE}, it will write verbose logging to a file in the current directory or 
-#' the specified \code{out_dir}.
+#' For \code{summarize_clones=TRUE} returns a \link{ScoperClones} object including the modified \code{db} 
+#'                                  with clone identifiers, and other clones summary information.
+#' If \code{log} is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
+#' If \code{log} is specified as only a filename.txt, current directory is used.
 #'
 #' @details
 #' \code{hierarchicalClones} provides a computational platform to explore the B cell clonal 
@@ -724,34 +802,42 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' (BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and junction length 
 #' based on the junction sequence similarity: 
 #'
+#' @seealso  See \link{plotCloneSummary} for generating a ggplot object from \code{summarize_clones=TRUE}
+#'           method.
+#'
 #' @examples
 #' results <- hierarchicalClones(ExampleDb, threshold=0.15,
 #'                               method="nt", linkage="single",
 #'                               junction="junction", 
 #'                               v_call="v_call", j_call="j_call", 
 #'                               summarize_clones=TRUE)
+#' 
+#' # Plot clonal summaries 
+#' p <- plotCloneSummary(results, binwidth=0.02)
+#' plot(p)
+#' 
 #' @export
 hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("single", "average", "complete"), 
                                normalize=c("len", "none"), junction="junction", 
                                v_call="v_call", j_call="j_call", clone="clone_id",
-                               first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=NULL, nproc=1,
-                               verbose=FALSE, log_verbose=FALSE, out_dir=".",
+                               first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
+                               verbose=FALSE, log="log_verbose.txt",
                                summarize_clones=FALSE) {
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
                                   method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
-                                  verbose = verbose, log_verbose = log_verbose, out_dir = out_dir, 
+                                  verbose = verbose, log = log, 
                                   summarize_clones = summarize_clones)
     
     # return results
     if (summarize_clones) {
-        return_list <- list("db" = results$db,
-                            "vjl_group_summ" = results$vjl_group_summ,
-                            "inter_intra" = results$inter_intra,
-                            "eff_threshold" = results$eff_threshold,
-                            "plot_inter_intra" = results$plot_inter_intra)    
+        return_list <- new("ScoperClones",
+                           db = results$db,
+                           vjl_group_summ = results$vjl_group_summ,
+                           inter_intra = results$inter_intra,
+                           eff_threshold = results$eff_threshold)  
         return(return_list)
     } else {
         return(results)
@@ -790,37 +876,28 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
-#'                              record from clonal assignment. Default is set to be \code{"NULL"} for no action.
+#' @param    max_n              the maximum number of N's to permit in the junction sequence before excluding the 
+#'                              record from clonal assignment. Default is set to be zero. Set it as \code{"NULL"} 
+#'                              for no action.
 #' @param    threshold          the upper-limit cut-off for clonal grouping.
 #' @param    base_sim           required similarity cut-off for sequences in equal distances from each other.
 #' @param    iter_max	        the maximum number of iterations allowed for kmean clustering step.
 #' @param    nstart	            the number of random sets chosen for kmean clustering initialization.
 #' @param    nproc              number of cores to distribute the function over.
-#' @param    verbose            if \code{TRUE} report a summary of each step cloning process;
-#'                              if \code{FALSE} process cloning silently.
-#' @param    log_verbose        if \code{TRUE} write verbose logging to a file in \code{out_dir}.
-#' @param    out_dir            specify the output directory to save \code{log_verbose}. The input 
-#'                              file directory is used if this is not specified.
+#' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
+#'                              if \code{FALSE} (default) process cloning silently.
+#' @param    log                specify the output path/filename.txt to save \code{verbose}. 
+#'                              The input file directory is used if path is not specified.
+#'                              The default is \code{log_verbose.txt}. Pass \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
 #'                              See Value for description.
 #'
 #' @return
 #' For \code{summarize_clones=FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
-#' For \code{summarize_clones=TRUE} returns a list containing:
-#' \itemize{
-#'      \item   \code{db}:                   modified \code{db} data.frame with clone identifiers in the \code{clone} column. 
-#'      \item   \code{vjl_group_summ}:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
-#'                                           and so on.
-#'      \item   \code{inter_intra}:          data.frame containing minimum inter (between) and maximum intra (within) 
-#'                                           clonal distances.
-#'      \item   \code{eff_threshold}:        effective cut-off separating the inter (between) and intra (within) clonal 
-#'                                           distances.
-#'      \item   \code{plot_inter_intra}:     ggplot histogram of inter (between) versus intra (within) clonal distances. The 
-#'                                           effective threshold is shown with a horizental dashed-line.
-#' }
-#' If \code{log_verbose=TRUE}, it will write verbose logging to a file in the current directory or 
-#' the specified \code{out_dir}.
+#' For \code{summarize_clones=TRUE} returns a \link{ScoperClones} object including the modified \code{db} 
+#'                                  with clone identifiers, and other clones summary information.
+#' If \code{log} is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
+#' If \code{log} is specified as only a filename.txt, current directory is used.
 #'
 #' @details
 #' \code{spectralClones} provides a computational platform to explore the B cell clonal 
@@ -838,21 +915,30 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'       if a SHM targeting model is provided through argument \code{targeting_model} (see \link{createTargetingModel} 
 #'       for more technical details). 
 #'       \item Not mandatory, but the upper-limit cut-off for clonal grouping can be provided to
-#'       prevent sequences with disimilarity above the threshold group together.
+#'       prevent sequences with disimilarity above the threshold group together. Using this argument any sequence with  
+#'       distances above the \code{threshold} value from other sequences, will become a singleton.
 #' }
+#'
+#' @seealso  See \link{plotCloneSummary} for generating a ggplot object from \code{summarize_clones=TRUE}
+#'           method.
 #'
 #' @examples
 #' results <- spectralClones(ExampleDb, method="vj", 
 #'                           germline="germline_alignment_d_mask", 
 #'                           sequence="sequence_alignment", 
 #'                           junction="junction", v_call="v_call", 
-#'                           j_call="j_call", threshold=0.15, summarize_clones=TRUE, log_verbose=T)
+#'                           j_call="j_call", threshold=0.15, summarize_clones=TRUE)
+#'                           
+#' # Plot clonal summaries 
+#' p <- plotCloneSummary(results, binwidth=0.02)
+#' plot(p)
+#' 
 #' @export
 spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignment", sequence="sequence_alignment",
                            junction="junction", v_call="v_call", j_call="j_call", clone="clone_id",
-                           targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=NULL, 
+                           targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, 
                            threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
-                           verbose=FALSE, log_verbose=FALSE, out_dir=".",
+                           verbose=FALSE, log="log_verbose.txt",
                            summarize_clones=FALSE) {
     
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
@@ -862,16 +948,16 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n,
                                   threshold = threshold, base_sim = base_sim,
                                   iter_max = iter_max, nstart = nstart, nproc = nproc,
-                                  verbose = verbose, log_verbose = log_verbose, out_dir = out_dir,
+                                  verbose = verbose, log = log,
                                   summarize_clones = summarize_clones)
     
     # return results
     if (summarize_clones) {
-        return_list <- list("db" = results$db,
-                            "vjl_group_summ" = results$vjl_group_summ,
-                            "inter_intra" = results$inter_intra,
-                            "eff_threshold" = results$eff_threshold,
-                            "plot_inter_intra" = results$plot_inter_intra)    
+        return_list <- new("ScoperClones",
+                           db = results$db,
+                           vjl_group_summ = results$vjl_group_summ,
+                           inter_intra = results$inter_intra,
+                           eff_threshold = results$eff_threshold)    
         return(return_list)
     } else {
         return(results)
@@ -887,10 +973,10 @@ defineClonesScoper <- function(db,
                                germline = "germline_alignment", sequence = "sequence_alignment",
                                junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
                                targeting_model = NULL, len_limit = NULL,
-                               first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = NULL, 
+                               first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = 0, 
                                threshold = NULL, base_sim = 0.95,
                                iter_max = 1000, nstart = 1000, nproc = 1,
-                               verbose = FALSE, log_verbose = FALSE, out_dir = ".",
+                               verbose = FALSE, log = "log_verbose.txt",
                                summarize_clones = FALSE) {
 
     ### get model
@@ -970,22 +1056,17 @@ defineClonesScoper <- function(db,
     
     ### check verbose and log
     verbose <- ifelse(verbose, 1, 0)
-    log_verbose <- ifelse(log_verbose, 1, 0)
-    if (log_verbose) {
-        if (is.null(out_dir)) stop("out_dir must be specified.")
+    if (!is.null(log)) {
+        out_dir <- dirname(log)
         if (!dir.exists(out_dir)) stop("out_dir '", out_dir, "' does not exist.")
-        log_verbose_name <- "log_verbose.dat"
+        log_verbose <- 1
+        log_verbose_name <- basename(log)
         cat(file=file.path(out_dir, log_verbose_name), append=FALSE)
+    } else {
+        log_verbose <- 0
     }
-    
+
     ### Prepare db
-    if (verbose) { cat("       PREPARE DB> ", "\n", sep=" ") }
-    if (log_verbose) {
-        cat("       PREPARE DB> ", "\n", sep=" ",
-            file = file.path(out_dir, log_verbose_name), append=TRUE) 
-        cat("", "\n", sep=" ",
-            file = file.path(out_dir, log_verbose_name), append=TRUE) 
-    }
     results_prep <- prepare_db(db = db, 
                                junction = junction, v_call = v_call, j_call = j_call,
                                first = first, cdr3 = cdr3, 
@@ -1126,21 +1207,9 @@ defineClonesScoper <- function(db,
                 file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
     }
-    ### print ending message
-    if (verbose) { cat("          CLONING> DONE.", "\n", sep=" ") }
-    if (log_verbose)  { 
-        cat("          CLONING> DONE.",  "\n", sep=" ", 
-            file = file.path(out_dir, log_verbose_name), append=TRUE) 
-    }
     
     ### make summary 
     if (summarize_clones) {
-        if (verbose) { cat("   SUMMARY CLONES> ...", "\n") }
-        if (log_verbose)  { 
-            cat("   SUMMARY CLONES> ...",  "\n", sep=" ", 
-                file = file.path(out_dir, log_verbose_name), append=TRUE) 
-        }
-        
         ### vjl group summary
         vjl_groups <- db_cloned %>%
             dplyr::group_by(!!rlang::sym("VJL_GROUP")) %>%
@@ -1156,22 +1225,42 @@ defineClonesScoper <- function(db,
                                     function(i){ paste(unique(strsplit(vjl_groups$J_CALL[i], split=",")[[1]]), collapse=",") })
         
         ### calculate inter and intra distances
-        results <- calculateInterVsIntra(db = db_cloned,
-                                         clone = clone,
-                                         vjl_groups = vjl_groups,
-                                         junction = junction,
-                                         cdr3 = cdr3,
-                                         cdr3_col = cdr3_col,
-                                         nproc = nproc,
-                                         verbose = verbose)
+        df_inter_intra <- calculateInterVsIntra(db = db_cloned,
+                                                clone = clone,
+                                                vjl_groups = vjl_groups,
+                                                junction = junction,
+                                                cdr3 = cdr3,
+                                                cdr3_col = cdr3_col,
+                                                nproc = nproc,
+                                                verbose = verbose)
         
-        ### plot inter and intra distances
-        p_results <- plotInterVsIntra(data = results$inter_intra)
+        ### calculate effective threshold
+        data_eff <- select(df_inter_intra, c("DISTANCE", "LABEL"))
+        data_intra <- data_eff %>% 
+            dplyr::filter(!!rlang::sym("LABEL") == "intra", !!rlang::sym("DISTANCE") > 0)
+        data_inter <- data_eff %>%
+            dplyr::filter(!!rlang::sym("LABEL") == "inter", !!rlang::sym("DISTANCE") > 0)
         
-        if (verbose) { cat("   SUMMARY CLONES> DONE.", "\n") }
-        if (log_verbose) { 
-            cat("   SUMMARY CLONES> DONE.",  "\n", sep=" ", 
-                file = file.path(out_dir, log_verbose_name), append=TRUE) 
+        eff_threshold <- as.numeric(NA)
+        if (nrow(data_intra) > 10 & nrow(data_inter) > 10) {
+            a <- data_intra$DISTANCE
+            b <- data_inter$DISTANCE
+            xlim = c(min(c(a,b)), max(c(a,b)))
+            df <- merge(
+                as.data.frame(density(a, from = xlim[1], to = xlim[2])[c("x", "y")]),
+                as.data.frame(density(b, from = xlim[1], to = xlim[2])[c("x", "y")]),
+                by = "x", suffixes = c(".a", ".b")
+            )
+            df$comp <- as.numeric(df$y.a > df$y.b)
+            df$cross <- c(NA, diff(df$comp))
+            df <- df[which(df$cross != 0), c("x", "y.a")]
+            if (nrow(df) > 0) {
+                eff_th <- df$x
+                eff_th <- eff_th[mean(a) - sd(a) < eff_th & eff_th < mean(b) + sd(b)]
+                if (length(eff_th) > 0) {
+                    eff_threshold <- round(mean(eff_th), 2)
+                } 
+            }    
         }
     }
     
@@ -1182,9 +1271,9 @@ defineClonesScoper <- function(db,
     if (summarize_clones) {
         return_list <- list("db" = db_cloned,
                             "vjl_group_summ" = vjl_groups,
-                            "inter_intra" = results$inter_intra,
-                            "eff_threshold" = p_results$eff_threshold,
-                            "plot_inter_intra" = p_results$plot_inter_intra)    
+                            "inter_intra" = df_inter_intra,
+                            "eff_threshold" = eff_threshold)  
+        
         return(return_list)
     } else {
         return(db_cloned)

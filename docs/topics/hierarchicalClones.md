@@ -24,11 +24,10 @@ clone = "clone_id",
 first = FALSE,
 cdr3 = FALSE,
 mod3 = FALSE,
-max_n = NULL,
+max_n = 0,
 nproc = 1,
 verbose = FALSE,
-log_verbose = FALSE,
-out_dir = ".",
+log = "log_verbose.txt",
 summarize_clones = FALSE
 )
 ```
@@ -87,21 +86,19 @@ max_n
 before excluding the record from clonal assignment. Note, with 
 `linkage="single"` non-informative positions can create artifactual 
 links between unrelated sequences. Use with caution. 
-Default is set to be `"NULL"` for no action.
+Default is set to be zero. Set it as `"NULL"` for no action.
 
 nproc
 :   number of cores to distribute the function over.
 
 verbose
-:   if `TRUE` report a summary of each step cloning process;
-if `FALSE` process cloning silently.
+:   if `TRUE` prints out a summary of each step cloning process.
+if `FALSE` (default) process cloning silently.
 
-log_verbose
-:   if `TRUE` write verbose logging to a file in `out_dir`.
-
-out_dir
-:   specify the output directory to save `log_verbose`. The input 
-file directory is used if this is not specified.
+log
+:   specify the output path/filename.txt to save `verbose`. 
+The input file directory is used if path is not specified.
+The default is `log_verbose.txt`. Pass `NULL` for no action.
 
 summarize_clones
 :   if `TRUE` performs a series of analysis to assess the clonal landscape.
@@ -114,19 +111,10 @@ Value
 -------------------
 
 For `summarize_clones=FALSE`, a modified data.frame with clone identifiers in the `clone` column. 
-For `summarize_clones=TRUE` returns a list containing:
-
-+ `db`:                   modified `db` data.frame with clone identifiers in the `clone` column. 
-+ `vjl_group_summ`:       data.frame of clones summary, e.g. size, V-gene, J-gene, junction length, and so on.
-+ `inter_intra`:          data.frame containing minimum inter (between) and maximum intra (within) 
-clonal distances.
-+ `eff_threshold`:        effective cut-off separating the inter (between) and intra (within) clonal 
-distances.
-+ `plot_inter_intra`:     ggplot histogram of inter (between) versus intra (within) clonal distances. The 
-effective threshold is shown with a horizental dashed-line.
-
-If `log_verbose=TRUE`, it will write verbose logging to a file in the current directory or 
-the specified `out_dir`.
+For `summarize_clones=TRUE` returns a [ScoperClones](ScoperClones-class.md) object including the modified `db` 
+with clone identifiers, and other clones summary information.
+If `log` is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
+If `log` is specified as only a filename.txt, current directory is used.
 
 
 Details
@@ -149,9 +137,37 @@ method="nt", linkage="single",
 junction="junction", 
 v_call="v_call", j_call="j_call", 
 summarize_clones=TRUE)
+
 ```
 
 
+```
+     MAX N FILTER>  0 invalid junction(s) ( # of N > 0 ) in the junction column removed. 
+
+```
+
+
+```R
+
+# Plot clonal summaries 
+p <- plotCloneSummary(results, binwidth=0.02)
+
+```
+
+![4](hierarchicalClones-4.png)
+
+```R
+plot(p)
+```
+
+![6](hierarchicalClones-6.png)
+
+
+See also
+-------------------
+
+See [plotCloneSummary](plotCloneSummary.md) for generating a ggplot object from `summarize_clones=TRUE`
+method.
 
 
 

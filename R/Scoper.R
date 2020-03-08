@@ -32,8 +32,9 @@
 #' @import      methods
 #' @importFrom  ggplot2     ggplot aes_string 
 #'                          theme theme_bw element_text element_blank element_rect
-#'                          ggtitle xlab ylab coord_flip
-#'                          scale_fill_manual scale_y_continuous geom_density
+#'                          ggtitle xlab ylab coord_flip coord_cartesian
+#'                          scale_fill_manual geom_density
+#'                          scale_x_continuous scale_y_continuous 
 #'                          geom_polygon geom_histogram geom_hline geom_vline
 #' @importFrom  dplyr       n %>% data_frame filter select arrange 
 #'                          group_by ungroup group_indices
@@ -44,6 +45,7 @@
 #' @importFrom  data.table  as.data.table .I
 #' @importFrom  doParallel  registerDoParallel
 #' @importFrom  foreach     foreach %dopar% registerDoSEQ
+#' @importFrom  scales      pretty_breaks
 #' @importFrom  alakazam    pairwiseDist checkColumns getDNAMatrix getAAMatrix
 #'                          padSeqEnds progressBar groupGenes baseTheme translateDNA
 #' @importFrom  shazam      consensusSequence

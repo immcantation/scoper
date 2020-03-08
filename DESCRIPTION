@@ -41,7 +41,8 @@ Imports:
     stringr,
     methods,
     stats,
-    rlang
+    rlang,
+    scales
 LinkingTo: Rcpp
 Suggests:
     knitr,

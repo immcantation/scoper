@@ -20,8 +20,8 @@ identicalClones(db,
                 v_call = "v_call", j_call = "j_call",
                 clone = "clone_id",
                 first = FALSE, cdr3 = FALSE, mod3 = FALSE,
-                max_n = NULL, nproc = 1, 
-                verbose = FALSE, log_verbose = FALSE, out_dir = ".",
+                max_n = 0, nproc = 1, 
+                verbose = FALSE, log = "log_verbose.txt",
                 summarize_clones = FALSE) 
 ```
 
@@ -52,8 +52,8 @@ hierarchicalClones(db, threshold,
                    junction = "junction", v_call = "v_call", j_call = "j_call",
                    clone = "clone_id",
                    first = FALSE, cdr3 = FALSE, mod3 = FALSE,
-                   max_n = NULL, nproc = 1, 
-                   verbose = FALSE, log_verbose = FALSE, out_dir = ".",
+                   max_n = 0, nproc = 1, 
+                   verbose = FALSE, log = "log_verbose.txt",
                    summarize_clones = FALSE) 
 ```
 
@@ -87,9 +87,9 @@ spectralClones(db,
                v_call = "v_call", j_call = "j_call", clone = "clone_id",
                targeting_model = NULL, len_limit = NULL,
                first = FALSE, cdr3 = FALSE, mod3 = FALSE,
-               max_n = NULL, threshold = NULL, base_sim = 0.95,
+               max_n = 0, threshold = NULL, base_sim = 0.95,
                iter_max = 1000, nstart = 1000, nproc = 1,
-               verbose = FALSE, log_verbose = FALSE, out_dir = ".",
+               verbose = FALSE, log = "log_verbose.txt",
                summarize_clones = FALSE)
 ```
 
@@ -115,21 +115,29 @@ of junctions with length less than `7` nucleotides from the original `db` datase
 argument `mod3` should be set as `TRUE` (the default is `FALSE`).
 7. A summary of each step cloning process would be reported if `verbose` set to `TRUE` 
 (the default is `FALSE`). 
-8. If the argument `log_verbose` be set as `TRUE`, the `verbose` output is written to 
-a file in the current input directory (by default).
-9. If the `out_dir` is specified, then its path will be used to save `log_verbose`. 
+8. specify the output path/filename.txt to save 'verbose'. The input file directory is used 
+if path is not specified. Pass `NULL` for no action.
 10. If `summarize_clones` set to be `FALSE` (default), a modified `data.frame` with clone 
 identifiers in the `clone` column will be returned. Otherwise, if `summarize_clones` 
 set to be `TRUE`, the cloning functions will perform a series of analyses to assess the 
-clonal landscape and return a list containing summary statistics and visualization of 
+clonal landscape and return a `ScoperClones` object containing summary statistics of 
 the clonal clustering results:
 
     * __db__: a modified `data.frame` with clone identifiers in the `clone` column.
     * __vjl_group_summ__: a `data.frame` of clones summary, e.g. size, V-gene, J-gene, junction lentgh, and so on.
     * __inter_intra__: a `data.frame` containing minimum inter (between) and maximum intra (within) clonal distances.
     * __eff_threshold__: effective cut-off separating the inter (between) and intra (within) clonal distances.
-    * __plot_inter_intra__: a `ggplot` histogram of inter (between) versus intra (within) clonal distances. 
-    The effective threshold is shown with a horizental dashed-line.
+
+11. Pass the `ScoperClones` object to `plotCloneSummary` function to generate a `ggplot` histogram of 
+inter (between) versus intra (within) clonal distances. The effective threshold is shown with a 
+horizental dashed-line.
+
+
+```r
+plotCloneSummary(data, xmin=NULL, xmax=NULL, breaks=NULL, 
+                 binwidth=NULL, title=NULL, size=0.75, silent=FALSE, 
+                 ...) 
+```
 
 **Note:** Functions specific arguments:
 
@@ -143,10 +151,12 @@ clustering step of the pipeline. They will pass the maximum allowed number of km
 iterations and the number of random sets chosen for kmean clustering initialization 
 respectively. The argument `base_sim` is required to be used as the similarity cut-off for 
 sequences in equal distances from each other. It is not mandatory, but the argument `threshold` 
-can also be used for the model `spectral` in order to enforce an upper-limit cut-off. 
-The arguments `germline` and `sequence` must be provided if method `vj` 
-is used. Therefore, mutation counts are determined by comparing the input sequences 
-(in the column specified by `sequence`) to the effective germline sequence 
+can also be used for the model `spectral` in order to enforce an upper-limit cut-off. Using this 
+argument any sequence with distances above the `threshold` value from all sequences, will become a 
+singleton. `threshold` can be defined as discussed above from distance-to-nearest distribution 
+(`findThreshold` function in the `SHazaM` R package). The arguments `germline` and `sequence` must 
+be provided if method `vj` is used. Therefore, mutation counts are determined by comparing the 
+input sequences (in the column specified by `sequence`) to the effective germline sequence 
 (IUPAC representation of sequences sequences in the column specified by `germline`). 
 Arguments `len_limit` can be used to focus only on the V segment. It is not mandatory, but the 
 influence of SHM hot- and cold-spot biases in the clonal inference process will be noted if a SHM 
@@ -168,11 +178,12 @@ results <- hierarchicalClones(db = ExampleDb, threshold = 0.15,
                               method = "nt", linkage = "single", 
                               junction = "junction", 
                               v_call = "v_call", j_call = "j_call",
+                              max_n = NULL,
                               summarize_clones = TRUE)
 # cloned data (a data.frame)
-cloned_db <- results$db
+cloned_db <- results@db
 # print effective threshold (a numeric)
-results$eff_threshold
+results@eff_threshold
 ```
 
 ```
@@ -181,12 +192,12 @@ results$eff_threshold
 
 ```r
 # get inter and intra conal distances (a data.frame)
-df <- results$inter_intra
+df <- results@inter_intra
 # histogram of inter versus intra clonal distances  (a ggplot).
-results$plot_inter_intra
+plotCloneSummary(results, binwidth=0.02)
 ```
 
-![plot of chunk Scoper-Vignette-5](figure/Scoper-Vignette-5-1.png)
+![plot of chunk Scoper-Vignette-6](figure/Scoper-Vignette-6-1.png)
 
 Clonal assignment using spectral model:
 
@@ -195,27 +206,28 @@ Clonal assignment using spectral model:
 # IMGT_V object from shazam package to identify sequence limit length
 library("shazam")
 results <- spectralClones(db = ExampleDb, method = "vj", 
-                          len_limit = shazam::IMGT_V, targeting_model = shazam::HH_S5F,
+                          len_limit = shazam::IMGT_V, 
                           sequence = "sequence_alignment", 
                           germline = "germline_alignment_d_mask",
                           junction = "junction", 
                           v_call = "v_call", j_call = "j_call",
+                          max_n = NULL,
                           threshold = 0.15, summarize_clones = TRUE)
 # cloned data (a data.frame)
-cloned_db <- results$db
+cloned_db <- results@db
 # print effective threshold (a numeric)
-results$eff_threshold
+results@eff_threshold
 ```
 
 ```
-## [1] 0.21
+## [1] 0.22
 ```
 
 ```r
 # get inter and intra conal distances (a data.frame)
-df <- results$inter_intra
+df <- results@inter_intra
 # histogram of inter versus intra clonal distances  (a ggplot).
-results$plot_inter_intra
+plotCloneSummary(results, binwidth=0.02)
 ```
 
-![plot of chunk Scoper-Vignette-6](figure/Scoper-Vignette-6-1.png)
+![plot of chunk Scoper-Vignette-7](figure/Scoper-Vignette-7-1.png)
