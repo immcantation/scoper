@@ -202,7 +202,7 @@ results@eff_threshold
 # get inter and intra conal distances (a data.frame)
 df <- results@inter_intra
 # histogram of inter versus intra clonal distances  (a ggplot).
-plotCloneSummary(results, binwidth=0.02)
+plot(results, binwidth=0.02)
 ```
 
 Clonal assignment using spectral model:
@@ -225,5 +225,5 @@ results@eff_threshold
 # get inter and intra conal distances (a data.frame)
 df <- results@inter_intra
 # histogram of inter versus intra clonal distances  (a ggplot).
-plotCloneSummary(results, binwidth=0.02)
+plot(results, binwidth=0.02)
 ```

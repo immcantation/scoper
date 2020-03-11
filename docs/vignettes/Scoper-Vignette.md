@@ -194,7 +194,7 @@ results@eff_threshold
 # get inter and intra conal distances (a data.frame)
 df <- results@inter_intra
 # histogram of inter versus intra clonal distances  (a ggplot).
-plotCloneSummary(results, binwidth=0.02)
+plot(results, binwidth=0.02)
 ```
 
 ![plot of chunk Scoper-Vignette-6](figure/Scoper-Vignette-6-1.png)
@@ -227,7 +227,7 @@ results@eff_threshold
 # get inter and intra conal distances (a data.frame)
 df <- results@inter_intra
 # histogram of inter versus intra clonal distances  (a ggplot).
-plotCloneSummary(results, binwidth=0.02)
+plot(results, binwidth=0.02)
 ```
 
 ![plot of chunk Scoper-Vignette-7](figure/Scoper-Vignette-7-1.png)
