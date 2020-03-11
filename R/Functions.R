@@ -8,7 +8,7 @@
 #'
 #' @slot   db              modified input \code{db} data.frame with clone identifiers in the \code{clone} 
 #'                         column.
-#' @slot   vjl_group_summ  data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
+#' @slot   vjl_groups      data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
 #'                         and so on.
 #' @slot   inter_intra     data.frame containing minimum inter (between) and maximum intra (within) 
 #'                         clonal distances.
@@ -23,7 +23,7 @@
 #' @exportClass  ScoperClones
 setClass("ScoperClones",
          slots=c(db="data.frame",
-                 vjl_group_summ="data.frame",
+                 vjl_groups="data.frame",
                  inter_intra="data.frame",
                  eff_threshold="numeric"))
 
@@ -45,6 +45,7 @@ setMethod("print", c(x="ScoperClones"), function(x) { print(x@eff_threshold) })
 setMethod("plot", c(x="ScoperClones", y="missing"),
           function(x, y, ...) { plotCloneSummary(x, ...) })
 
+#### Internal functions ####
 
 # find density gap
 findGapSmooth <- function(vec) {
@@ -541,11 +542,11 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' 
 #' @return   A ggplot object defining the plot.
 #'
-#' @seealso  See \link{ScoperClones} for the the input object definition and \link{spectralClones}, 
-#'           \link{identicalClones}, and \link{hierarchicalClones} functions for generating the input object.
+#' @seealso  See \link{ScoperClones} for the the input object definition and 
+#'           \link{spectralClones}, \link{identicalClones}, and \link{hierarchicalClones} 
+#'           functions for generating the input object.
 #'
 #' @examples
-#' \donttest{
 #' results <- hierarchicalClones(ExampleDb, threshold=0.15,
 #'                               method="nt", linkage="single",
 #'                               junction="junction", 
@@ -553,9 +554,8 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'                               summarize_clones=TRUE)
 #' 
 #' # Plot clonal summaries 
-#' p <- plotCloneSummary(results, binwidth=0.02)
-#' plot(p)
-#' }
+#' plot(results, binwidth=0.02)
+#' 
 #' @export
 plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL, 
                              binwidth=NULL, title=NULL, size=0.75, silent=FALSE, 
@@ -712,8 +712,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                            j_call="j_call", summarize_clones=TRUE)
 #' 
 #' # Plot clonal summaries 
-#' p <- plotCloneSummary(results, binwidth=0.02)
-#' plot(p)
+#' plotCloneSummary(results, binwidth=0.02)
 #' 
 #' @export
 identicalClones <- function(db, method=c("nt", "aa"), junction="junction", 
@@ -733,7 +732,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
     if (summarize_clones) {
         return_list <- new("ScoperClones",
                            db = results$db,
-                           vjl_group_summ = results$vjl_group_summ,
+                           vjl_groups = results$vjl_groups,
                            inter_intra = results$inter_intra,
                            eff_threshold = results$eff_threshold)    
         
@@ -813,8 +812,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                               summarize_clones=TRUE)
 #' 
 #' # Plot clonal summaries 
-#' p <- plotCloneSummary(results, binwidth=0.02)
-#' plot(p)
+#' plot(results, binwidth=0.02)
 #' 
 #' @export
 hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("single", "average", "complete"), 
@@ -835,7 +833,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
     if (summarize_clones) {
         return_list <- new("ScoperClones",
                            db = results$db,
-                           vjl_group_summ = results$vjl_group_summ,
+                           vjl_groups = results$vjl_groups,
                            inter_intra = results$inter_intra,
                            eff_threshold = results$eff_threshold)  
         return(return_list)
@@ -848,9 +846,9 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 
 #' Spectral clustering-based method for partitioning Ig sequences into clones.
 #'
-#' The \code{spectralClones} function provides an unsupervised computational pipline for assigning Ig 
-#' sequences into clonal groups sharing same V gene, J gene, and junction length, based on the 
-#' junction sequence similarity and shared mutations in V and J segments.
+#' The \code{spectralClones} function provides an unsupervised computational pipline for 
+#' assigning Ig sequences into clonal groups sharing same V gene, J gene, and junction 
+#' length, based on the junction sequence similarity and shared mutations in V and J segments.
 #'
 #' @param    db                 data.frame containing sequence data.
 #' @param    method             one of the \code{"novj"} or \code{"vj"}. See Details for description.
@@ -915,8 +913,8 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'       if a SHM targeting model is provided through argument \code{targeting_model} (see \link{createTargetingModel} 
 #'       for more technical details). 
 #'       \item Not mandatory, but the upper-limit cut-off for clonal grouping can be provided to
-#'       prevent sequences with disimilarity above the threshold group together. Using this argument any sequence with  
-#'       distances above the \code{threshold} value from other sequences, will become a singleton.
+#'       prevent sequences with disimilarity above the threshold group together. Using this argument 
+#'       any sequence with distances above the \code{threshold} value from other sequences, will become a singleton.
 #' }
 #'
 #' @seealso  See \link{plotCloneSummary} for generating a ggplot object from \code{summarize_clones=TRUE}
@@ -930,8 +928,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                           j_call="j_call", threshold=0.15, summarize_clones=TRUE)
 #'                           
 #' # Plot clonal summaries 
-#' p <- plotCloneSummary(results, binwidth=0.02)
-#' plot(p)
+#' plot(results, binwidth=0.02)
 #' 
 #' @export
 spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignment", sequence="sequence_alignment",
@@ -955,7 +952,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
     if (summarize_clones) {
         return_list <- new("ScoperClones",
                            db = results$db,
-                           vjl_group_summ = results$vjl_group_summ,
+                           vjl_groups = results$vjl_groups,
                            inter_intra = results$inter_intra,
                            eff_threshold = results$eff_threshold)    
         return(return_list)
@@ -965,6 +962,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
 }
 
 #### defineClonesScoper ####
+
 # *****************************************************************************
 defineClonesScoper <- function(db,
                                model = c("identical", "hierarchical", "spectral"),
@@ -1270,7 +1268,7 @@ defineClonesScoper <- function(db,
     # return results
     if (summarize_clones) {
         return_list <- list("db" = db_cloned,
-                            "vjl_group_summ" = vjl_groups,
+                            "vjl_groups" = vjl_groups,
                             "inter_intra" = df_inter_intra,
                             "eff_threshold" = eff_threshold)  
         

@@ -41,7 +41,7 @@ Slots
 :   modified input `db` data.frame with clone identifiers in the `clone` 
 column.
 
-`vjl_group_summ`
+`vjl_groups`
 :   data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
 and so on.
 

@@ -3,9 +3,9 @@
 Description
 --------------------
 
-The `spectralClones` function provides an unsupervised computational pipline for assigning Ig 
-sequences into clonal groups sharing same V gene, J gene, and junction length, based on the 
-junction sequence similarity and shared mutations in V and J segments.
+The `spectralClones` function provides an unsupervised computational pipline for 
+assigning Ig sequences into clonal groups sharing same V gene, J gene, and junction 
+length, based on the junction sequence similarity and shared mutations in V and J segments.
 
 
 Usage
@@ -154,8 +154,8 @@ germline sequence (IUPAC representation of sequences in the column specified by 
 if a SHM targeting model is provided through argument `targeting_model` (see [createTargetingModel](http://www.rdocumentation.org/packages/shazam/topics/createTargetingModel) 
 for more technical details). 
 +  Not mandatory, but the upper-limit cut-off for clonal grouping can be provided to
-prevent sequences with disimilarity above the threshold group together. Using this argument any sequence with  
-distances above the `threshold` value from other sequences, will become a singleton.
+prevent sequences with disimilarity above the threshold group together. Using this argument 
+any sequence with distances above the `threshold` value from other sequences, will become a singleton.
 
 
 
@@ -182,17 +182,10 @@ j_call="j_call", threshold=0.15, summarize_clones=TRUE)
 ```R
 
 # Plot clonal summaries 
-p <- plotCloneSummary(results, binwidth=0.02)
-
+plot(results, binwidth=0.02)
 ```
 
 ![4](spectralClones-4.png)
-
-```R
-plot(p)
-```
-
-![6](spectralClones-6.png)
 
 
 See also

@@ -19,7 +19,9 @@ pages:
   - 'Vignettes':
     - 'Clonal partitioning': vignettes/Scoper-Vignette.md
   - 'Help Topics':
+    - topics/ScoperClones.md
     - topics/identicalClones.md
     - topics/hierarchicalClones.md
     - topics/spectralClones.md
+    - topics/plotCloneSummary.md
     - topics/ExampleDb.md

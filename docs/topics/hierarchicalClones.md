@@ -150,17 +150,10 @@ summarize_clones=TRUE)
 ```R
 
 # Plot clonal summaries 
-p <- plotCloneSummary(results, binwidth=0.02)
-
+plot(results, binwidth=0.02)
 ```
 
 ![4](hierarchicalClones-4.png)
-
-```R
-plot(p)
-```
-
-![6](hierarchicalClones-6.png)
 
 
 See also

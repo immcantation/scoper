@@ -131,17 +131,10 @@ j_call="j_call", summarize_clones=TRUE)
 ```R
 
 # Plot clonal summaries 
-p <- plotCloneSummary(results, binwidth=0.02)
-
+plotCloneSummary(results, binwidth=0.02)
 ```
 
 ![4](identicalClones-4.png)
-
-```R
-plot(p)
-```
-
-![6](identicalClones-6.png)
 
 
 See also

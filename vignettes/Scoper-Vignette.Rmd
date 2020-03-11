@@ -142,7 +142,7 @@ clonal landscape and return a `ScoperClones` object containing summary statistic
 the clonal clustering results:
 
     * __db__: a modified `data.frame` with clone identifiers in the `clone` column.
-    * __vjl_group_summ__: a `data.frame` of clones summary, e.g. size, V-gene, J-gene, junction lentgh, and so on.
+    * __vjl_groups__: a `data.frame` of clones summary, e.g. size, V-gene, J-gene, junction lentgh, and so on.
     * __inter_intra__: a `data.frame` containing minimum inter (between) and maximum intra (within) clonal distances.
     * __eff_threshold__: effective cut-off separating the inter (between) and intra (within) clonal distances.
 

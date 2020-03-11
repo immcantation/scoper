@@ -94,24 +94,18 @@ summarize_clones=TRUE)
 ```R
 
 # Plot clonal summaries 
-p <- plotCloneSummary(results, binwidth=0.02)
-
+plot(results, binwidth=0.02)
 ```
 
 ![4](plotCloneSummary-4.png)
-
-```R
-plot(p)
-```
-
-![6](plotCloneSummary-6.png)
 
 
 See also
 -------------------
 
-See [ScoperClones](ScoperClones-class.md) for the the input object definition and [spectralClones](spectralClones.md), 
-[identicalClones](identicalClones.md), and [hierarchicalClones](hierarchicalClones.md) functions for generating the input object.
+See [ScoperClones](ScoperClones-class.md) for the the input object definition and 
+[spectralClones](spectralClones.md), [identicalClones](identicalClones.md), and [hierarchicalClones](hierarchicalClones.md) 
+functions for generating the input object.
 
 
 
