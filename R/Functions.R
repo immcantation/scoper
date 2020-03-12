@@ -925,6 +925,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                           germline="germline_alignment_d_mask", 
 #'                           sequence="sequence_alignment", 
 #'                           junction="junction", v_call="v_call", 
+#'                           len_limit = shazam::IMGT_V,
 #'                           j_call="j_call", threshold=0.15, summarize_clones=TRUE)
 #'                           
 #' # Plot clonal summaries 
