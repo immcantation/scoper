@@ -168,19 +168,15 @@ results <- spectralClones(ExampleDb, method="vj",
 germline="germline_alignment_d_mask", 
 sequence="sequence_alignment", 
 junction="junction", v_call="v_call", 
+len_limit = shazam::IMGT_V,
 j_call="j_call", threshold=0.15, summarize_clones=TRUE)
-
-```
-
-**Error in defineClonesScoper(db = db, method = match.arg(method), model = "spectral", **: Column(s) 'clone_id' already exist.
- Invalid column names are: 'clone_id', 'VJ_GROUP', 'VJL_GROUP', 'JUNCTION_L', 'CDR3', 'CDR3_L', 'CLONE_temp'.
-```R
 
 # Plot clonal summaries 
 plot(results, binwidth=0.02)
 ```
 
-**Error in plot(results, binwidth = 0.02)**: object 'results' not found
+![2](spectralClones-2.png)
+
 
 See also
 -------------------

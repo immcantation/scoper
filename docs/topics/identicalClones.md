@@ -119,17 +119,12 @@ results <- identicalClones(ExampleDb, method="nt",
 junction="junction", v_call="v_call", 
 j_call="j_call", summarize_clones=TRUE)
 
-```
-
-**Error in defineClonesScoper(db = db, method = match.arg(method), model = "identical", **: Column(s) 'clone_id' already exist.
- Invalid column names are: 'clone_id', 'VJ_GROUP', 'VJL_GROUP', 'JUNCTION_L', 'CDR3', 'CDR3_L', 'CLONE_temp'.
-```R
-
 # Plot clonal summaries 
 plot(results, binwidth=0.02)
 ```
 
-**Error in plot(results, binwidth = 0.02)**: object 'results' not found
+![2](identicalClones-2.png)
+
 
 See also
 -------------------
