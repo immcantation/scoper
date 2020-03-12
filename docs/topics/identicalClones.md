@@ -121,21 +121,15 @@ j_call="j_call", summarize_clones=TRUE)
 
 ```
 
-
-```
-     MAX N FILTER>  0 invalid junction(s) ( # of N > 0 ) in the junction column removed. 
-
-```
-
-
+**Error in defineClonesScoper(db = db, method = match.arg(method), model = "identical", **: Column(s) 'clone_id' already exist.
+ Invalid column names are: 'clone_id', 'VJ_GROUP', 'VJL_GROUP', 'JUNCTION_L', 'CDR3', 'CDR3_L', 'CLONE_temp'.
 ```R
 
 # Plot clonal summaries 
-plotCloneSummary(results, binwidth=0.02)
+plot(results, binwidth=0.02)
 ```
 
-![4](identicalClones-4.png)
-
+**Error in plot(results, binwidth = 0.02)**: object 'results' not found
 
 See also
 -------------------

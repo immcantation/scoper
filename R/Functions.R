@@ -201,7 +201,7 @@ pairwiseMutions <- function(germ_imgt,
         trim_l <- junc_length
         ##### trim out junction/cdr3 segments from seq_imgt
         seq_imgt <- sapply(1:length(seq_imgt), function(i){
-            x <- s2c(seq_imgt[i])         # x <- strsplit(seq_imgt[i], split="")[[1]]
+            x <- strsplit(seq_imgt[i], split="")[[1]]
             x[(lv+1):(lv+trim_l)] <- ""   # x[(lv+1):(lv+trim_l[i])] <- ""
             return(paste(x, collapse=""))
         })
@@ -212,7 +212,7 @@ pairwiseMutions <- function(germ_imgt,
         }
         ##### trim out junction/cdr3 segments from germ_imgt
         germ_imgt <- sapply(1:length(germ_imgt), function(i){
-            x <- s2c(germ_imgt[i])       # x <- strsplit(germ_imgt[i], split="")[[1]]
+            x <- strsplit(germ_imgt[i], split="")[[1]]
             x[(lv+1):(lv+trim_l)] <- ""  # x[(lv+1):(lv+trim_l[i])] <- ""
             return(paste(x, collapse=""))
         })
@@ -247,11 +247,11 @@ pairwiseMutions <- function(germ_imgt,
     ##### count informative positions
     informative_pos <- sapply(1:n, function(x){ sum(stri_count(seq_imgt[x], fixed = c("A","C","G","T"))) })
     ##### convert eff_germ and seq_imgt to matrices
-    effMtx <- matrix(NA, nrow=n, ncol=lenConsensus)
     seqsMtx <- matrix(NA, nrow=n, ncol=lenConsensus)
+    effMtx <- matrix(NA, nrow=n, ncol=lenConsensus)
     for (i in 1:n) {
-        seqsMtx[i, ] <- s2c(seq_imgt[i])[1:lenConsensus]
-        effMtx[i, ] <- s2c(eff_germ)[1:lenConsensus]
+        seqsMtx[i, ] <- strsplit(seq_imgt[i], split = "")[[1]][1:lenConsensus]
+        effMtx[i, ] <- strsplit(eff_germ, split = "")[[1]][1:lenConsensus]
     }
     ##### make a distance matrix
     dnaMtx <- getDNAMatrix(gap = 0)
@@ -475,9 +475,9 @@ prepare_db <- function(db,
     ### check for N's
     # Count the number of 'N's in junction
     if (!is.null(max_n)) {
-        n_rmv_N <- sum(str_count(db[[junction]], "N") > max_n)
+        n_rmv_N <- sum(stri_count(db[[junction]], regex = "N") > max_n)
         db <- db %>% 
-            dplyr::filter(str_count(!!rlang::sym(junction), "N") <= max_n)
+            dplyr::filter(stri_count(!!rlang::sym(junction), regex = "N") <= max_n)
     } else {
         n_rmv_N <- 0
     }
@@ -712,7 +712,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                            j_call="j_call", summarize_clones=TRUE)
 #' 
 #' # Plot clonal summaries 
-#' plotCloneSummary(results, binwidth=0.02)
+#' plot(results, binwidth=0.02)
 #' 
 #' @export
 identicalClones <- function(db, method=c("nt", "aa"), junction="junction", 
@@ -1185,21 +1185,27 @@ defineClonesScoper <- function(db,
     
     ### report removed sequences
     if (mod3) {
-        cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ")
+        if (verbose) {
+            cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ")   
+        }
         if (log_verbose)  { 
             cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ",
                 file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
     }
     if (cdr3) {
-        cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ")
+        if (verbose) {
+            cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ")   
+        }
         if (log_verbose)  { 
             cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ",
                 file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
     }
     if (!is.null(max_n)) {
-        cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ")
+        if (verbose) {
+            cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ")   
+        }
         if (log_verbose)  { 
             cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ",
                 file = file.path(out_dir, log_verbose_name), append=TRUE) 

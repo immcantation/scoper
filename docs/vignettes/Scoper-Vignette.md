@@ -180,24 +180,48 @@ results <- hierarchicalClones(db = ExampleDb, threshold = 0.15,
                               v_call = "v_call", j_call = "j_call",
                               max_n = NULL, log = NULL,
                               summarize_clones = TRUE)
+```
+
+```
+## Error in defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", : Column(s) 'clone_id' already exist.
+##  Invalid column names are: 'clone_id', 'VJ_GROUP', 'VJL_GROUP', 'JUNCTION_L', 'CDR3', 'CDR3_L', 'CLONE_temp'.
+```
+
+```r
 # cloned data (a data.frame)
 cloned_db <- results@db
+```
+
+```
+## Error in eval(expr, envir, enclos): object 'results' not found
+```
+
+```r
 # print effective threshold (a numeric)
 results@eff_threshold
 ```
 
 ```
-## [1] 0.22
+## Error in eval(expr, envir, enclos): object 'results' not found
 ```
 
 ```r
 # get inter and intra conal distances (a data.frame)
 df <- results@inter_intra
+```
+
+```
+## Error in eval(expr, envir, enclos): object 'results' not found
+```
+
+```r
 # histogram of inter versus intra clonal distances  (a ggplot).
 plot(results, binwidth=0.02)
 ```
 
-![plot of chunk Scoper-Vignette-6](figure/Scoper-Vignette-6-1.png)
+```
+## Error in plot(results, binwidth = 0.02): object 'results' not found
+```
 
 Clonal assignment using spectral model:
 
@@ -213,21 +237,45 @@ results <- spectralClones(db = ExampleDb, method = "vj",
                           v_call = "v_call", j_call = "j_call",
                           max_n = NULL, log = NULL,
                           threshold = 0.15, summarize_clones = TRUE)
+```
+
+```
+## Error in defineClonesScoper(db = db, method = match.arg(method), model = "spectral", : Column(s) 'clone_id' already exist.
+##  Invalid column names are: 'clone_id', 'VJ_GROUP', 'VJL_GROUP', 'JUNCTION_L', 'CDR3', 'CDR3_L', 'CLONE_temp'.
+```
+
+```r
 # cloned data (a data.frame)
 cloned_db <- results@db
+```
+
+```
+## Error in eval(expr, envir, enclos): object 'results' not found
+```
+
+```r
 # print effective threshold (a numeric)
 results@eff_threshold
 ```
 
 ```
-## [1] 0.22
+## Error in eval(expr, envir, enclos): object 'results' not found
 ```
 
 ```r
 # get inter and intra conal distances (a data.frame)
 df <- results@inter_intra
+```
+
+```
+## Error in eval(expr, envir, enclos): object 'results' not found
+```
+
+```r
 # histogram of inter versus intra clonal distances  (a ggplot).
 plot(results, binwidth=0.02)
 ```
 
-![plot of chunk Scoper-Vignette-7](figure/Scoper-Vignette-7-1.png)
+```
+## Error in plot(results, binwidth = 0.02): object 'results' not found
+```

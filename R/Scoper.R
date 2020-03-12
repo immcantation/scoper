@@ -40,8 +40,6 @@
 #'                          group_by ungroup group_indices
 #'                          mutate summarize slice 
 #' @importFrom  stringi     stri_split_fixed stri_length stri_count
-#' @importFrom  stringr     str_count
-#' @importFrom  seqinr      s2c
 #' @importFrom  data.table  as.data.table .I
 #' @importFrom  doParallel  registerDoParallel
 #' @importFrom  foreach     foreach %dopar% registerDoSEQ
