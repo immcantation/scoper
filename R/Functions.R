@@ -489,7 +489,7 @@ prepare_db <- function(db,
                      first = first)
     
     ### groups to use
-    groupBy <- c("VJ_GROUP", junction_l)
+    groupBy <- c("vj_group", junction_l)
     
     ### assign group ids to db
     db$VJL_GROUP <- db %>%
@@ -1026,7 +1026,7 @@ defineClonesScoper <- function(db,
     }
     
     ### temp columns
-    temp_cols <- c("VJ_GROUP", "VJL_GROUP", "JUNCTION_L",  "CDR3", "CDR3_L", "CLONE_temp")
+    temp_cols <- c("vj_group", "VJL_GROUP", "JUNCTION_L",  "CDR3", "CDR3_L", "CLONE_temp")
     
     ### check for invalid columns
     invalid_cols <- c(clone, temp_cols)
