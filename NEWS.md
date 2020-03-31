@@ -1,6 +1,11 @@
-Version 0.2.0.999 March 12, 2020
+Version 0.2.0.999 March 31, 2020
 -------------------------------------------------------------------------------
 
+Backwards Incompatible Changes:
+
++ `ExampleDb` converted to the AIRR Rearrangement standard and examples updated 
+  accordingly.
+  
 General:
 
 + Added unit tests

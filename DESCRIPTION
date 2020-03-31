@@ -1,7 +1,7 @@
 Package: scoper
 Type: Package
 Version: 0.2.0.999
-Date: 2020-03-12
+Date: 2020-03-31
 Authors@R: c(person("Nima", "Nouri", role=c("aut", "cre"), 
                     email="nima.nouri@yale.edu"),
              person("Jason", "Vander Heiden", role=c("ctb"), 
