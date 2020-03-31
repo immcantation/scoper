@@ -1080,14 +1080,14 @@ defineClonesScoper <- function(db,
     ### summary of the groups
     vjl_gps <- db %>% 
         dplyr::group_by(!!rlang::sym("vjl_group")) %>% 
-        dplyr::summarise(GROUP_V_CALL = paste(unique(!!rlang::sym(v_call)), collapse=","),
-                         GROUP_J_CALL = paste(unique(!!rlang::sym(j_call)), collapse=","),
-                         GROUP_JUNCTION_LENGTH = unique(!!rlang::sym(junction_l)),
-                         GROUP_SIZE = n())
-    vjl_gps$GROUP_V_CALL <- sapply(1:nrow(vjl_gps), 
-                                      function(i){ paste(unique(strsplit(vjl_gps$GROUP_V_CALL[i], split=",")[[1]]), collapse=",") })
-    vjl_gps$GROUP_J_CALL <- sapply(1:nrow(vjl_gps), 
-                                      function(i){ paste(unique(strsplit(vjl_gps$GROUP_J_CALL[i], split=",")[[1]]), collapse=",") })
+        dplyr::summarise(group_v_call = paste(unique(!!rlang::sym(v_call)), collapse=","),
+                         group_j_call = paste(unique(!!rlang::sym(j_call)), collapse=","),
+                         group_junction_length = unique(!!rlang::sym(junction_l)),
+                         group_size = n())
+    vjl_gps$group_v_call <- sapply(1:nrow(vjl_gps), 
+                                      function(i){ paste(unique(strsplit(vjl_gps$group_v_call[i], split=",")[[1]]), collapse=",") })
+    vjl_gps$group_j_call <- sapply(1:nrow(vjl_gps), 
+                                      function(i){ paste(unique(strsplit(vjl_gps$group_j_call[i], split=",")[[1]]), collapse=",") })
     n_groups <- nrow(vjl_gps)
     
     ### Create cluster of nproc size and export namespaces
@@ -1120,10 +1120,10 @@ defineClonesScoper <- function(db,
                              # *********************************************************************************
                              # filter each group
                              vjl_gp <- vjl_gps$vjl_group[gp]
-                             gp_vcall <- vjl_gps$GROUP_V_CALL[gp]
-                             gp_jcall <- vjl_gps$GROUP_J_CALL[gp]
-                             gp_lent <- vjl_gps$GROUP_JUNCTION_LENGTH[gp]
-                             gp_size <- vjl_gps$GROUP_SIZE[gp]
+                             gp_vcall <- vjl_gps$group_v_call[gp]
+                             gp_jcall <- vjl_gps$group_j_call[gp]
+                             gp_lent <- vjl_gps$group_junction_length[gp]
+                             gp_size <- vjl_gps$group_size[gp]
                              db_gp <- db %>%
                                  dplyr::filter(!!rlang::sym("vjl_group") == vjl_gp)
                              
