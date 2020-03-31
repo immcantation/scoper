@@ -299,7 +299,7 @@ pairwiseMutions <- function(germ_imgt,
 # inter-clone-distance vs intra-clone-distance
 calculateInterVsIntra <- function(db,
                                   clone,
-                                  vjl_groups,
+                                  vjl_gps,
                                   junction = "junction",
                                   cdr3 = FALSE,
                                   cdr3_col = NA,
@@ -317,7 +317,7 @@ calculateInterVsIntra <- function(db,
         stop('Nproc must be positive.')
     }
     
-    n_groups <- nrow(vjl_groups)  
+    n_groups <- nrow(vjl_gps)  
     ### check the progressbar
     if (verbose) {
         pb <- progressBar(n_groups)
@@ -330,8 +330,8 @@ calculateInterVsIntra <- function(db,
                       .errorhandling='stop') %dopar% {
                           
                           # *********************************************************************************
-                          clones <- strsplit(vjl_groups$CLONE_ID[k], split=",")[[1]]
-                          l <- vjl_groups$JUNCTION_LENGTH[k]
+                          clones <- strsplit(vjl_gps$clone_id[k], split=",")[[1]]
+                          l <- vjl_gps$junction_length[k]
                           n_clones <- length(clones)
                           seqs <- db[[ifelse(cdr3, cdr3_col, junction)]][db[[clone]] %in% clones]
                           names(seqs) <- db[[clone]][db[[clone]] %in% clones]
@@ -384,18 +384,18 @@ calculateInterVsIntra <- function(db,
     
     # convert to a data.frame
     db_dff <- data.frame(keyName = names(vec_ff), 
-                         DISTANCE = vec_ff, 
+                         distance = vec_ff, 
                          row.names=NULL)
-    db_dff$LABEL <- "intra"
-    db_dff$LABEL[grepl("inter", db_dff$keyName)] <- "inter"
+    db_dff$label <- "intra"
+    db_dff$label[grepl("inter", db_dff$keyName)] <- "inter"
     clones_xy <- data.frame(matrix(unlist(stri_split_fixed(db_dff$keyName, "_", n=3)),
                                    nrow=nrow(db_dff),
                                    byrow=T),
                             stringsAsFactors=FALSE)
     db_dff <- cbind(clones_xy, db_dff)
     db_dff$keyName <- NULL
-    colnames(db_dff)[colnames(db_dff) == "X1"] <- "CLONE_X"
-    colnames(db_dff)[colnames(db_dff) == "X2"] <- "CLONE_Y"
+    colnames(db_dff)[colnames(db_dff) == "X1"] <- "clone_x"
+    colnames(db_dff)[colnames(db_dff) == "X2"] <- "clone_y"
     db_dff$X3 <- NULL
     
     # return results
@@ -403,11 +403,11 @@ calculateInterVsIntra <- function(db,
 }
 # *****************************************************************************
 ### Define verbose reporting function
-printVerbose <- function(n_groups, vjl_group, model, method, linkage, cdr3,
+printVerbose <- function(n_groups, vjl_gp, model, method, linkage, cdr3,
                          gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) {
     method <- ifelse(model == "hierarchical", paste(linkage, "linkage", method, sep="-"), method)
     cat("     TOTAL GROUPS> ", n_groups,  "\n", sep=" ")
-    cat("            GROUP> ", vjl_group, "\n", sep=" ")
+    cat("            GROUP> ", vjl_gp, "\n", sep=" ")
     cat("             SIZE> ", gp_size,   "\n", sep=" ")
     cat("        V CALL(s)> ", gp_vcall,  "\n", sep=" ")
     cat("        J CALL(s)> ", gp_jcall,  "\n", sep=" ")
@@ -422,11 +422,11 @@ printVerbose <- function(n_groups, vjl_group, model, method, linkage, cdr3,
 
 # *****************************************************************************
 logVerbose <- function(out_dir, log_verbose_name,
-                       n_groups, vjl_group, model, method, linkage, cdr3,
+                       n_groups, vjl_gp, model, method, linkage, cdr3,
                        gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) {
     method <- ifelse(model == "hierarchical", paste(linkage, "linkage", method, sep="-"), method)
     cat("     TOTAL GROUPS> ", n_groups,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
-    cat("            GROUP> ", vjl_group, "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
+    cat("            GROUP> ", vjl_gp, "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("             SIZE> ", gp_size,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("        V CALL(s)> ", gp_vcall,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("        J CALL(s)> ", gp_jcall,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
@@ -445,8 +445,8 @@ prepare_db <- function(db,
                        first = FALSE, cdr3 = FALSE, 
                        mod3 = FALSE, max_n = 0) {
     # add junction length column
-    db$JUNCTION_L <- stri_length(db[[junction]])
-    junction_l <- "JUNCTION_L"
+    db$junction_l <- stri_length(db[[junction]])
+    junction_l <- "junction_l"
     
     ### check for mod3
     # filter mod 3 junction lengths
@@ -465,8 +465,8 @@ prepare_db <- function(db,
         db <- db %>% 
             dplyr::filter(!!rlang::sym(junction_l) > 6)
         # add cdr3 column
-        db$CDR3 <- substr(db[[junction]], 4, db[[junction_l]]-3)
-        cdr3_col <- "CDR3"
+        db$cdr3_col <- substr(db[[junction]], 4, db[[junction_l]]-3)
+        cdr3_col <- "cdr3_col"
     } else {
         n_rmv_cdr3 <- 0
         cdr3_col <- NA
@@ -492,7 +492,7 @@ prepare_db <- function(db,
     groupBy <- c("vj_group", junction_l)
     
     ### assign group ids to db
-    db$VJL_GROUP <- db %>%
+    db$vjl_group <- db %>%
         dplyr::group_by(!!!rlang::syms(groupBy)) %>%
         dplyr::group_indices()
     
@@ -562,11 +562,11 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
                              ...) {
     
     eff_threshold <- data@eff_threshold
-    xdf <- select(data@inter_intra, c("DISTANCE", "LABEL"))
+    xdf <- select(data@inter_intra, c("distance", "label"))
     data_intra <- xdf %>% 
-        dplyr::filter(!!rlang::sym("LABEL") == "intra", !!rlang::sym("DISTANCE") > 0)
+        dplyr::filter(!!rlang::sym("label") == "intra", !!rlang::sym("distance") > 0)
     data_inter <- xdf %>%
-        dplyr::filter(!!rlang::sym("LABEL") == "inter", !!rlang::sym("DISTANCE") > 0)
+        dplyr::filter(!!rlang::sym("label") == "inter", !!rlang::sym("distance") > 0)
     
     # fill color
     fill_manual <- c("intra"="grey30",
@@ -598,10 +598,10 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
     if (nrow(data_intra) > 0) {
         p <- p + 
             geom_histogram(data = data_intra,
-                           aes_string(x = "DISTANCE", y = "..density..", fill = "LABEL"),
+                           aes_string(x = "distance", y = "..density..", fill = "label"),
                            binwidth = binwidth, color = "white", alpha = 0.85) +
             geom_density(data = data_intra, 
-                         aes_string(x = "DISTANCE"),
+                         aes_string(x = "distance"),
                          size = size, color = "grey30")
     }
     
@@ -609,10 +609,10 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
     if (nrow(data_inter) > 0) {
         p <- p + 
             geom_histogram(data = data_inter,
-                           aes_string(x = "DISTANCE", y = "..density..", fill = "LABEL"),
+                           aes_string(x = "distance", y = "..density..", fill = "label"),
                            binwidth = binwidth, color = "white", alpha = 0.75) +
             geom_density(data = data_inter, 
-                         aes_string(x = "DISTANCE"),
+                         aes_string(x = "distance"),
                          size = size, color = "grey60")
     } else {
         warning("No inter clonal distance is detected. Each group of sequences with same V-gene, J-gene, and junction length may contain only one clone.")
@@ -732,7 +732,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
     if (summarize_clones) {
         return_list <- new("ScoperClones",
                            db = results$db,
-                           vjl_groups = results$vjl_groups,
+                           vjl_groups = results$vjl_gps,
                            inter_intra = results$inter_intra,
                            eff_threshold = results$eff_threshold)    
         
@@ -833,7 +833,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
     if (summarize_clones) {
         return_list <- new("ScoperClones",
                            db = results$db,
-                           vjl_groups = results$vjl_groups,
+                           vjl_groups = results$vjl_gps,
                            inter_intra = results$inter_intra,
                            eff_threshold = results$eff_threshold)  
         return(return_list)
@@ -953,7 +953,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
     if (summarize_clones) {
         return_list <- new("ScoperClones",
                            db = results$db,
-                           vjl_groups = results$vjl_groups,
+                           vjl_groups = results$vjl_gps,
                            inter_intra = results$inter_intra,
                            eff_threshold = results$eff_threshold)    
         return(return_list)
@@ -1026,7 +1026,7 @@ defineClonesScoper <- function(db,
     }
     
     ### temp columns
-    temp_cols <- c("vj_group", "VJL_GROUP", "JUNCTION_L",  "CDR3", "CDR3_L", "CLONE_temp")
+    temp_cols <- c("vj_group", "vjl_group", "junction_l",  "cdr3_col", "clone_temp")
     
     ### check for invalid columns
     invalid_cols <- c(clone, temp_cols)
@@ -1078,17 +1078,17 @@ defineClonesScoper <- function(db,
     cdr3_col <-  results_prep$cdr3_col
     
     ### summary of the groups
-    vjl_groups <- db %>% 
-        dplyr::group_by(!!rlang::sym("VJL_GROUP")) %>% 
+    vjl_gps <- db %>% 
+        dplyr::group_by(!!rlang::sym("vjl_group")) %>% 
         dplyr::summarise(GROUP_V_CALL = paste(unique(!!rlang::sym(v_call)), collapse=","),
                          GROUP_J_CALL = paste(unique(!!rlang::sym(j_call)), collapse=","),
                          GROUP_JUNCTION_LENGTH = unique(!!rlang::sym(junction_l)),
                          GROUP_SIZE = n())
-    vjl_groups$GROUP_V_CALL <- sapply(1:nrow(vjl_groups), 
-                                      function(i){ paste(unique(strsplit(vjl_groups$GROUP_V_CALL[i], split=",")[[1]]), collapse=",") })
-    vjl_groups$GROUP_J_CALL <- sapply(1:nrow(vjl_groups), 
-                                      function(i){ paste(unique(strsplit(vjl_groups$GROUP_J_CALL[i], split=",")[[1]]), collapse=",") })
-    n_groups <- nrow(vjl_groups)
+    vjl_gps$GROUP_V_CALL <- sapply(1:nrow(vjl_gps), 
+                                      function(i){ paste(unique(strsplit(vjl_gps$GROUP_V_CALL[i], split=",")[[1]]), collapse=",") })
+    vjl_gps$GROUP_J_CALL <- sapply(1:nrow(vjl_gps), 
+                                      function(i){ paste(unique(strsplit(vjl_gps$GROUP_J_CALL[i], split=",")[[1]]), collapse=",") })
+    n_groups <- nrow(vjl_gps)
     
     ### Create cluster of nproc size and export namespaces
     if(nproc == 1) {
@@ -1119,16 +1119,16 @@ defineClonesScoper <- function(db,
                          .errorhandling='stop') %dopar% { 
                              # *********************************************************************************
                              # filter each group
-                             vjl_group <- vjl_groups$VJL_GROUP[gp]
-                             gp_vcall <- vjl_groups$GROUP_V_CALL[gp]
-                             gp_jcall <- vjl_groups$GROUP_J_CALL[gp]
-                             gp_lent <- vjl_groups$GROUP_JUNCTION_LENGTH[gp]
-                             gp_size <- vjl_groups$GROUP_SIZE[gp]
+                             vjl_gp <- vjl_gps$vjl_group[gp]
+                             gp_vcall <- vjl_gps$GROUP_V_CALL[gp]
+                             gp_jcall <- vjl_gps$GROUP_J_CALL[gp]
+                             gp_lent <- vjl_gps$GROUP_JUNCTION_LENGTH[gp]
+                             gp_size <- vjl_gps$GROUP_SIZE[gp]
                              db_gp <- db %>%
-                                 dplyr::filter(!!rlang::sym("VJL_GROUP") == vjl_group)
+                                 dplyr::filter(!!rlang::sym("vjl_group") == vjl_gp)
                              
                              # pass the group for clustering
-                             # cat(paste(vjl_group, "here"), sep="\n")  # for tests
+                             # cat(paste(vjl_gp, "here"), sep="\n")  # for tests
                              results <- passToClustering_lev1(db_gp,
                                                               model = model,
                                                               method = method,
@@ -1149,25 +1149,25 @@ defineClonesScoper <- function(db,
                                                               nstart = nstart)
                              idCluster <- results$idCluster
                              n_cluster <- results$n_cluster
-                             # cat(paste(vjl_group), sep="\n")  # for tests
+                             # cat(paste(vjl_gp), sep="\n")  # for tests
                              
                              if (length(idCluster) == 0 | any(is.na(idCluster))) {
-                                 stop(printVerbose(n_groups, vjl_group, model, method, linkage, cdr3,
+                                 stop(printVerbose(n_groups, vjl_gp, model, method, linkage, cdr3,
                                                    gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) )  
                              } 
                              
                              # check verbose
-                             if (verbose) { printVerbose(n_groups, vjl_group, model, method, linkage, cdr3,
+                             if (verbose) { printVerbose(n_groups, vjl_gp, model, method, linkage, cdr3,
                                                          gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) 
                              }
                              
                              # check log verbose
                              if (log_verbose) { logVerbose(out_dir, log_verbose_name,
-                                                           n_groups, vjl_group, model, method, linkage, cdr3,
+                                                           n_groups, vjl_gp, model, method, linkage, cdr3,
                                                            gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) }
                              
                              # attache clones
-                             db_gp[[clone]] <- paste(vjl_group, idCluster, sep="_")   
+                             db_gp[[clone]] <- paste(vjl_gp, idCluster, sep="_")   
                              
                              # return result from each proc
                              return(db_gp)
@@ -1177,10 +1177,10 @@ defineClonesScoper <- function(db,
     ### Stop the cluster
     if (nproc > 1) { parallel::stopCluster(cluster) }
     
-    db_cloned$CLONE_temp <- db_cloned %>%
+    db_cloned$clone_temp <- db_cloned %>%
         dplyr::group_by(!!rlang::sym(clone)) %>%
         dplyr::group_indices()
-    db_cloned[[clone]] <- db_cloned$CLONE_temp
+    db_cloned[[clone]] <- db_cloned$clone_temp
     db_cloned <- db_cloned[order(db_cloned[[clone]]), ]
     db_cloned[[clone]] <- as.character(db_cloned[[clone]])
     
@@ -1216,23 +1216,23 @@ defineClonesScoper <- function(db,
     ### make summary 
     if (summarize_clones) {
         ### vjl group summary
-        vjl_groups <- db_cloned %>%
-            dplyr::group_by(!!rlang::sym("VJL_GROUP")) %>%
-            dplyr::summarise(SIZE = n(),
-                             V_CALL = paste(unique(!!rlang::sym(v_call)), collapse=","),
-                             J_CALL = paste(unique(!!rlang::sym(j_call)), collapse=","),
-                             JUNCTION_LENGTH = unique(!!rlang::sym(junction_l)),
-                             NUMBER_OF_CLONE = length(unique(!!rlang::sym(clone))),
-                             CLONE_ID = paste(unique(!!rlang::sym(clone)), collapse = ","))
-        vjl_groups$V_CALL <- sapply(1:nrow(vjl_groups),
-                                    function(i){ paste(unique(strsplit(vjl_groups$V_CALL[i], split=",")[[1]]), collapse=",") })
-        vjl_groups$J_CALL <- sapply(1:nrow(vjl_groups),
-                                    function(i){ paste(unique(strsplit(vjl_groups$J_CALL[i], split=",")[[1]]), collapse=",") })
+        vjl_gps <- db_cloned %>%
+            dplyr::group_by(!!rlang::sym("vjl_group")) %>%
+            dplyr::summarise(size = n(),
+                             v_call = paste(unique(!!rlang::sym(v_call)), collapse=","),
+                             j_call = paste(unique(!!rlang::sym(j_call)), collapse=","),
+                             junction_length = unique(!!rlang::sym(junction_l)),
+                             number_of_clone = length(unique(!!rlang::sym(clone))),
+                             clone_id = paste(unique(!!rlang::sym(clone)), collapse = ","))
+        vjl_gps$v_call <- sapply(1:nrow(vjl_gps),
+                                    function(i){ paste(unique(strsplit(vjl_gps$v_call[i], split=",")[[1]]), collapse=",") })
+        vjl_gps$j_call <- sapply(1:nrow(vjl_gps),
+                                    function(i){ paste(unique(strsplit(vjl_gps$j_call[i], split=",")[[1]]), collapse=",") })
         
         ### calculate inter and intra distances
         df_inter_intra <- calculateInterVsIntra(db = db_cloned,
                                                 clone = clone,
-                                                vjl_groups = vjl_groups,
+                                                vjl_gps = vjl_gps,
                                                 junction = junction,
                                                 cdr3 = cdr3,
                                                 cdr3_col = cdr3_col,
@@ -1240,16 +1240,16 @@ defineClonesScoper <- function(db,
                                                 verbose = verbose)
         
         ### calculate effective threshold
-        data_eff <- select(df_inter_intra, c("DISTANCE", "LABEL"))
+        data_eff <- select(df_inter_intra, c("distance", "label"))
         data_intra <- data_eff %>% 
-            dplyr::filter(!!rlang::sym("LABEL") == "intra", !!rlang::sym("DISTANCE") > 0)
+            dplyr::filter(!!rlang::sym("label") == "intra", !!rlang::sym("distance") > 0)
         data_inter <- data_eff %>%
-            dplyr::filter(!!rlang::sym("LABEL") == "inter", !!rlang::sym("DISTANCE") > 0)
+            dplyr::filter(!!rlang::sym("label") == "inter", !!rlang::sym("distance") > 0)
         
         eff_threshold <- as.numeric(NA)
         if (nrow(data_intra) > 10 & nrow(data_inter) > 10) {
-            a <- data_intra$DISTANCE
-            b <- data_inter$DISTANCE
+            a <- data_intra$distance
+            b <- data_inter$distance
             xlim = c(min(c(a,b)), max(c(a,b)))
             df <- merge(
                 as.data.frame(density(a, from = xlim[1], to = xlim[2])[c("x", "y")]),
@@ -1275,7 +1275,7 @@ defineClonesScoper <- function(db,
     # return results
     if (summarize_clones) {
         return_list <- list("db" = db_cloned,
-                            "vjl_groups" = vjl_groups,
+                            "vjl_gps" = vjl_gps,
                             "inter_intra" = df_inter_intra,
                             "eff_threshold" = eff_threshold)  
         
