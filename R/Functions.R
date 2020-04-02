@@ -427,7 +427,7 @@ logVerbose <- function(out_dir, log_verbose_name,
     method <- ifelse(model == "hierarchical", paste(linkage, "linkage", method, sep="-"), method)
     cat("     TOTAL GROUPS> ", n_groups,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("            GROUP> ", vjl_gp, "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
-    cat("    SEQUENCECOUNT> ", gp_size,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
+    cat("   SEQUENCE COUNT> ", gp_size,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("        V CALL(s)> ", gp_vcall,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("        J CALL(s)> ", gp_jcall,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("  JUNCTION LENGTH> ", gp_lent,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)   
