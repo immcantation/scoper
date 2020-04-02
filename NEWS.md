@@ -8,11 +8,9 @@ Backwards Incompatible Changes:
   
 General:
 
-+ Added unit tests
-+ splitted `defineClonesScoper` function to three functions: `identicalClones`, 
++ Split `defineClonesScoper` function to three functions: `identicalClones`, 
   `hierarchicalClones`, and `spectralClones`.
-+ AIRR
-+ added largest-distance-to-nearest filter to clustering process.
++ Added largest distance-to-nearest filter to clustering process.
 
 
 Version 0.2.0:  August 5, 2019

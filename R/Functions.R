@@ -406,16 +406,16 @@ calculateInterVsIntra <- function(db,
 printVerbose <- function(n_groups, vjl_gp, model, method, linkage, cdr3,
                          gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) {
     method <- ifelse(model == "hierarchical", paste(linkage, "linkage", method, sep="-"), method)
-    cat("     TOTAL GROUPS> ", n_groups,  "\n", sep=" ")
+    cat("     TOTAL_GROUPS> ", n_groups,  "\n", sep=" ")
     cat("            GROUP> ", vjl_gp, "\n", sep=" ")
-    cat("   SEQUENCE COUNT> ", gp_size,   "\n", sep=" ")
-    cat("        V CALL(s)> ", gp_vcall,  "\n", sep=" ")
-    cat("        J CALL(s)> ", gp_jcall,  "\n", sep=" ")
-    cat("  JUNCTION LENGTH> ", gp_lent,   "\n", sep=" ") 
+    cat("   SEQUENCE_COUNT> ", gp_size,   "\n", sep=" ")
+    cat("           V_CALL> ", gp_vcall,  "\n", sep=" ")
+    cat("           J CALL> ", gp_jcall,  "\n", sep=" ")
+    cat("  JUNCTION_LENGTH> ", gp_lent,   "\n", sep=" ") 
     cat("            MODEL> ", model,     "\n", sep=" ")
     cat("           METHOD> ", method,    "\n", sep=" ")
     cat("             CDR3> ", cdr3,      "\n", sep=" ")
-    cat("         CLONE(s)> ", n_cluster, "\n", sep=" ")
+    cat("            CLONE> ", n_cluster, "\n", sep=" ")
     cat("", "\n", sep=" ")
 }
 # *****************************************************************************
@@ -425,16 +425,16 @@ logVerbose <- function(out_dir, log_verbose_name,
                        n_groups, vjl_gp, model, method, linkage, cdr3,
                        gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) {
     method <- ifelse(model == "hierarchical", paste(linkage, "linkage", method, sep="-"), method)
-    cat("     TOTAL GROUPS> ", n_groups,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
+    cat("     TOTAL_GROUPS> ", n_groups,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("            GROUP> ", vjl_gp, "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
-    cat("   SEQUENCE COUNT> ", gp_size,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
-    cat("        V CALL(s)> ", gp_vcall,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
-    cat("        J CALL(s)> ", gp_jcall,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
-    cat("  JUNCTION LENGTH> ", gp_lent,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)   
+    cat("   SEQUENCE_COUNT> ", gp_size,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
+    cat("           V_CALL> ", gp_vcall,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
+    cat("           J_CALL> ", gp_jcall,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
+    cat("  JUNCTION_LENGTH> ", gp_lent,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)   
     cat("            MODEL> ", model,     "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)   
     cat("           METHOD> ", method,    "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("             CDR3> ", cdr3,      "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
-    cat("         CLONE(s)> ", n_cluster, "\n", sep=" ", file=file.path(out_dir, log_verbose_name), append=TRUE)
+    cat("            CLONE> ", n_cluster, "\n", sep=" ", file=file.path(out_dir, log_verbose_name), append=TRUE)
     cat("", "\n", sep=" ", file=file.path(out_dir, log_verbose_name), append=TRUE)
 }
 # *****************************************************************************
