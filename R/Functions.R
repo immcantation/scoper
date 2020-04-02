@@ -410,7 +410,7 @@ printVerbose <- function(n_groups, vjl_gp, model, method, linkage, cdr3,
     cat("            GROUP> ", vjl_gp, "\n", sep=" ")
     cat("   SEQUENCE_COUNT> ", gp_size,   "\n", sep=" ")
     cat("           V_CALL> ", gp_vcall,  "\n", sep=" ")
-    cat("           J CALL> ", gp_jcall,  "\n", sep=" ")
+    cat("           J_CALL> ", gp_jcall,  "\n", sep=" ")
     cat("  JUNCTION_LENGTH> ", gp_lent,   "\n", sep=" ") 
     cat("            MODEL> ", model,     "\n", sep=" ")
     cat("           METHOD> ", method,    "\n", sep=" ")
