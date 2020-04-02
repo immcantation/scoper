@@ -42,8 +42,8 @@ Slots
 column.
 
 `vjl_groups`
-:   data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
-and so on.
+:   data.frame of clones summary, e.g. sequence count, V-gene, J-gene, junction lentgh,
+clone count, etc.
 
 `inter_intra`
 :   data.frame containing minimum inter (between) and maximum intra (within) 

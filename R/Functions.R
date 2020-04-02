@@ -8,8 +8,8 @@
 #'
 #' @slot   db              modified input \code{db} data.frame with clone identifiers in the \code{clone} 
 #'                         column.
-#' @slot   vjl_groups      data.frame of clones summary, e.g. size, V-gene, J-gene, junction lentgh,
-#'                         and so on.
+#' @slot   vjl_groups      data.frame of clones summary, e.g. sequence count, V-gene, J-gene, junction lentgh,
+#'                         clone count, etc.
 #' @slot   inter_intra     data.frame containing minimum inter (between) and maximum intra (within) 
 #'                         clonal distances.
 #' @slot   eff_threshold   effective cut-off separating the inter (between) and intra (within) clonal 
@@ -394,8 +394,8 @@ calculateInterVsIntra <- function(db,
                             stringsAsFactors=FALSE)
     db_dff <- cbind(clones_xy, db_dff)
     db_dff$keyName <- NULL
-    colnames(db_dff)[colnames(db_dff) == "X1"] <- "clone_x"
-    colnames(db_dff)[colnames(db_dff) == "X2"] <- "clone_y"
+    colnames(db_dff)[colnames(db_dff) == "X1"] <- "clone_id_x"
+    colnames(db_dff)[colnames(db_dff) == "X2"] <- "clone_id_y"
     db_dff$X3 <- NULL
     
     # return results
@@ -408,7 +408,7 @@ printVerbose <- function(n_groups, vjl_gp, model, method, linkage, cdr3,
     method <- ifelse(model == "hierarchical", paste(linkage, "linkage", method, sep="-"), method)
     cat("     TOTAL GROUPS> ", n_groups,  "\n", sep=" ")
     cat("            GROUP> ", vjl_gp, "\n", sep=" ")
-    cat("             SIZE> ", gp_size,   "\n", sep=" ")
+    cat("   SEQUENCE COUNT> ", gp_size,   "\n", sep=" ")
     cat("        V CALL(s)> ", gp_vcall,  "\n", sep=" ")
     cat("        J CALL(s)> ", gp_jcall,  "\n", sep=" ")
     cat("  JUNCTION LENGTH> ", gp_lent,   "\n", sep=" ") 
@@ -427,7 +427,7 @@ logVerbose <- function(out_dir, log_verbose_name,
     method <- ifelse(model == "hierarchical", paste(linkage, "linkage", method, sep="-"), method)
     cat("     TOTAL GROUPS> ", n_groups,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("            GROUP> ", vjl_gp, "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
-    cat("             SIZE> ", gp_size,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
+    cat("    SEQUENCECOUNT> ", gp_size,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("        V CALL(s)> ", gp_vcall,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("        J CALL(s)> ", gp_jcall,  "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)
     cat("  JUNCTION LENGTH> ", gp_lent,   "\n", sep=" ", file = file.path(out_dir, log_verbose_name), append=TRUE)   
@@ -877,7 +877,8 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' @param    max_n              the maximum number of N's to permit in the junction sequence before excluding the 
 #'                              record from clonal assignment. Default is set to be zero. Set it as \code{"NULL"} 
 #'                              for no action.
-#' @param    threshold          the upper-limit cut-off for clonal grouping.
+#' @param    threshold          the supervising cut-off to enforce an upper-limit distance for clonal grouping.
+#'                              A numeric value between (0,1).
 #' @param    base_sim           required similarity cut-off for sequences in equal distances from each other.
 #' @param    iter_max	        the maximum number of iterations allowed for kmean clustering step.
 #' @param    nstart	            the number of random sets chosen for kmean clustering initialization.
@@ -921,7 +922,9 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'           method.
 #'
 #' @examples
-#' results <- spectralClones(ExampleDb, method="vj", 
+#' # Subset example data
+#' db <- subset(ExampleDb, sample_id == "-1h")
+#' results <- spectralClones(db, method="novj", 
 #'                           germline="germline_alignment_d_mask", 
 #'                           sequence="sequence_alignment", 
 #'                           junction="junction", v_call="v_call", 
@@ -1218,11 +1221,11 @@ defineClonesScoper <- function(db,
         ### vjl group summary
         vjl_gps <- db_cloned %>%
             dplyr::group_by(!!rlang::sym("vjl_group")) %>%
-            dplyr::summarise(size = n(),
+            dplyr::summarise(sequence_count = n(),
                              v_call = paste(unique(!!rlang::sym(v_call)), collapse=","),
                              j_call = paste(unique(!!rlang::sym(j_call)), collapse=","),
                              junction_length = unique(!!rlang::sym(junction_l)),
-                             number_of_clone = length(unique(!!rlang::sym(clone))),
+                             clone_count = length(unique(!!rlang::sym(clone))),
                              clone_id = paste(unique(!!rlang::sym(clone)), collapse = ","))
         vjl_gps$v_call <- sapply(1:nrow(vjl_gps),
                                     function(i){ paste(unique(strsplit(vjl_gps$v_call[i], split=",")[[1]]), collapse=",") })
@@ -1247,7 +1250,7 @@ defineClonesScoper <- function(db,
             dplyr::filter(!!rlang::sym("label") == "inter", !!rlang::sym("distance") > 0)
         
         eff_threshold <- as.numeric(NA)
-        if (nrow(data_intra) > 10 & nrow(data_inter) > 10) {
+        if (nrow(data_intra) > 5 & nrow(data_inter) > 5) {
             a <- data_intra$distance
             b <- data_inter$distance
             xlim = c(min(c(a,b)), max(c(a,b)))

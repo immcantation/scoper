@@ -96,7 +96,8 @@ record from clonal assignment. Default is set to be zero. Set it as `"NULL"`
 for no action.
 
 threshold
-:   the upper-limit cut-off for clonal grouping.
+:   the supervising cut-off to enforce an upper-limit distance for clonal grouping.
+A numeric value between (0,1).
 
 base_sim
 :   required similarity cut-off for sequences in equal distances from each other.
@@ -164,7 +165,9 @@ Examples
 -------------------
 
 ```R
-results <- spectralClones(ExampleDb, method="vj", 
+# Subset example data
+db <- subset(ExampleDb, sample_id == "-1h")
+results <- spectralClones(db, method="novj", 
 germline="germline_alignment_d_mask", 
 sequence="sequence_alignment", 
 junction="junction", v_call="v_call", 

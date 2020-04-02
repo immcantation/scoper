@@ -48,10 +48,10 @@ next-generation sequencing data.” _bioRxiv_. doi: 10.1101/788620
 To cite the hierarchical clustering-based model in publications,
 please use:
 
-Gupta N, Adams K, Briggs A, Timberlake S, Vigneault F, Kleinstein
-S (2017). “Hierarchical clustering can identify B cell clones
-with high confidence in Ig repertoire sequencing data.” _The
-Journal of Immunology_, 2489-2499. doi: 10.4049/jimmunol.1601850
-(URL: https://doi.org/10.4049/jimmunol.1601850).
+Gupta N, Adams K, Briggs A, Timberlake S, Vigneault F, Kleinstein S
+(2017). “Hierarchical clustering can identify B cell clones with
+high confidence in Ig repertoire sequencing data.” _The Journal of
+Immunology_, 2489-2499. doi: 10.4049/jimmunol.1601850 (URL:
+https://doi.org/10.4049/jimmunol.1601850).
 
 

@@ -125,9 +125,10 @@ the clonal clustering results:
 
     * __db__: a modified `data.frame` with clone identifiers in the `clone` column.
     * __vjl_groups__: a `data.frame` of clones summary, e.g. size, V-gene, J-gene, junction lentgh, and so on.
-    * __inter_intra__: a `data.frame` containing minimum inter (between) and maximum intra (within) clonal hamming 
-                       distances among junctions.
-    * __eff_threshold__: effective cut-off separating the inter (between) and intra (within) clonal distances.
+    * __inter_intra__: a `data.frame` containing minimum inter (between) and maximum intra (within) clonal distances 
+                      (hamming distances among junctions).
+    * __eff_threshold__: effective cut-off separating the inter (between) and intra (within) clonal distances
+                         (hamming distances among junctions).
 
 11. Pass the `ScoperClones` object to `plotCloneSummary` function to generate a `ggplot` histogram of 
 inter (between) versus intra (within) clonal distances. The effective threshold is shown with a 
