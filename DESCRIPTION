@@ -5,7 +5,9 @@ Date: 2020-04-02
 Authors@R: c(person("Nima", "Nouri", role=c("aut", "cre"), 
                     email="nima.nouri@yale.edu"),
              person("Jason", "Vander Heiden", role=c("ctb"), 
-                    email="jason.vanderheiden@yale.edu"), 
+                    email="jason.vanderheiden@yale.edu"),
+             person("Edel", "Aron", role=c("ctb"), 
+                    email="edel.aron@yale.edu"),
              person("Steven", "Kleinstein", role=c("aut", "cph"), 
                     email="steven.kleinstein@yale.edu"))
 Title: Spectral Clustering-Based Method for Identifying B Cell Clones

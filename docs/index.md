@@ -25,6 +25,7 @@ For help and questions please contact the [Immcantation Group](mailto:immcantati
 
 [Nima Nouri](mailto:nima.nouri@yale.edu) (aut, cre)  
 [Jason Vander Heiden](mailto:jason.vanderheiden@yale.edu) (ctb)  
+[Edel Aron](mailto:edel.aron@yale.edu) (ctb)  
 [Steven Kleinstein](mailto:steven.kleinstein@yale.edu) (aut, cph)
 
 
