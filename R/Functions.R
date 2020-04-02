@@ -1190,28 +1190,28 @@ defineClonesScoper <- function(db,
     ### report removed sequences
     if (mod3) {
         if (verbose) {
-            cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ")   
+            cat("      MOD3_FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ")   
         }
         if (log_verbose)  { 
-            cat("      MOD3 FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ",
+            cat("      MOD3_FILTER> ", n_rmv_mod3, "invalid junction length(s) (not mod3) in the", junction, "column removed.", "\n", sep=" ",
                 file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
     }
     if (cdr3) {
         if (verbose) {
-            cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ")   
+            cat("      CDR3_FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ")   
         }
         if (log_verbose)  { 
-            cat("      CDR3 FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ",
+            cat("      CDR3_FILTER> ", n_rmv_cdr3, "invalid junction length(s) (< 7) in the", junction, "column removed.", "\n", sep=" ",
                 file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
     }
     if (!is.null(max_n)) {
         if (verbose) {
-            cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ")   
+            cat("     MAX_N_FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ")   
         }
         if (log_verbose)  { 
-            cat("     MAX N FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ",
+            cat("     MAX_N_FILTER> ", n_rmv_N, "invalid junction(s) ( # of N >", max_n, ") in the", junction, "column removed.", "\n", sep=" ",
                 file = file.path(out_dir, log_verbose_name), append=TRUE) 
         }
     }
