@@ -185,7 +185,7 @@ to the effective germline sequence (IUPAC representation of sequences in the col
 will be noted if a SHM targeting model is provided through the argument `targeting_model` 
 (see the function `createTargetingModel` from `SHazaM` R package for more technical details).
 
-A small example ChangeO database is included in the `scoper` package.
+A small example Change-O database is included in the `scoper` package.
 
 ```r
 # Load scoper
