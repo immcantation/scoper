@@ -53,3 +53,13 @@
 #' @importFrom  Rcpp        evalCpp
 #' @useDynLib   scoper, .registration=TRUE
 NULL
+
+# Package loading actions
+.onAttach <- function(libname, pkgname) {
+    msg <- paste("As of v1.0.0 the AIRR Rearrangement schema is now the default file format.",
+                 "A description of the standard is available at https://docs.airr-community.org.",
+                 "The legacy Change-O format is supported through arguments to each function",
+                 "that allow the input column names to be explicitly defined.",
+                 sep="\n")
+    packageStartupMessage(msg)
+}
