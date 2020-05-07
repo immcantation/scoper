@@ -138,11 +138,19 @@ junction="junction",
 v_call="v_call", j_call="j_call", 
 summarize_clones=TRUE)
 
+```
+
+*Warning*:`data_frame()` is deprecated as of tibble 1.1.0.
+Please use `tibble()` instead.
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_warnings()` to see where this warning was generated.
+```R
+
 # Plot clonal summaries 
 plot(results, binwidth=0.02)
 ```
 
-![2](hierarchicalClones-2.png)
+![4](hierarchicalClones-4.png)
 
 
 See also
