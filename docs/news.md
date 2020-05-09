@@ -1,4 +1,4 @@
-Version 0.2.0.999 April 02, 2020
+Version 1.0.0: May 12, 2020
 -------------------------------------------------------------------------------
 
 Backwards Incompatible Changes:
@@ -15,11 +15,12 @@ Backwards Incompatible Changes:
   to be specified in the function call.
 + `ExampleDb` converted to the AIRR Rearrangement standard and examples updated 
   accordingly.
++ Split `defineClonesScoper` function to three functions: `identicalClones`, 
+  `hierarchicalClones`, and `spectralClones`.
   
 General:
 
-+ Split `defineClonesScoper` function to three functions: `identicalClones`, 
-  `hierarchicalClones`, and `spectralClones`.
++ License changed to AGPL-3.
 + Added largest distance-to-nearest filter to clustering process.
 
 

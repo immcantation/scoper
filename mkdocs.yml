@@ -17,7 +17,7 @@ pages:
     - 'Release Notes': news.md
     - 'Related Projects': projects.md
   - 'Vignettes':
-    - 'Clonal partitioning': vignettes/Scoper-Vignette.md
+    - 'Clonal Partitioning': vignettes/Scoper-Vignette.md
   - 'Help Topics':
     - topics/identicalClones.md
     - topics/hierarchicalClones.md
