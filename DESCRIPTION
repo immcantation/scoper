@@ -28,21 +28,21 @@ VignetteBuilder: knitr
 Encoding: UTF-8
 SystemRequirements: C++11
 Depends:
-    R (>= 3.1.2),
+    R (>= 3.5.0),
     ggplot2 (>= 3.2.0)
 Imports: 
     alakazam (>= 1.0.0),
     shazam (>= 1.0.0), 
-    doParallel,
-    foreach,
-    dplyr (>= 0.8.1),
-    Rcpp (>= 0.12.12),
     data.table,
-    stringi,
+    doParallel,
+    dplyr (>= 0.8.1),
+    foreach,
     methods,
-    stats,
+    Rcpp (>= 0.12.12),
     rlang,
-    scales
+    scales,
+    stats,
+    stringi
 LinkingTo: Rcpp
 Suggests:
     knitr,
