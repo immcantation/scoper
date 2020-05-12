@@ -1535,7 +1535,8 @@ passToClustering_lev3 <- function(mtx,
                                   nstart = 1000){
     n <- nrow(mtx)
     ### set seed for reproducibility
-    set.seed(12345)
+    # set.seed(12345)
+    set.seed(12345, kind = "Mersenne-Twister", normal.kind = "Inversion")
     ### check the minimum number of data points requirement
     if (n < 3) stop("SCOPer needs at least 3 unique data points")
     ### calculate the krnl matrix
