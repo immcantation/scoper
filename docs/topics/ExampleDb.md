@@ -17,6 +17,7 @@ ExampleDb
 
 Format
 -------------------
+
 A data.frame with the following Change-O style columns:
 
 + `sequence_id`:                Sequence identifier
@@ -30,6 +31,7 @@ D regions masked.
 + `j_call`:                     J region allele assignments.
 + `junction`:                   Junction region sequence.
 + `junction_length`:            Length of the junction region in nucleotides.
+
 
 
 References
