@@ -44,7 +44,8 @@ test_that("Test spectralClones - novj", {
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
     expects <- as.integer(c(7, 7, 7, 7, 8, 9, 10, 12, 192, 491))
     ## Test if the updated function reproduces results
-    expect_true(sum(abs(clones - expects)) <= 2)
+    # expect_true(sum(abs(clones - expects)) <= 2)
+    expect_identical(clones, expects)
 })
 
 #### clone - spectralClones - vj method ####
@@ -60,6 +61,7 @@ test_that("Test spectralClones - vj", {
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
     expects <- as.integer(c(12, 12, 13, 13, 14, 15, 16, 29, 35, 667))
     ## Test if the updated function reproduces results
-    expect_true(sum(abs(clones - expects)) <= 2)
+    # expect_true(sum(abs(clones - expects)) <= 2)
+    expect_identical(clones, expects)
 })
 
