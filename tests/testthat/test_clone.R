@@ -59,7 +59,7 @@ test_that("Test spectralClones - vj", {
                          j_call = "j_call", threshold=0.15,
                          summarize_clones = FALSE)
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
-    expects <- as.integer(c(12, 12, 13, 13, 14, 15, 16, 29, 35, 667))
+    expects <- as.integer(c(11, 12, 12, 13, 14, 15, 16, 29, 35, 683))
     ## Test if the updated function reproduces results
     # expect_true(sum(abs(clones - expects)) <= 2)
     expect_identical(clones, expects)
