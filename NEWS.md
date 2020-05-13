@@ -20,6 +20,7 @@ Backwards Incompatible Changes:
   
 General:
 
++ Removed the `bw.ucv` from `density` function. 
 + License changed to AGPL-3.
 + Added largest distance-to-nearest filter to clustering process.
 
