@@ -15,6 +15,27 @@ framework for identification of B cell clones from AIRR-Seq data. Three main fun
 sequences of BCRs/IGs (B cell receptors/immunoglobulins) which share the same V gene, J gene and 
 junction length.
 
+## Example data
+
+A small example AIRR Rearrangement database is included in the `scoper` package. 
+The example dataset consists of a subset of Ig sequencing data from an 
+influenza vaccination study (Laserson and Vigneault et al., PNAS, 2014). The 
+data include sequences from multiple time-points before and after the subject 
+received an influenza vaccination. Identification of clones requires the following 
+fields (columns) to be present in the table: 
+
+* `junction`
+* `v_call`
+* `j_call`
+* `sequence_alignment`
+* `germline_alignment_d_mask`
+
+
+```r
+# Load scoper
+library("scoper")
+```
+
 ## Clonal assignment
 
 __identicalClones__: The simplest methodlogy to infer clonal relationships is to define
@@ -22,6 +43,47 @@ clones among identical junctions (i.e., where the V, D, and J gene segments join
 This can be done using `identicalClones` function. Using this 
 function user can identify clones (1) in nucleotide level (`nt`:nucleotide based clustering), or 
 (2) amino acid level (`aa`: amino acid based clustering).
+
+
+```r
+# Clonal assignment using the identical model
+results <- identicalClones(db = ExampleDb,
+                           method = "nt",
+                           junction = "junction", 
+                           v_call = "v_call", j_call = "j_call",
+                           summarize_clones = TRUE)
+
+# results is an object of class ScoperClones
+class(results)
+```
+
+```
+## [1] "ScoperClones"
+## attr(,"package")
+## [1] "scoper"
+```
+
+```r
+# cloned data (a data.frame)
+cloned_db <- results@db
+# print effective threshold (a numeric)
+# this is an explanatory value calculated to represent the cut-off separating the 
+# inter (between) and intra (within) clonal distances.
+results@eff_threshold
+```
+
+```
+## [1] NA
+```
+
+```r
+# get inter and intra conal distances (a data.frame)
+df <- results@inter_intra
+# plot a histogram of inter versus intra clonal distances  (a ggplot).
+plot(results, binwidth=0.02)
+```
+
+![plot of chunk Scoper-Vignette-2](figure/Scoper-Vignette-2-1.png)
 
 __hierarchicalClones__: Most current studies however uses a more sophisticated definition 
 for clonal relationships. These studies leverage the high diversity of 
@@ -48,81 +110,6 @@ Technical details can be found in:
         high confidence in Ig repertoire sequencing data.
         The Journal of Immunology 198(6):2489-2499.
 
-__spectralClones__: While the hierarchical clustering-based model groups sequences using 
-a fixed distance supervised threshold, the spectral clustering-based model uses an adaptive 
-unsupervised threshold to tune the required level of similarity among sequences in different 
-local neighborhoods. It can be used as an alternative if the nearest-neighbor distance distribution 
-is unimodal (so `findThreshold` wasn't able to find the threshold at which to cut the hierarchy, 
-see above). The two available methods are: (1) `novj`: clonal relationships are inferred using an adaptive 
-threshold that indicates the level of similarity among junction sequences in a local neighborhood, 
-and (2) `vj`: clonal relationships are inferred not only based on the junction region homology, 
-but also taking into account the mutation profiles in the V and J segments. It is not mandatory, but the 
-fixed threshold can also be used for the model `spectralClones`  in order to enforce an upper-limit cut-off. 
-Using this argument, any sequence with distances above the threshold value from all sequences, will 
-become a singleton. The threshold can be defined as discussed above from distance-to-nearest distribution 
-(`findThreshold` function in the `SHazaM` R package). Technical details can be found in:
-
-    Nouri N and Kleinstein SH (2018). A spectral clustering-based method for
-        identifying clones from high-throughput B cell repertoire sequencing data.
-        Bioinformatics, 34(13):i341-i349.
-
-    Nouri N and Kleinstein SH (2019). Somatic hypermutation analysis for improved
-        identification of B cell clonal families from next-generation sequencing data,
-        bioRxiv doi: 10.1101/788620.
-
-## Example data
-Following we present an example of each methodology and review the outputs. We note that
-based on the argument `summarize_clones`, the output will be different. If `summarize_clones=FALSE`, 
-all functions return a modified `data.frame` with clone identifiers in the clone column. Otherwise 
-(`summarize_clones=TRUE`), all functions return an object including the modified `db` 
-with clone identifiers, and other clones summary information. A small example 
-database is included in the `scoper` package.
-
-
-```r
-# Load scoper
-library("scoper")
-```
-
-
-```r
-# Clonal assignment using the identical model
-results <- identicalClones(db = ExampleDb,
-                           method = "nt",
-                           junction = "junction", 
-                           v_call = "v_call", j_call = "j_call",
-                           summarize_clones = TRUE)
-
-# results is an object of class ScoperClones
-class(results)
-```
-
-```
-## [1] "ScoperClones"
-## attr(,"package")
-## [1] "scoper"
-```
-
-```r
-# cloned data (a data.frame)
-cloned_db <- results@db
-# print effective threshold (a numeric)
-results@eff_threshold
-```
-
-```
-## [1] NA
-```
-
-```r
-# get inter and intra conal distances (a data.frame)
-df <- results@inter_intra
-# plot a histogram of inter versus intra clonal distances  (a ggplot).
-plot(results, binwidth=0.02)
-```
-
-![plot of chunk Scoper-Vignette-2](figure/Scoper-Vignette-2-1.png)
-
 
 ```r
 # Clonal assignment using the hierarchical model
@@ -148,6 +135,9 @@ class(results)
 # cloned data (a data.frame)
 cloned_db <- results@db
 # print effective threshold (a numeric)
+# this is an explanatory value calculated to represent the cut-off separating the 
+# inter (between) and intra (within) clonal distances. It may differ from threshold 
+# provided for the function.
 results@eff_threshold
 ```
 
@@ -164,6 +154,27 @@ plot(results, binwidth=0.02)
 
 ![plot of chunk Scoper-Vignette-3](figure/Scoper-Vignette-3-1.png)
 
+__spectralClones__: While the hierarchical clustering-based model groups sequences using 
+a fixed distance supervised threshold, the spectral clustering-based model uses an adaptive 
+unsupervised threshold to tune the required level of similarity among sequences in different 
+local neighborhoods. It can be used as an alternative if the nearest-neighbor distance distribution 
+is unimodal (so `findThreshold` wasn't able to find the threshold at which to cut the hierarchy, 
+see above). The two available methods are: (1) `novj`: clonal relationships are inferred using an adaptive 
+threshold that indicates the level of similarity among junction sequences in a local neighborhood, 
+and (2) `vj`: clonal relationships are inferred not only based on the junction region homology, 
+but also taking into account the mutation profiles in the V and J segments. It is not mandatory, but the 
+fixed threshold can also be used for the model `spectralClones`  in order to enforce an upper-limit cut-off. 
+Using this argument, any sequence with distances above the threshold value from all sequences, will 
+become a singleton. The threshold can be defined as discussed above from distance-to-nearest distribution 
+(`findThreshold` function in the `SHazaM` R package). Technical details can be found in:
+
+    Nouri N and Kleinstein SH (2018). A spectral clustering-based method for
+        identifying clones from high-throughput B cell repertoire sequencing data.
+        Bioinformatics, 34(13):i341-i349.
+
+    Nouri N and Kleinstein SH (2019). Somatic hypermutation analysis for improved
+        identification of B cell clonal families from next-generation sequencing data,
+        bioRxiv doi: 10.1101/788620.
 
 
 ```r
@@ -192,6 +203,9 @@ class(results)
 # cloned data (a data.frame), with the column `clone_id`
 cloned_db <- results@db
 # print effective threshold (a numeric)
+# this is an explanatory value calculated to represent the cut-off separating the 
+# inter (between) and intra (within) clonal distances. It may differ from threshold 
+# provided for the function.
 results@eff_threshold
 ```
 
@@ -207,3 +221,5 @@ plot(results, binwidth=0.02)
 ```
 
 ![plot of chunk Scoper-Vignette-4](figure/Scoper-Vignette-4-1.png)
+
+
