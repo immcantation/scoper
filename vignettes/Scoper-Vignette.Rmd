@@ -58,9 +58,7 @@ fields (columns) to be present in the table:
 library("scoper")
 ```
 
-## Clonal assignment
-
-### identicalClones function
+## Clonal assignments using identicalClones function
 
 The simplest methodology to infer clonal relationships is to define
 clones among identical junctions (i.e., where the V, D, and J gene segments join). 
@@ -80,20 +78,19 @@ results <- identicalClones(db = ExampleDb,
 class(results)
 # cloned data (a data.frame)
 cloned_db <- results@db
-# print effective threshold (a numeric):
-# this is an explanatory value calculated to represent the cut-off 
-# separating the inter (between) and intra (within) clonal distances. 
-results@eff_threshold
 # get inter and intra conal distances (a data.frame)
 df <- results@inter_intra
-# plot a histogram of inter versus intra clonal distances  (a ggplot):
-# User can plot the results from summarize_clones=TRUE, including the 
-# minimum inter (between) and maximum intra (within) clonal distances, 
-# and the calculated efective threshold.
+```
+
+User can plot the results from `summarize_clones=TRUE`, including the minimum inter (between) 
+clonal distances.
+
+```{r, eval=TRUE, warning=FALSE, message=FALSE}
+# plot a histogram of inter clonal distances  (a ggplot):
 plot(results, binwidth=0.02)
 ```
 
-### hierarchicalClones function
+## Clonal assignments using hierarchicalClones function
 
 Most current studies however uses a more sophisticated definition 
 for clonal relationships. These studies leverage the high diversity of 
@@ -135,20 +132,26 @@ class(results)
 # cloned data (a data.frame)
 cloned_db <- results@db
 # print effective threshold (a numeric):
-# this is an explanatory value calculated to represent the cut-off 
-# separating the inter (between) and intra (within) clonal distances. 
-# It may differ from threshold provided for the function.
 results@eff_threshold
+```
+
+Effective threshold is an explanatory value calculated to represent the cut-off separating the inter (between) 
+and intra (within) clonal distances. It may differ from threshold provided for the function.
+
+```{r, eval=TRUE, warning=FALSE, message=FALSE}
 # get inter and intra conal distances (a data.frame)
 df <- results@inter_intra
+```
+
+User can plot the results from `summarize_clones=TRUE`, including the minimum inter (between) 
+and maximum intra (within) clonal distances, and the calculated efective threshold.
+
+```{r, eval=TRUE, warning=FALSE, message=FALSE}
 # plot a histogram of inter versus intra clonal distances  (a ggplot):
-# User can plot the results from summarize_clones=TRUE, including the 
-# minimum inter (between) and maximum intra (within) clonal distances, 
-# and the calculated efective threshold.
 plot(results, binwidth=0.02)
 ```
 
-### spectralClones function
+## Clonal assignments using spectralClones function
 
 While the hierarchical clustering-based model groups sequences using 
 a fixed distance supervised threshold, the spectral clustering-based model uses an adaptive 
@@ -189,16 +192,22 @@ class(results)
 # cloned data (a data.frame), with the column `clone_id`
 cloned_db <- results@db
 # print effective threshold (a numeric):
-# this is an explanatory value calculated to represent the cut-off 
-# separating the inter (between) and intra (within) clonal distances. 
-# It may differ from threshold provided for the function.
 results@eff_threshold
+```
+
+Effective threshold is an explanatory value calculated to represent the cut-off separating the inter (between) 
+and intra (within) clonal distances. It may differ from threshold provided for the function.
+
+```{r, eval=TRUE, warning=FALSE, message=FALSE}
 # get inter and intra clonal distances (a data.frame)
 df <- results@inter_intra
+```
+
+User can plot the results from `summarize_clones=TRUE`, including the minimum inter (between) 
+and maximum intra (within) clonal distances, and the calculated efective threshold.
+
+```{r, eval=TRUE, warning=FALSE, message=FALSE}
 # plot a histogram of inter versus intra clonal distances  (a ggplot):
-# User can plot the results from summarize_clones=TRUE, including the 
-# minimum inter (between) and maximum intra (within) clonal distances, 
-# and the calculated efective threshold.
 plot(results, binwidth=0.02)
 ```
 
