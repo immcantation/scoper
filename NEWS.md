@@ -20,8 +20,8 @@ Backwards Incompatible Changes:
   
 General:
 
-+ Removed the `bw.ucv` from `density` and a round function due to platform precision 
-incompatibility.
++ Removed the `bw.ucv` from `density` (reduced run time) and a round function 
+  from `krnlMtxGenerator` due to platform precision incompatibility.
 + License changed to AGPL-3.
 + Added largest distance-to-nearest filter to clustering process.
 
