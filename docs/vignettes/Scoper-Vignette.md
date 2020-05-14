@@ -1,4 +1,4 @@
-# Identifying clones from high-throughput B cell repertoire sequencing data
+# B cell clonal relationships inference
 
 ## Introduction
 
@@ -9,14 +9,11 @@ clonal relationships is critical as these clonal groups form the fundamental bas
 range of repertoire analyses, including diversity analysis, lineage reconstruction, and 
 effector functionality. Recent advances in next-generation sequencing have enabled large-scale 
 profiling of the B cell immunoglobulin repertoire from blood and tissue samples. Thus, a key computational 
-challenge in the analysis of these data is to infer clonal relationships.
-
-## Description
-
-`scoper` provides a computational framework for identification of B cell clones from 
-AIRR-Seq data. Three main functions are included (`identicalClones`, `hierarchicalClones`, 
-and `spectralClones`) that infer clonal relationships among sequences of BCRs/IGs 
-(B cell receptors/immunoglobulins) which share the same V gene, J gene and junction length.
+challenge in the analysis of these data is to infer clonal relationships. `scoper` provides a computational 
+framework for identification of B cell clones from AIRR-Seq data. Three main functions are included 
+(`identicalClones`, `hierarchicalClones`, and `spectralClones`) that infer clonal relationships among 
+sequences of BCRs/IGs (B cell receptors/immunoglobulins) which share the same V gene, J gene and 
+junction length.
 
 ## Clonal assignment
 
@@ -25,18 +22,6 @@ clones among identical junctions (i.e., where the V, D, and J gene segments join
 This can be done using `identicalClones` function. Using this 
 function user can identify clones (1) in nucleotide level (`nt`:nucleotide based clustering), or 
 (2) amino acid level (`aa`: amino acid based clustering).
-
-
-```r
-identicalClones(db,
-                method = c("nt", "aa"),
-                junction = "junction", v_call = "v_call", j_call = "j_call",
-                clone = "clone_id",
-                first = FALSE, cdr3 = FALSE, mod3 = FALSE,
-                max_n = 0, nproc = 1,
-                verbose = FALSE, log = NULL,
-                summarize_clones = FALSE)
-```
 
 __hierarchicalClones__: Most current studies however uses a more sophisticated definition 
 for clonal relationships. These studies leverage the high diversity of 
@@ -63,20 +48,6 @@ Technical details can be found in:
         high confidence in Ig repertoire sequencing data.
         The Journal of Immunology 198(6):2489-2499.
 
-
-```r
-hierarchicalClones(db, threshold,
-                   method = c("nt", "aa"),
-                   linkage = c("single", "average", "complete"),
-                   normalize = c("len", "none"),
-                   junction = "junction", v_call = "v_call", j_call = "j_call",
-                   clone = "clone_id",
-                   first = FALSE, cdr3 = FALSE, mod3 = FALSE,
-                   max_n = 0, nproc = 1,
-                   verbose = FALSE, log = NULL,
-                   summarize_clones = FALSE)
-```
-
 __spectralClones__: While the hierarchical clustering-based model groups sequences using 
 a fixed distance supervised threshold, the spectral clustering-based model uses an adaptive 
 unsupervised threshold to tune the required level of similarity among sequences in different 
@@ -98,22 +69,6 @@ become a singleton. The threshold can be defined as discussed above from distanc
     Nouri N and Kleinstein SH (2019). Somatic hypermutation analysis for improved
         identification of B cell clonal families from next-generation sequencing data,
         bioRxiv doi: 10.1101/788620.
-
-
-```r
-spectralClones(db,
-               method = c("novj", "vj"),
-               germline = "germline_alignment",
-               sequence = "sequence_alignment",
-               junction = "junction", v_call = "v_call", j_call = "j_call",
-               clone = "clone_id",
-               targeting_model = NULL, len_limit = NULL,
-               first = FALSE, cdr3 = FALSE, mod3 = FALSE,
-               max_n = 0, threshold = NULL, base_sim = 0.95,
-               iter_max = 1000, nstart = 1000, nproc = 1,
-               verbose = FALSE, log = NULL,
-               summarize_clones = FALSE)
-```
 
 ## Example data
 Following we present an example of each methodology and review the outputs. We note that
@@ -166,7 +121,7 @@ df <- results@inter_intra
 plot(results, binwidth=0.02)
 ```
 
-![plot of chunk Scoper-Vignette-5](figure/Scoper-Vignette-5-1.png)
+![plot of chunk Scoper-Vignette-2](figure/Scoper-Vignette-2-1.png)
 
 
 ```r
@@ -207,7 +162,7 @@ df <- results@inter_intra
 plot(results, binwidth=0.02)
 ```
 
-![plot of chunk Scoper-Vignette-6](figure/Scoper-Vignette-6-1.png)
+![plot of chunk Scoper-Vignette-3](figure/Scoper-Vignette-3-1.png)
 
 
 
@@ -251,4 +206,4 @@ df <- results@inter_intra
 plot(results, binwidth=0.02)
 ```
 
-![plot of chunk Scoper-Vignette-7](figure/Scoper-Vignette-7-1.png)
+![plot of chunk Scoper-Vignette-4](figure/Scoper-Vignette-4-1.png)
