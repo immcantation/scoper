@@ -1,10 +1,10 @@
 #### Data ####
 
-#' Example Change-O database
+#' Example database
 #'
 #' A small example database subset from Laserson and Vigneault et al, 2014.
 #'
-#' @format   A data.frame with the following Change-O style columns:
+#' @format   A data.frame with the following columns:
 #'   \itemize{
 #'     \item  \code{sequence_id}:                Sequence identifier
 #'     \item  \code{sequence_alignment}:         IMGT-gapped observed sequence.
