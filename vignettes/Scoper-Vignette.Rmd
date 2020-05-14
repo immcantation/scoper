@@ -30,7 +30,7 @@ are included (`identicalClones`, `hierarchicalClones`, and `spectralClones`)
 that perform clustering among sequences of BCRs/IGs (B cell receptors/immunoglobulins) 
 which share the same V gene, J gene and junction length.
 
-## Clonal assignment using an adaptive threshold
+## Clonal assignment
 
 A key step in the analysis of Adaptive Immune Receptor Repertoire sequencing (AIRR-Seq) data is
 partition data into clonally related lineages. Each lineage is a group of sequences that descendants of a common ancestor cell.
@@ -42,9 +42,7 @@ The traditional hierarchical clustering method is available with the function `h
 
 To learn more about the hierachical clustering  method as implemented in the Immcantation framework, in the [shazam](https://shazam.readthedocs.io) R package, see `?shazam::distToNearest`, `?shazam::findThreshold` and the vignette `DistToNearest`.
 
-## Examples
-
-### Example data
+## Example data
 
 A small example database is included in the `scoper` package. See ` ?scoper::ExampleDb` for details.
 
@@ -53,7 +51,7 @@ A small example database is included in the `scoper` package. See ` ?scoper::Exa
 library("scoper")
 ```
 
-### Clonal assignment using the spectral model
+## Clonal assignment using the spectral model
 
 While hierarchical clustering-based models group sequences using a fixed distance supervised threshold, the spectral clustering-based model uses an adaptive unsupervised threshold to tune the required level of similarity among sequences in different local neighborhoods. 
 
@@ -86,7 +84,7 @@ head(df)
 plot(results, binwidth=0.02)
 ```
 
-### Clonal assignment using the hierarchical model
+## Clonal assignment using the hierarchical model
 
 The function `hierarchicalClones` performs hierarchical clustering based on the junction sequence similarity among sequences that share the same V gene, J gene, and junction length.
 
@@ -112,7 +110,7 @@ df <- results@inter_intra
 plot(results, binwidth=0.02)
 ```
 
-### Clonal assignment using identical clones
+## Clonal assignment using identical clones
 
 The function `identicalClones` performs hierarchical clustering among sequences that share the same V gene, J gene and identical junction.
 
