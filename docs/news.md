@@ -1,4 +1,4 @@
-Version 1.0.0: May 12, 2020
+Version 1.0.0: May 14, 2020
 -------------------------------------------------------------------------------
 
 Backwards Incompatible Changes:
@@ -20,7 +20,8 @@ Backwards Incompatible Changes:
   
 General:
 
-+ Removed the `bw.ucv` from `density` function. 
++ Removed the `bw.ucv` from `density` and a round function due to platform precision 
+incompatibility.
 + License changed to AGPL-3.
 + Added largest distance-to-nearest filter to clustering process.
 
