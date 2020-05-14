@@ -20,9 +20,12 @@ Backwards Incompatible Changes:
   
 General:
 
-+ Removed the `bw.ucv` from `density` (reduced run time) and a round function 
-  from `krnlMtxGenerator` due to platform precision incompatibility.
 + License changed to AGPL-3.
+
+Cloning:
+
++ Fixed a platform precision incompatibility bug which caused spectral cloning
+  results to be non-reproducible across platforms.
 + Added largest distance-to-nearest filter to clustering process.
 
 

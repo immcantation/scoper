@@ -36,7 +36,7 @@
 #'                          scale_fill_manual geom_density
 #'                          scale_x_continuous scale_y_continuous 
 #'                          geom_polygon geom_histogram geom_hline geom_vline
-#' @importFrom  dplyr       n %>% data_frame filter select arrange 
+#' @importFrom  dplyr       n %>% filter select arrange 
 #'                          group_by ungroup group_indices
 #'                          mutate summarize slice 
 #' @importFrom  stringi     stri_split_fixed stri_length stri_count
