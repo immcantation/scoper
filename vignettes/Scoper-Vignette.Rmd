@@ -33,7 +33,7 @@ which share the same V gene, J gene and junction length.
 ## Clonal assignment
 
 A key step in the analysis of Adaptive Immune Receptor Repertoire sequencing (AIRR-Seq) data is
-partition data into clonally related lineages. Each lineage is a group of sequences that descendants of a common ancestor cell.
+partition data into clonally related lineages. Each lineage is a group of sequences that are descendants of a common ancestor cell.
 
 Clonal relationships can be inferred from sequencing data. Hierarchical clustering is a widely used distance-based method for identify clonally related sequences. Usually there is an initial
 step, grouping sequences sharing the same V gene, J gene, and junction length. Then, for each group, the high diversity in the junction region is used as a fingerprint to identify clonally related sequences. This method requires a measure of distance between pairs of junction sequences and a choice of linkage to define the distance between groups of sequences. Then, analyzing the distance-to-nearest distribution in the whole dataset, a threshold to cut the hierarchy into discrete clonal groups is selected. Typically, the distribution is bimodal, and the threshold separates the two modes. The first mode represents sequences that have at least one clonal relative in the dataset, and the second mode sequences that do not have any clonal relatives in the data. 
