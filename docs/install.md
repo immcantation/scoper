@@ -1,14 +1,14 @@
 Download
 -------------------------------------------------------------------------------
 
-The latest stable release of Scoper can be downloaded from 
+The latest stable release of SCOPer can be downloaded from 
 [CRAN](http://cran.rstudio.com/web/packages/scoper) or 
 [Bitbucket](https://bitbucket.org/kleinstein/scoper/downloads).
 
 Installing Released Versions
 -------------------------------------------------------------------------------
 
-The simplest way to install Scoper is via CRAN:
+The simplest way to install SCOPer is via CRAN:
 
 ```R
 install.packages("scoper")
