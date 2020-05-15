@@ -1,9 +1,11 @@
 SCOPer
 -------------------------------------------------------------------------------
 
-SCOPer Provides a computational framework for identification of B cell clonal 
-relationships from  Adaptive Immune Receptor Repertoire sequencing (AIRR-Seq) 
-data. SCOPer is part of the [Immcantation](http://immcantation.readthedocs.io) 
+SCOPer provides a computational framework for the identification of B cell 
+clonal relationships from Adaptive Immune Receptor Repertoire sequencing 
+(AIRR-Seq) data. It includes methods for assigning clonal identifiers using
+sequence identity, hierarchical clustering, and spectral clustering.
+SCOPer is part of the [Immcantation](http://immcantation.readthedocs.io) 
 analysis framework.
 
 Contact

@@ -2,21 +2,24 @@
 
 #' The SCOPer package
 #'
-#' Provides a computational framework for B cell clones identification
-#' from adaptive immune receptor repertoire sequencing (AIRR-Seq) datasets. 
-#' Three models are included (identical, hierarchical, and spectral) 
-#' which perform clustering among sequences of B cell receptors 
-#' (BCRs, also referred to as Immunoglobulins, (Igs)) that 
-#' share the same V gene, J gene and junction length.
+#' \code{scoper} is a member of the Immcantation framework and provides computational approaches 
+#' for the identification of B cell clones from adaptive immune receptor repertoire sequencing 
+#' (AIRR-Seq) datasets. It includes methods for assigning clonal identifiers using
+#' sequence identity, hierarchical clustering, and spectral clustering.
 #'
-#' @section SCOPer:
+#' @section Clonal clustering:
 #'
 #' \itemize{
-#'   \item  \link{identicalClones}:  Identical clustering-based metho for partitioning Ig sequences into clones..
-#'   \item  \link{hierarchicalClones}:  Hierarchical clustering-based method for partitioning Ig sequences into clones.
-#'   \item  \link{spectralClones}:  Spectral clustering-based method for partitioning Ig sequences into clones.
+#'   \item  \link{identicalClones}:  Clonal assignment using sequence identity partitioning.
+#'   \item  \link{hierarchicalClones}:  Hierarchical clustering approach to clonal assignment.
+#'   \item  \link{spectralClones}:  Spectral clustering approach to clonal assignment.
 #' }
-#'
+#' 
+#' @section Visualization:
+#' \itemize{
+#'   \item  \link{plotCloneSummary}:  Visualize inter- and intra-clone distances.
+#' }
+#' 
 #' @name        scoper
 #' @docType     package
 #' @references
