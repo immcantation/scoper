@@ -30,17 +30,19 @@ A key step to higher-level quantitative analysis of Adaptive Immune Receptor Rep
 from a common ancestor) using computationally-driven approaches. Accurate identification of 
 clonal relationships is critical as these clonal groups form the fundamental basis for a wide 
 range of repertoire analyses, including diversity analysis, lineage reconstruction, and 
-effector functionality. `scoper` provides a computational framework for identification of B cell 
+effector functionality. 
+
+`scoper` provides a computational framework for identification of B cell 
 clones from AIRR-Seq data among Ig (immunoglobulin, B cell receptor, BCR) sequences which share the 
 same V gene, J gene and junction length. It includes methods to infer clonal relationships using
 either a predefined clustering threshold or an adaptive threshold.
 
 ## Example data
 
-A small example AIRR Rearrangement database is included in the `scoper` package. 
-The example dataset consists of a subset of Ig sequencing data from an 
-influenza vaccination study (Laserson and Vigneault et al., PNAS, 2014). The 
-data include sequences from multiple time-points before and after the subject 
+A small example AIRR Rearrangement dataset is included in the `scoper` package. 
+The dataset consists of a subset of Ig sequencing data from an 
+influenza vaccination study (Laserson and Vigneault et al., PNAS, 2014). It 
+includes sequences from multiple time-points before and after the subject 
 received an influenza vaccination. Identification of clones requires the following 
 fields (columns) to be present in the table: 
 
@@ -52,9 +54,9 @@ fields (columns) to be present in the table:
 
 ## Identifying clones by sequence identity
 
-The simplest methodology to infer clonal relationships is to define
-clones among identical junction region sequence (the junction region being where the V, D, and J gene 
-segments join). This can be done using `identicalClones` function at either the in nucleotide level 
+The simplest method for inferring clonal relationships is to define
+clones among identical junction region sequences (the junction region is where the V, D, and J gene 
+segments join). This can be done using the `identicalClones` function at either the nucleotide level 
 (`method="nt"`) or the amino acid level (`method="aa"`):
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE}
@@ -90,13 +92,13 @@ glimpse(summary(results))
 
 ## Identifying clones by hierarchical clustering
 
-Most current studies uses a more sophisticated definition  for clonal relationships. These studies 
-leverage the high diversity of  the junction region as a fingerprint to identify each B cell clone. 
-Because it is unlikely that two separate recombination events would lead to identical junctions, 
+Most current studies uses a more sophisticated definition for clonal relationships. These studies 
+leverage the high diversity of the junction region as a fingerprint to identify each B cell clone. 
+Since it is unlikely that two separate recombination events would lead to identical junctions, 
 sequences with junction regions that are similar enough are determined to share a common B cell 
 ancestor (i.e., be clonally related) rather than to have arisen independently. Hierarchical 
 clustering is a widely used distance-based method for identify clonally related sequences.
-An implementation of the heirarchical clustering approach is provide via the `heirachicalClones`
+An implementation of the hierarchical clustering approach is provided via the `hierachicalClones`
 function.
 
 It is important to determine an appropriate threshold for trimming the hierarchical 
@@ -117,7 +119,7 @@ Technical details can be found in:
         high confidence in Ig repertoire sequencing data.
         The Journal of Immunology 198(6):2489-2499.
 
-Identifying clonal groups using `heirachicalClones` is largely the same as the approach using the 
+Identifying clonal groups using `hierachicalClones` is largely the same as the approach using the 
 `identicalClones` function, with the additional requirement of a distance threshold:
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE}
@@ -147,20 +149,20 @@ glimpse(summary(results))
 
 While the hierarchical clustering method groups sequences using a fixed distance supervised threshold, 
 the spectral clustering-based model uses an adaptive unsupervised threshold to tune the required 
-level of similarity among sequences in differentlocal neighborhoods. It can be used as an alternative 
-if the nearest-neighbor distance distribution is unimodal; meaning, `findThreshold` wasn't able to find 
+level of similarity among sequences in different local neighborhoods. It can be used as an alternative 
+if the nearest-neighbor distance distribution is unimodal, meaning that `findThreshold` wasn't able to find 
 the threshold at which to cut the hierarchy. 
 
 There are two available spectral clustering methods provided by the `spectralClones`  function:
 
 1. `method="novj"`: Infers clonal relationships using an adaptive threshold that indicates the level 
-    of similarity among junction sequences in a local neighborhood, 
+    of similarity among junction sequences in a local neighborhood
 2. `method="vj"`: Infers clonal relationships not only based on the junction region homology, 
-    but also taking into account the mutation profiles in the V and J segments. 
+    but also taking into account the mutation profiles in the V and J segments
     
 It is not mandatory, but a fixed threshold can also be provided to `spectralClones` 
 (`threshold` argument) which will enforce an upper-limit cut-off. When specifying the `threshold` 
-argument, any sequence with distances above the threshold value from all sequences, will become a 
+argument, any sequence with distances above the threshold value from all sequences will become a 
 singleton. The threshold can be defined as discussed above using nearest-neighbor distance 
 distribution methods provided in the [shazam](https://shazam.readthedocs.io).
 Technical details can be found in:
@@ -174,7 +176,7 @@ Technical details can be found in:
         bioRxiv doi: 10.1101/788620.
 
 The following example calls the `spectralClones` function using the same (optional) threshold used 
-previously to defined clones using the heirachical approach:
+previously to defined clones using the hierachical approach:
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE}
 # Clonal assignment using the spectral clustering
@@ -184,7 +186,7 @@ results <- spectralClones(ExampleDb, method="vj",
 ```
 
 The results data.frame, summary plots, and summary table are accessed in the same manner as shown 
-above using the heirachical approach.
+above using the hierachical approach.
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE}
 # Get results data.frame
