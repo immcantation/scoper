@@ -1,4 +1,4 @@
-**ExampleDb** - *Example Change-O database*
+**ExampleDb** - *Example database*
 
 Description
 --------------------
@@ -18,7 +18,7 @@ ExampleDb
 Format
 -------------------
 
-A data.frame with the following Change-O style columns:
+A data.frame with the following columns:
 
 + `sequence_id`:                Sequence identifier
 + `sequence_alignment`:         IMGT-gapped observed sequence.

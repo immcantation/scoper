@@ -33,7 +33,7 @@ nstart = 1000,
 nproc = 1,
 verbose = FALSE,
 log = NULL,
-summarize_clones = FALSE
+summarize_clones = TRUE
 )
 ```
 
@@ -116,13 +116,14 @@ verbose
 if `FALSE` (default) process cloning silently.
 
 log
-:   specify the output path/filename.txt to save `verbose`. 
+:   output path and filename to save the `verbose` log. 
 The input file directory is used if path is not specified.
 The default is `NULL` for no action.
 
 summarize_clones
-:   if `TRUE` performs a series of analysis to assess the clonal landscape.
-See Value for description.
+:   if `TRUE` performs a series of analysis to assess the clonal landscape
+and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` then
+a modified input `db` is returned.
 
 
 
@@ -130,11 +131,11 @@ See Value for description.
 Value
 -------------------
 
-For `summarize_clones=FALSE`, a modified data.frame with clone identifiers in the `clone` column. 
-For `summarize_clones=TRUE` returns a [ScoperClones](ScoperClones-class.md) object including the modified `db` 
-with clone identifiers, and other clones summary information.
-If `log` is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
-If `log` is specified as only a filename.txt, current directory is used. The default is `NULL` for no action.
+If `summarize_clones=TRUE` (default) a [ScoperClones](ScoperClones-class.md) object is returned that includes the 
+clonal assignment summary information and a modified input `db` in the `db` slot that 
+contains clonal identifiers in the specified `clone` column.
+If `summarize_clones=FALSE` modified `data.frame` is returned with clone identifiers in the 
+specified `clone` column.
 
 
 Details
@@ -145,18 +146,20 @@ relationships in high-throughput Adaptive Immune Receptor Repertoire sequencing 
 data sets. Two methods are included to perform clustering among sequences of B cell receptors 
 (BCRs, immunoglobulins, Ig) that share the same V gene, J gene and junction length: 
 
-+  If `method` = `"novj"`: clonal relationships are inferred using an adaptive threshold that 
-indicates the level of similarity among junction sequences in a local neighborhood. 
-+  If `method` = `"vj"`: clonal relationships are inferred not only based on the junction region 
-homology, but also takes into account the mutation profiles in the V and J segments. Mutation counts are 
-determined by comparing the input sequences (in the column specified by `sequence`) to the effective 
-germline sequence (IUPAC representation of sequences in the column specified by `germline`). 
-+  Not mandatory, but the influence of SHM hot- and cold-spot biases in the clonal inference process will be noted 
-if a SHM targeting model is provided through argument `targeting_model` (see [createTargetingModel](http://www.rdocumentation.org/packages/shazam/topics/createTargetingModel) 
-for more technical details). 
++  If `method` = `"novj"`: clonal relationships are inferred using an adaptive 
+threshold that indicates the level of similarity among junction sequences in a local neighborhood. 
++  If `method` = `"vj"`: clonal relationships are inferred not only based on 
+the junction region homology, but also takes into account the mutation profiles in the V 
+and J segments. Mutation counts are determined by comparing the input sequences (in the 
+column specified by `sequence`) to the effective germline sequence (IUPAC representation 
+of sequences in the column specified by `germline`). +  Not mandatory, but the 
+influence of SHM hot- and cold-spot biases in the clonal inference process will be noted 
+if a SHM targeting model is provided through argument `targeting_model` 
+(see [createTargetingModel](http://www.rdocumentation.org/packages/shazam/topics/createTargetingModel) for more technical details). 
 +  Not mandatory, but the upper-limit cut-off for clonal grouping can be provided to
 prevent sequences with disimilarity above the threshold group together. Using this argument 
-any sequence with distances above the `threshold` value from other sequences, will become a singleton.
+any sequence with distances above the `threshold` value from other sequences, will 
+become a singleton.
 
 
 
@@ -167,12 +170,12 @@ Examples
 ```R
 # Subset example data
 db <- subset(ExampleDb, sample_id == "-1h")
-results <- spectralClones(db, method="novj", 
-germline="germline_alignment_d_mask", 
-sequence="sequence_alignment", 
-junction="junction", v_call="v_call", 
-len_limit = shazam::IMGT_V,
-j_call="j_call", threshold=0.15, summarize_clones=TRUE)
+
+# Find clonal groups
+results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask")
+
+# Retrieve modified input data with clonal clustering identifiers
+df <- as.data.frame(results)
 
 # Plot clonal summaries 
 plot(results, binwidth=0.02)
@@ -184,8 +187,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for generating a ggplot object from `summarize_clones=TRUE`
-method.
+See [plotCloneSummary](plotCloneSummary.md) plotting summary results.
 
 
 

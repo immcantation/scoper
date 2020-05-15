@@ -28,7 +28,7 @@ max_n = 0,
 nproc = 1,
 verbose = FALSE,
 log = NULL,
-summarize_clones = FALSE
+summarize_clones = TRUE
 )
 ```
 
@@ -96,13 +96,14 @@ verbose
 if `FALSE` (default) process cloning silently.
 
 log
-:   specify the output path/filename.txt to save `verbose`. 
+:   output path and filename to save the `verbose` log. 
 The input file directory is used if path is not specified.
 The default is `NULL` for no action.
 
 summarize_clones
-:   if `TRUE` performs a series of analysis to assess the clonal landscape.
-See Value for description.
+:   if `TRUE` performs a series of analysis to assess the clonal landscape
+and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` then
+a modified input `db` is returned.
 
 
 
@@ -110,11 +111,11 @@ See Value for description.
 Value
 -------------------
 
-For `summarize_clones=FALSE`, a modified data.frame with clone identifiers in the `clone` column. 
-For `summarize_clones=TRUE` returns a [ScoperClones](ScoperClones-class.md) object including the modified `db` 
-with clone identifiers, and other clones summary information.
-If `log` is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
-If `log` is specified as only a filename.txt, current directory is used. The default is `NULL` for no action.
+If `summarize_clones=TRUE` (default) a [ScoperClones](ScoperClones-class.md) object is returned that includes the 
+clonal assignment summary information and a modified input `db` in the `db` slot that 
+contains clonal identifiers in the specified `clone` column.
+If `summarize_clones=FALSE` modified `data.frame` is returned with clone identifiers in the 
+specified `clone` column.
 
 
 Details
@@ -132,11 +133,11 @@ Examples
 -------------------
 
 ```R
-results <- hierarchicalClones(ExampleDb, threshold=0.15,
-method="nt", linkage="single",
-junction="junction", 
-v_call="v_call", j_call="j_call", 
-summarize_clones=TRUE)
+# Find clonal groups
+results <- hierarchicalClones(ExampleDb, threshold=0.15)
+
+# Retrieve modified input data with clonal clustering identifiers
+df <- as.data.frame(results)
 
 # Plot clonal summaries 
 plot(results, binwidth=0.02)
@@ -148,8 +149,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for generating a ggplot object from `summarize_clones=TRUE`
-method.
+See [plotCloneSummary](plotCloneSummary.md) plotting summary results.
 
 
 

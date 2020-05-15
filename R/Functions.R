@@ -1,21 +1,20 @@
 #### Classes ####
 
-#' Output of \code{identicalClones}, \code{hierarchicalClones}, and \code{spectralClones}, 
-#' if \code{summarize_clones=TRUE}
+#' S4 class containing clonal assignments and summary data
 #' 
-#' \code{ScoperClones} contains output from \link{identicalClones}, \link{hierarchicalClones}, and
-#' \link{spectralClones} functions, if argument \code{summarize_clones} is \code{TRUE}. 
+#' \code{ScoperClones} stores output from \link{identicalClones}, \link{hierarchicalClones} and
+#' \link{spectralClones} functions.
 #'
-#' @slot   db              modified input \code{db} data.frame with clone identifiers in the \code{clone} 
-#'                         column.
-#' @slot   vjl_groups      data.frame of clones summary, e.g. sequence count, V-gene, J-gene, junction lentgh,
-#'                         clone count, etc.
-#' @slot   inter_intra     data.frame containing minimum inter (between) and maximum intra (within) 
-#'                         clonal distances.
+#' @slot   db              \code{data.frame} of repertoire data including with clonal identifiers in 
+#'                         the column specified during processing.
+#' @slot   vjl_groups      \code{data.frame} of clonal summary, including sequence count, V gene, 
+#'                         J gene, junction length, and clone counts.
+#' @slot   inter_intra     \code{data.frame} containing minimum inter (between) and maximum intra 
+#'                         (within) clonal distances.
 #' @slot   eff_threshold   effective cut-off separating the inter (between) and intra (within) clonal 
 #'                         distances.
 #'
-#' @seealso      \link{identicalClones}, \link{hierarchicalClones}, and \link{spectralClones}
+#' @seealso      \link{identicalClones}, \link{hierarchicalClones} and \link{spectralClones}
 #'
 #' @name         ScoperClones-class
 #' @rdname       ScoperClones-class
@@ -29,21 +28,35 @@ setClass("ScoperClones",
 
 #### Methods ####
 
-#' @param    x    ScoperClones object
+#' @param    x      ScoperClones object
 #' 
 #' @rdname   ScoperClones-class
 #' @aliases  ScoperClones-method
 #' @export
 setMethod("print", c(x="ScoperClones"), function(x) { print(x@eff_threshold) })
 
-#' @param    y    ignored.
-#' @param    ...  arguments to pass to \link{plotCloneSummary}.
+#' @param    object  ScoperClones object
+#' 
+#' @rdname   ScoperClones-class
+#' @aliases  ScoperClones-method
+#' @export
+setMethod("summary", c(object="ScoperClones"),
+          function(object) { object@vjl_groups })
+
+#' @param    y      ignored.
+#' @param    ...    arguments to pass to \link{plotCloneSummary}.
 #' 
 #' @rdname   ScoperClones-class
 #' @aliases  ScoperClones-method
 #' @export
 setMethod("plot", c(x="ScoperClones", y="missing"),
           function(x, y, ...) { plotCloneSummary(x, ...) })
+
+#' @rdname   ScoperClones-class
+#' @aliases  ScoperClones-method
+#' @export
+setMethod("as.data.frame", c(x="ScoperClones"),
+          function(x) { as.data.frame(x@db) })
 
 #### Internal functions ####
 
@@ -517,16 +530,15 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 
 #### plotCloneSummary ####
 
-#' Plot ScoperClones object for the summarize_clones=TRUE
+#' Plot clonal clustering summary
 #' 
-#' \code{plotCloneSummary} plots the results from \code{summarize_clones=TRUE} method of 
-#' \code{spectralClones}, \code{identicalClones}, and \code{hierarchicalClones} functions, 
-#' including the minimum inter (between) and maximum intra (within) clonal distances, 
+#' \code{plotCloneSummary} plots the results in a \code{ScoperClones} object returned 
+#' by \code{spectralClones}, \code{identicalClones} or \code{hierarchicalClones}.  
+#' Includes the minimum inter (between) and maximum intra (within) clonal distances 
 #' and the calculated efective threshold.
 #'
 #' @param    data      \link{ScoperClones} object output by the \link{spectralClones}, 
-#'                     \link{identicalClones}, and \link{hierarchicalClones} functions, 
-#'                     if argument \code{summarize_clones} assigned to be \code{TRUE}.
+#'                     \link{identicalClones} or \link{hierarchicalClones}.
 #' @param    xmin      minimum limit for plotting the x-axis. If \code{NULL} the limit will 
 #'                     be set automatically.
 #' @param    xmax      maximum limit for plotting the x-axis. If \code{NULL} the limit will 
@@ -543,16 +555,13 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' 
 #' @return   A ggplot object defining the plot.
 #'
-#' @seealso  See \link{ScoperClones} for the the input object definition and 
-#'           \link{spectralClones}, \link{identicalClones}, and \link{hierarchicalClones} 
-#'           functions for generating the input object.
+#' @seealso  See \link{ScoperClones} for the the input object definition.  
+#'           See \link{spectralClones}, \link{identicalClones} and \link{hierarchicalClones} 
+#'           for generating the input object.
 #'
 #' @examples
-#' results <- hierarchicalClones(ExampleDb, threshold=0.15,
-#'                               method="nt", linkage="single",
-#'                               junction="junction", 
-#'                               v_call="v_call", j_call="j_call", 
-#'                               summarize_clones=TRUE)
+#' # Find clones
+#' results <- hierarchicalClones(ExampleDb, threshold=0.15)
 #' 
 #' # Plot clonal summaries 
 #' plot(results, binwidth=0.02)
@@ -685,32 +694,34 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
 #'                              if \code{FALSE} (default) process cloning silently.
-#' @param    log                specify the output path/filename.txt to save \code{verbose}. 
+#' @param    log                output path and filename to save the \code{verbose} log. 
 #'                              The input file directory is used if path is not specified.
 #'                              The default is \code{NULL} for no action.
-#' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
-#'                              See Value for description.
+#' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
+#'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
+#'                              a modified input \code{db} is returned.
 #'
 #' @return
-#' For \code{summarize_clones=FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
-#' For \code{summarize_clones=TRUE} returns a \link{ScoperClones} object including the modified \code{db} 
-#'                                  with clone identifiers, and other clones summary information.
-#' If \code{log} is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
-#' If \code{log} is specified as only a filename.txt, current directory is used. The default is \code{NULL} for no action.
-#'
+#' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
+#' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
+#' contains clonal identifiers in the specified \code{clone} column.
+#' If \code{summarize_clones=FALSE} modified \code{data.frame} is returned with clone identifiers in the 
+#' specified \code{clone} column.
+#' 
 #' @details
 #' \code{identicalClones} provides a computational platform to explore the B cell clonal 
 #' relationships in high-throughput Adaptive Immune Receptor Repertoire sequencing (AIRR-seq) 
 #' data sets. This function performs clustering among sequences of B cell receptors 
 #' (BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and identical junction: 
 #'
-#' @seealso  See \link{plotCloneSummary} for generating a ggplot object from \code{summarize_clones=TRUE}
-#'           method.
+#' @seealso  See \link{plotCloneSummary} plotting summary results.
 #'
 #' @examples
-#' results <- identicalClones(ExampleDb, method="nt", 
-#'                            junction="junction", v_call="v_call", 
-#'                            j_call="j_call", summarize_clones=TRUE)
+#' # Find clonal groups
+#' results <- identicalClones(ExampleDb)
+#' 
+#' # Retrieve modified input data with clonal clustering identifiers
+#' df <- as.data.frame(results)
 #' 
 #' # Plot clonal summaries 
 #' plot(results, binwidth=0.02)
@@ -720,7 +731,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
                             v_call="v_call", j_call="j_call", clone="clone_id",
                             first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc = 1,
                             verbose=FALSE, log=NULL, 
-                            summarize_clones=FALSE) {
+                            summarize_clones=TRUE) {
     
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
@@ -782,19 +793,20 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
 #'                              if \code{FALSE} (default) process cloning silently.
-#' @param    log                specify the output path/filename.txt to save \code{verbose}. 
+#' @param    log                output path and filename to save the \code{verbose} log. 
 #'                              The input file directory is used if path is not specified.
 #'                              The default is \code{NULL} for no action.
-#' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
-#'                              See Value for description.
+#' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
+#'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
+#'                              a modified input \code{db} is returned.
 #'
 #' @return
-#' For \code{summarize_clones=FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
-#' For \code{summarize_clones=TRUE} returns a \link{ScoperClones} object including the modified \code{db} 
-#'                                  with clone identifiers, and other clones summary information.
-#' If \code{log} is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
-#' If \code{log} is specified as only a filename.txt, current directory is used. The default is \code{NULL} for no action.
-#'
+#' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
+#' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
+#' contains clonal identifiers in the specified \code{clone} column.
+#' If \code{summarize_clones=FALSE} modified \code{data.frame} is returned with clone identifiers in the 
+#' specified \code{clone} column.
+#' 
 #' @details
 #' \code{hierarchicalClones} provides a computational platform to explore the B cell clonal 
 #' relationships in high-throughput Adaptive Immune Receptor Repertoire sequencing (AIRR-seq) 
@@ -802,15 +814,14 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' (BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and junction length 
 #' based on the junction sequence similarity: 
 #'
-#' @seealso  See \link{plotCloneSummary} for generating a ggplot object from \code{summarize_clones=TRUE}
-#'           method.
+#' @seealso  See \link{plotCloneSummary} plotting summary results.
 #'
 #' @examples
-#' results <- hierarchicalClones(ExampleDb, threshold=0.15,
-#'                               method="nt", linkage="single",
-#'                               junction="junction", 
-#'                               v_call="v_call", j_call="j_call", 
-#'                               summarize_clones=TRUE)
+#' # Find clonal groups
+#' results <- hierarchicalClones(ExampleDb, threshold=0.15)
+#' 
+#' # Retrieve modified input data with clonal clustering identifiers
+#' df <- as.data.frame(results)
 #' 
 #' # Plot clonal summaries 
 #' plot(results, binwidth=0.02)
@@ -821,7 +832,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
                                v_call="v_call", j_call="j_call", clone="clone_id",
                                first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                                verbose=FALSE, log=NULL,
-                               summarize_clones=FALSE) {
+                               summarize_clones=TRUE) {
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
                                   method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
@@ -886,18 +897,19 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
 #'                              if \code{FALSE} (default) process cloning silently.
-#' @param    log                specify the output path/filename.txt to save \code{verbose}. 
+#' @param    log                output path and filename to save the \code{verbose} log. 
 #'                              The input file directory is used if path is not specified.
 #'                              The default is \code{NULL} for no action.
-#' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape.
-#'                              See Value for description.
+#' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
+#'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
+#'                              a modified input \code{db} is returned.
 #'
 #' @return
-#' For \code{summarize_clones=FALSE}, a modified data.frame with clone identifiers in the \code{clone} column. 
-#' For \code{summarize_clones=TRUE} returns a \link{ScoperClones} object including the modified \code{db} 
-#'                                  with clone identifiers, and other clones summary information.
-#' If \code{log} is specified as output path/filename.txt, it will write verbose logging to a file in the output path. 
-#' If \code{log} is specified as only a filename.txt, current directory is used. The default is \code{NULL} for no action.
+#' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
+#' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
+#' contains clonal identifiers in the specified \code{clone} column.
+#' If \code{summarize_clones=FALSE} modified \code{data.frame} is returned with clone identifiers in the 
+#' specified \code{clone} column.
 #'
 #' @details
 #' \code{spectralClones} provides a computational platform to explore the B cell clonal 
@@ -905,33 +917,34 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' data sets. Two methods are included to perform clustering among sequences of B cell receptors 
 #' (BCRs, immunoglobulins, Ig) that share the same V gene, J gene and junction length: 
 #' \itemize{
-#'       \item If \code{method} = \code{"novj"}: clonal relationships are inferred using an adaptive threshold that 
-#'       indicates the level of similarity among junction sequences in a local neighborhood. 
-#'       \item If \code{method} = \code{"vj"}: clonal relationships are inferred not only based on the junction region 
-#'       homology, but also takes into account the mutation profiles in the V and J segments. Mutation counts are 
-#'       determined by comparing the input sequences (in the column specified by \code{sequence}) to the effective 
-#'       germline sequence (IUPAC representation of sequences in the column specified by \code{germline}). 
-#'       \item Not mandatory, but the influence of SHM hot- and cold-spot biases in the clonal inference process will be noted 
-#'       if a SHM targeting model is provided through argument \code{targeting_model} (see \link{createTargetingModel} 
-#'       for more technical details). 
+#'       \item If \code{method} = \code{"novj"}: clonal relationships are inferred using an adaptive 
+#'       threshold that indicates the level of similarity among junction sequences in a local neighborhood. 
+#'       \item If \code{method} = \code{"vj"}: clonal relationships are inferred not only based on 
+#'       the junction region homology, but also takes into account the mutation profiles in the V 
+#'       and J segments. Mutation counts are determined by comparing the input sequences (in the 
+#'       column specified by \code{sequence}) to the effective germline sequence (IUPAC representation 
+#'       of sequences in the column specified by \code{germline}). \item Not mandatory, but the 
+#'       influence of SHM hot- and cold-spot biases in the clonal inference process will be noted 
+#'       if a SHM targeting model is provided through argument \code{targeting_model} 
+#'       (see \link{createTargetingModel} for more technical details). 
 #'       \item Not mandatory, but the upper-limit cut-off for clonal grouping can be provided to
 #'       prevent sequences with disimilarity above the threshold group together. Using this argument 
-#'       any sequence with distances above the \code{threshold} value from other sequences, will become a singleton.
+#'       any sequence with distances above the \code{threshold} value from other sequences, will 
+#'       become a singleton.
 #' }
 #'
-#' @seealso  See \link{plotCloneSummary} for generating a ggplot object from \code{summarize_clones=TRUE}
-#'           method.
+#' @seealso  See \link{plotCloneSummary} plotting summary results.
 #'
 #' @examples
 #' # Subset example data
 #' db <- subset(ExampleDb, sample_id == "-1h")
-#' results <- spectralClones(db, method="novj", 
-#'                           germline="germline_alignment_d_mask", 
-#'                           sequence="sequence_alignment", 
-#'                           junction="junction", v_call="v_call", 
-#'                           len_limit = shazam::IMGT_V,
-#'                           j_call="j_call", threshold=0.15, summarize_clones=TRUE)
-#'                           
+#' 
+#' # Find clonal groups
+#' results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask")
+#' 
+#' # Retrieve modified input data with clonal clustering identifiers
+#' df <- as.data.frame(results)
+#'   
 #' # Plot clonal summaries 
 #' plot(results, binwidth=0.02)
 #' 
@@ -941,7 +954,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
                            targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, 
                            threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
                            verbose=FALSE, log=NULL,
-                           summarize_clones=FALSE) {
+                           summarize_clones=TRUE) {
     
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
                                   germline = germline, sequence = sequence,
@@ -980,7 +993,7 @@ defineClonesScoper <- function(db,
                                threshold = NULL, base_sim = 0.95,
                                iter_max = 1000, nstart = 1000, nproc = 1,
                                verbose = FALSE, log = NULL,
-                               summarize_clones = FALSE) {
+                               summarize_clones = TRUE) {
 
     ### get model
     model <- match.arg(model)

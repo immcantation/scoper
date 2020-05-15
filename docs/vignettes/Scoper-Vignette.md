@@ -1,19 +1,16 @@
-# B cell clonal relationships inference
+# Inferring B cell clonal relationships
 
 ## Introduction
 
 A key step to higher-level quantitative analysis of Adaptive Immune Receptor Repertoire sequencing 
 (AIRR-Seq) data is the identification of B cell clones (sequences derived from cells descended 
-from a common ancestor), using computationally-driven approaches. Accurate identification of 
+from a common ancestor) using computationally-driven approaches. Accurate identification of 
 clonal relationships is critical as these clonal groups form the fundamental basis for a wide 
 range of repertoire analyses, including diversity analysis, lineage reconstruction, and 
-effector functionality. Recent advances in next-generation sequencing have enabled large-scale 
-profiling of the B cell immunoglobulin repertoire from blood and tissue samples. Thus, a key computational 
-challenge in the analysis of these data is to infer clonal relationships. `scoper` provides a computational 
-framework for identification of B cell clones from AIRR-Seq data. Three main functions are included 
-(`identicalClones`, `hierarchicalClones`, and `spectralClones`) that infer clonal relationships among 
-sequences of BCRs/IGs (B cell receptors/immunoglobulins) which share the same V gene, J gene and 
-junction length.
+effector functionality. `scoper` provides a computational framework for identification of B cell 
+clones from AIRR-Seq data among Ig (immunoglobulin, B cell receptor, BCR) sequences which share the 
+same V gene, J gene and junction length. It includes methods to infer clonal relationships using
+either a predefined clustering threshold or an adaptive threshold.
 
 ## Example data
 
@@ -30,69 +27,97 @@ fields (columns) to be present in the table:
 * `sequence_alignment`
 * `germline_alignment_d_mask`
 
-
-```r
-# Load scoper
-library("scoper")
-```
-
-## Clonal assignments using identicalClones function
+## Identifying clones by sequence identity
 
 The simplest methodology to infer clonal relationships is to define
-clones among identical junctions (i.e., where the V, D, and J gene segments join). 
-This can be done using `identicalClones` function. Using this 
-function user can identify clones (1) in nucleotide level (`nt`:nucleotide based clustering), or 
-(2) amino acid level (`aa`: amino acid based clustering). 
+clones among identical junction region sequence (the junction region being where the V, D, and J gene 
+segments join). This can be done using `identicalClones` function at either the in nucleotide level 
+(`method="nt"`) or the amino acid level (`method="aa"`):
 
 
 ```r
-# Clonal assignment using the identical model
-results <- identicalClones(db = ExampleDb,
-                           method = "nt",
-                           junction = "junction", 
-                           v_call = "v_call", j_call = "j_call",
-                           summarize_clones = TRUE)
+# Imports
+library(scoper)
+library(dplyr)
 
-# results is an object of class ScoperClones
-class(results)
+# Clonal assignment using identical nucleotide sequences
+results <- identicalClones(ExampleDb, method="nt")
 ```
 
-```
-## [1] "ScoperClones"
-## attr(,"package")
-## [1] "scoper"
-```
-
-```r
-# cloned data (a data.frame)
-cloned_db <- results@db
-# get inter and intra conal distances (a data.frame)
-df <- results@inter_intra
-```
-
-User can plot the results from `summarize_clones=TRUE`, including the minimum inter (between) 
-clonal distances.
+A modified input data.frame with clonal identifiers in the `clone_id` column is contained in the
+`db` slot of the returned returned `ScoperClones` object, which can also be accessed by
+calling `as.data.frame` on the result object.
 
 
 ```r
-# plot a histogram of inter clonal distances  (a ggplot):
+# Get results data.frame
+results_db <- as.data.frame(results)
+glimpse(results_db)
+```
+
+```
+## Rows: 2,000
+## Columns: 16
+## $ sequence_id               <chr> "GN5SHBT08JPUYU", "GN5SHBT01EOOGB", "GN5SHBT05IQQ1G", "GN5SHBT01A6IAJ", "GN5SHBT03BNODZ", "GN5SHBT02A6P…
+## $ sequence_alignment        <chr> "CAGGTTCAACTGGTGCAGTCTGGAGCT...GAGGTGAAAAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGACTTCTGGTTACACCTTT............…
+## $ germline_alignment        <chr> "CAGGTTCAGCTGGTGCAGTCTGGAGCT...GAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGTTACACCTTT............…
+## $ germline_alignment_d_mask <chr> "CAGGTTCAGCTGGTGCAGTCTGGAGCT...GAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGTTACACCTTT............…
+## $ v_call                    <chr> "Homsap IGHV1-18*01 F", "Homsap IGHV1-18*01 F", "Homsap IGHV1-18*01 F", "Homsap IGHV1-18*01 F", "Homsap…
+## $ v_call_genotyped          <chr> "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01"…
+## $ d_call                    <chr> "Homsap IGHD3-9*01 F", "Homsap IGHD2-8*01 F", "Homsap IGHD2-2*01 F", "Homsap IGHD2-21*02 F", "Homsap IG…
+## $ j_call                    <chr> "Homsap IGHJ4*03 F", "Homsap IGHJ4*02 F", "Homsap IGHJ4*03 F", "Homsap IGHJ4*03 F", "Homsap IGHJ4*03 F"…
+## $ c_call                    <chr> "IGHA", "IGHM", "IGHM", "IGHM", "IGHM", "IGHM", "IGHD", "IGHD", "IGHM", "IGHM", "IGHM", "IGHM", "IGHA",…
+## $ junction                  <chr> "TGTGCAAGAATGAAGTATTACGATATTTTGACTGGTTACGAGCCGACCGCTTATTTCTACTTTACGGGTTTGGACGTCTGG", "TGTGCGAGAGATCTGGG…
+## $ junction_length           <dbl> 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 75, 75, 75, 75, 75, 75,…
+## $ np1_length                <dbl> 5, 6, 6, 27, 7, 11, 13, 13, 16, 7, 26, 21, 11, 20, 26, 9, 19, 28, 19, 19, 11, 11, 11, 13, 13, 12, 8, 8,…
+## $ np2_length                <dbl> 34, 23, 37, 6, 37, 27, 18, 18, 28, 27, 9, 17, 30, 21, 31, 35, 16, 1, 16, 24, 8, 3, 3, 15, 4, 10, 13, 13…
+## $ duplicate_count           <dbl> 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+## $ sample_id                 <chr> "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h"…
+## $ clone_id                  <chr> "1", "2", "3", "4", "5", "6", "7", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",…
+```
+
+A summary of the results can be plotted by calling `plot` on the returned `ScoperClones` object.
+This will show the minimum inter (between) clonal distances. A detailed summary of clonal 
+relationships as a `data.frame` is also available through a call to `summary` on the results object.
+
+
+```r
+# Plot a histogram of inter clonal distances
 plot(results, binwidth=0.02)
 ```
 
 ![plot of chunk Scoper-Vignette-3](figure/Scoper-Vignette-3-1.png)
 
-## Clonal assignments using hierarchicalClones function
+```r
+# Get summary data.frame
+glimpse(summary(results))
+```
 
-Most current studies however uses a more sophisticated definition 
-for clonal relationships. These studies leverage the high diversity of 
-the junction region as a fingerprint to identify each B cell clone. Because it is unlikely 
-that two separate recombination events would lead to identical junctions, sequences with junction 
-regions that are similar enough are determined to share a common B cell ancestor 
-(i.e., be clonally related) rather than to have arisen independently. Hierarchical clustering 
-is a widely used distance-based method for identify clonally related sequences. The three available 
-agglomeration linkages are: (1) `single`, (2) `average`, and (3) `complete`.
+```
+## Rows: 156
+## Columns: 7
+## $ vjl_group       <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31…
+## $ sequence_count  <int> 20, 1, 1, 1, 12, 7, 3, 1, 12, 5, 37, 4, 5, 10, 6, 9, 5, 4, 5, 2, 4, 1, 2, 1, 2, 1, 24, 25, 7, 2, 3, 3, 12, 1, 15,…
+## $ v_call          <chr> "Homsap IGHV1-18*01 F", "Homsap IGHV1-46*01 F,Homsap IGHV1-46*03 F", "Homsap IGHV5-10-1*01 F", "Homsap IGHV5-10-1…
+## $ j_call          <chr> "Homsap IGHJ4*03 F,Homsap IGHJ4*02 F,Homsap IGHJ4*01 F", "Homsap IGHJ2*01 F", "Homsap IGHJ2*01 F", "Homsap IGHJ3*…
+## $ junction_length <int> 81, 81, 60, 102, 69, 66, 84, 96, 66, 75, 75, 84, 93, 60, 75, 87, 54, 63, 51, 60, 75, 60, 69, 57, 57, 78, 54, 63, …
+## $ clone_count     <int> 19, 1, 1, 1, 10, 7, 3, 1, 11, 4, 36, 4, 3, 8, 5, 9, 5, 4, 5, 2, 3, 1, 2, 1, 2, 1, 20, 25, 6, 1, 3, 2, 10, 1, 15, …
+## $ clone_id        <chr> "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19", "547", "611", "721", "768,769,770,771,772,773,774,775,776,777"…
+```
+
+## Identifying clones by hierarchical clustering
+
+Most current studies uses a more sophisticated definition  for clonal relationships. These studies 
+leverage the high diversity of  the junction region as a fingerprint to identify each B cell clone. 
+Because it is unlikely that two separate recombination events would lead to identical junctions, 
+sequences with junction regions that are similar enough are determined to share a common B cell 
+ancestor (i.e., be clonally related) rather than to have arisen independently. Hierarchical 
+clustering is a widely used distance-based method for identify clonally related sequences.
+An implementation of the heirarchical clustering approach is provide via the `heirachicalClones`
+function.
+
 It is important to determine an appropriate threshold for trimming the hierarchical 
-clustering into B cell clones before using this model. The ideal threshold for separating 
+clustering into B cell clones before using this method. The ideal threshold for separating 
 clonal groups is the value that separates the two modes of the nearest-neighbor distance
 distribution. The nearest-neighbor distance distribution can be generated by using the 
 `distToNearest` function in the [shazam](https://shazam.readthedocs.io) R package.
@@ -101,80 +126,102 @@ The resulting distribution should be bimodal, with the first mode representing s
 with clonal relatives in the dataset and the second mode representing singletons. 
 For further details regarding inferring an appropriate threshold for the hierarchical 
 clustering method, see the 
-[Distance-to-Nearest vignette](https://shazam.readthedocs.io/en/stable/vignettes/DistToNearest-Vignette). 
+[Distance to Nearest Neighbor](https://shazam.readthedocs.io/en/stable/vignettes/DistToNearest-Vignette) 
+vignette in the [shazam](https://shazam.readthedocs.io) package. 
 Technical details can be found in:
 
     Gupta NT, et al. (2017). Hierarchical clustering can identify B cell clones with
         high confidence in Ig repertoire sequencing data.
         The Journal of Immunology 198(6):2489-2499.
 
-
-```r
-# Clonal assignment using the hierarchical model
-results <- hierarchicalClones(db = ExampleDb, threshold = 0.15,
-                              method = "nt",
-                              linkage = "single",
-                              junction = "junction", 
-                              v_call = "v_call", j_call = "j_call",
-                              max_n = NULL, log = NULL,
-                              summarize_clones = TRUE)
-
-# results is an object of class ScoperClones
-class(results)
-```
-
-```
-## [1] "ScoperClones"
-## attr(,"package")
-## [1] "scoper"
-```
-
-```r
-# cloned data (a data.frame)
-cloned_db <- results@db
-# print effective threshold (a numeric):
-results@eff_threshold
-```
-
-```
-## [1] 0.22
-```
-
-Effective threshold is an explanatory value calculated to represent the cut-off separating the inter (between) 
-and intra (within) clonal distances. It may differ from threshold provided for the function.
+Identifying clonal groups using `heirachicalClones` is largely the same as the approach using the 
+`identicalClones` function, with the additional requirement of a distance threshold:
 
 
 ```r
-# get inter and intra conal distances (a data.frame)
-df <- results@inter_intra
+# Clonal assignment using hierarchical clustering
+results <- hierarchicalClones(ExampleDb, threshold=0.15)
 ```
 
-User can plot the results from `summarize_clones=TRUE`, including the minimum inter (between) 
-and maximum intra (within) clonal distances, and the calculated efective threshold.
+The results data.frame, summary plots, and summary table are accessed in the same manner as above.
+This will show the minimum inter (between) and maximum intra (within) clonal distances along with
+an effective threshold, which is an explanatory value calculated to represent the cut-off separating 
+the inter and intra clonal distances. The effective threshold may differ from clustering threshold 
+provided as input to `hierarchicalClones`.
 
 
 ```r
-# plot a histogram of inter versus intra clonal distances  (a ggplot):
+# Get results data.frame
+results_db <- as.data.frame(results)
+glimpse(results_db)
+```
+
+```
+## Rows: 2,000
+## Columns: 16
+## $ sequence_id               <chr> "GN5SHBT01EOOGB", "GN5SHBT06H5CUA", "GN5SHBT04EFLMK", "GN5SHBT02BH08U", "GN5SHBT01A6IAJ", "GN5SHBT08JDG…
+## $ sequence_alignment        <chr> "CAGGTTCAGCTGGTGCAGTCTGGAGCT...GAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGTTACACCTTT............…
+## $ germline_alignment        <chr> "CAGGTTCAGCTGGTGCAGTCTGGAGCT...GAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGTTACACCTTT............…
+## $ germline_alignment_d_mask <chr> "CAGGTTCAGCTGGTGCAGTCTGGAGCT...GAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGTTACACCTTT............…
+## $ v_call                    <chr> "Homsap IGHV1-18*01 F", "Homsap IGHV1-18*01 F", "Homsap IGHV1-18*01 F", "Homsap IGHV1-18*01 F", "Homsap…
+## $ v_call_genotyped          <chr> "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01"…
+## $ d_call                    <chr> "Homsap IGHD2-8*01 F", "Homsap IGHD3-22*01 F", "Homsap IGHD3-3*01 F", "Homsap IGHD3-3*01 F", "Homsap IG…
+## $ j_call                    <chr> "Homsap IGHJ4*02 F", "Homsap IGHJ4*03 F", "Homsap IGHJ4*03 F", "Homsap IGHJ4*03 F", "Homsap IGHJ4*03 F"…
+## $ c_call                    <chr> "IGHM", "IGHM", "IGHD", "IGHD", "IGHM", "IGHM", "IGHM", "IGHM", "IGHM", "IGHM", "IGHA", "IGHM", "IGHA",…
+## $ junction                  <chr> "TGTGCGAGAGATCTGGGGGATATTGTACTAATGGTGTATGCCGACCAGTACCCCATATTGGGGTACTACTTTGACTACTGG", "TGTGCGAGAGACCACGC…
+## $ junction_length           <dbl> 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 75, 75, 75, 75, 75, 75,…
+## $ np1_length                <dbl> 6, 19, 13, 13, 27, 26, 16, 7, 20, 19, 26, 9, 5, 11, 7, 6, 28, 21, 11, 19, 13, 13, 11, 11, 11, 32, 12, 8…
+## $ np2_length                <dbl> 23, 16, 18, 18, 6, 9, 28, 27, 21, 16, 31, 35, 34, 30, 37, 37, 1, 17, 27, 24, 4, 15, 3, 3, 8, 6, 10, 13,…
+## $ duplicate_count           <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1…
+## $ sample_id                 <chr> "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h"…
+## $ clone_id                  <chr> "1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",…
+```
+
+```r
+# Plot a histogram of inter clonal distances
 plot(results, binwidth=0.02)
 ```
 
-![plot of chunk Scoper-Vignette-6](figure/Scoper-Vignette-6-1.png)
+![plot of chunk Scoper-Vignette-5](figure/Scoper-Vignette-5-1.png)
 
-## Clonal assignments using spectralClones function
+```r
+# Get summary data.frame
+glimpse(summary(results))
+```
 
-While the hierarchical clustering-based model groups sequences using 
-a fixed distance supervised threshold, the spectral clustering-based model uses an adaptive 
-unsupervised threshold to tune the required level of similarity among sequences in different 
-local neighborhoods. It can be used as an alternative if the nearest-neighbor distance distribution 
-is unimodal (so `findThreshold` wasn't able to find the threshold at which to cut the hierarchy, 
-see above). The two available methods are: (1) `novj`: clonal relationships are inferred using an adaptive 
-threshold that indicates the level of similarity among junction sequences in a local neighborhood, 
-and (2) `vj`: clonal relationships are inferred not only based on the junction region homology, 
-but also taking into account the mutation profiles in the V and J segments. It is not mandatory, but the 
-fixed threshold can also be used for the model `spectralClones`  in order to enforce an upper-limit cut-off. 
-Using this argument, any sequence with distances above the threshold value from all sequences, will 
-become a singleton. The threshold can be defined as discussed above from distance-to-nearest distribution 
-(`findThreshold` function in the `SHazaM` R package). Technical details can be found in:
+```
+## Rows: 156
+## Columns: 7
+## $ vjl_group       <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31…
+## $ sequence_count  <int> 20, 1, 1, 1, 12, 7, 3, 1, 12, 5, 37, 4, 5, 10, 6, 9, 5, 4, 5, 2, 4, 1, 2, 1, 2, 1, 24, 25, 7, 2, 3, 3, 12, 1, 15,…
+## $ v_call          <chr> "Homsap IGHV1-18*01 F", "Homsap IGHV1-46*01 F,Homsap IGHV1-46*03 F", "Homsap IGHV5-10-1*01 F", "Homsap IGHV5-10-1…
+## $ j_call          <chr> "Homsap IGHJ4*02 F,Homsap IGHJ4*03 F,Homsap IGHJ4*01 F", "Homsap IGHJ2*01 F", "Homsap IGHJ2*01 F", "Homsap IGHJ3*…
+## $ junction_length <int> 81, 81, 60, 102, 69, 66, 84, 96, 66, 75, 75, 84, 93, 60, 75, 87, 54, 63, 51, 60, 75, 60, 69, 57, 57, 78, 54, 63, …
+## $ clone_count     <int> 19, 1, 1, 1, 5, 7, 3, 1, 11, 4, 36, 4, 3, 6, 5, 9, 5, 4, 5, 2, 3, 1, 2, 1, 2, 1, 20, 25, 6, 1, 3, 2, 10, 1, 15, 2…
+## $ clone_id        <chr> "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19", "518", "582", "685", "727,728,729,730,731", "822,823,824,825,8…
+```
+
+## Identifying clones by spectral clustering
+
+While the hierarchical clustering method groups sequences using a fixed distance supervised threshold, 
+the spectral clustering-based model uses an adaptive unsupervised threshold to tune the required 
+level of similarity among sequences in differentlocal neighborhoods. It can be used as an alternative 
+if the nearest-neighbor distance distribution is unimodal; meaning, `findThreshold` wasn't able to find 
+the threshold at which to cut the hierarchy. 
+
+There are two available spectral clustering methods provided by the `spectralClones`  function:
+
+1. `method="novj"`: Infers clonal relationships using an adaptive threshold that indicates the level 
+    of similarity among junction sequences in a local neighborhood, 
+2. `method="vj"`: Infers clonal relationships not only based on the junction region homology, 
+    but also taking into account the mutation profiles in the V and J segments. 
+    
+It is not mandatory, but a fixed threshold can also be provided to `spectralClones` 
+(`threshold` argument) which will enforce an upper-limit cut-off. When specifying the `threshold` 
+argument, any sequence with distances above the threshold value from all sequences, will become a 
+singleton. The threshold can be defined as discussed above using nearest-neighbor distance 
+distribution methods provided in the [shazam](https://shazam.readthedocs.io).
+Technical details can be found in:
 
     Nouri N and Kleinstein SH (2018). A spectral clustering-based method for
         identifying clones from high-throughput B cell repertoire sequencing data.
@@ -184,58 +231,69 @@ become a singleton. The threshold can be defined as discussed above from distanc
         identification of B cell clonal families from next-generation sequencing data,
         bioRxiv doi: 10.1101/788620.
 
-
-```r
-# Clonal assignment using the spectral model
-# IMGT_V object from shazam package to identify sequence limit length
-library("shazam")
-results <- spectralClones(db = ExampleDb, method = "vj",
-                          len_limit = shazam::IMGT_V,
-                          sequence = "sequence_alignment",
-                          germline = "germline_alignment_d_mask",
-                          junction = "junction",
-                          v_call = "v_call", j_call = "j_call",
-                          max_n = NULL, log = NULL,
-                          threshold = 0.15, summarize_clones = TRUE)
-# results is an object of class ScoperClones
-class(results)
-```
-
-```
-## [1] "ScoperClones"
-## attr(,"package")
-## [1] "scoper"
-```
-
-```r
-# cloned data (a data.frame), with the column `clone_id`
-cloned_db <- results@db
-# print effective threshold (a numeric):
-results@eff_threshold
-```
-
-```
-## [1] 0.23
-```
-
-Effective threshold is an explanatory value calculated to represent the cut-off separating the inter (between) 
-and intra (within) clonal distances. It may differ from threshold provided for the function.
+The following example calls the `spectralClones` function using the same (optional) threshold used 
+previously to defined clones using the heirachical approach:
 
 
 ```r
-# get inter and intra clonal distances (a data.frame)
-df <- results@inter_intra
+# Clonal assignment using the spectral clustering
+results <- spectralClones(ExampleDb, method="vj",
+                          threshold=0.15,
+                          germline="germline_alignment_d_mask")
 ```
 
-User can plot the results from `summarize_clones=TRUE`, including the minimum inter (between) 
-and maximum intra (within) clonal distances, and the calculated efective threshold.
+The results data.frame, summary plots, and summary table are accessed in the same manner as shown 
+above using the heirachical approach.
 
 
 ```r
-# plot a histogram of inter versus intra clonal distances  (a ggplot):
+# Get results data.frame
+results_db <- as.data.frame(results)
+glimpse(results_db)
+```
+
+```
+## Rows: 2,000
+## Columns: 16
+## $ sequence_id               <chr> "GN5SHBT01EOOGB", "GN5SHBT06H5CUA", "GN5SHBT04EFLMK", "GN5SHBT02BH08U", "GN5SHBT01A6IAJ", "GN5SHBT08JDG…
+## $ sequence_alignment        <chr> "CAGGTTCAGCTGGTGCAGTCTGGAGCT...GAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGTTACACCTTT............…
+## $ germline_alignment        <chr> "CAGGTTCAGCTGGTGCAGTCTGGAGCT...GAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGTTACACCTTT............…
+## $ germline_alignment_d_mask <chr> "CAGGTTCAGCTGGTGCAGTCTGGAGCT...GAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGTTACACCTTT............…
+## $ v_call                    <chr> "Homsap IGHV1-18*01 F", "Homsap IGHV1-18*01 F", "Homsap IGHV1-18*01 F", "Homsap IGHV1-18*01 F", "Homsap…
+## $ v_call_genotyped          <chr> "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01", "IGHV1-18*01"…
+## $ d_call                    <chr> "Homsap IGHD2-8*01 F", "Homsap IGHD3-22*01 F", "Homsap IGHD3-3*01 F", "Homsap IGHD3-3*01 F", "Homsap IG…
+## $ j_call                    <chr> "Homsap IGHJ4*02 F", "Homsap IGHJ4*03 F", "Homsap IGHJ4*03 F", "Homsap IGHJ4*03 F", "Homsap IGHJ4*03 F"…
+## $ c_call                    <chr> "IGHM", "IGHM", "IGHD", "IGHD", "IGHM", "IGHM", "IGHM", "IGHM", "IGHM", "IGHM", "IGHA", "IGHM", "IGHA",…
+## $ junction                  <chr> "TGTGCGAGAGATCTGGGGGATATTGTACTAATGGTGTATGCCGACCAGTACCCCATATTGGGGTACTACTTTGACTACTGG", "TGTGCGAGAGACCACGC…
+## $ junction_length           <dbl> 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 75, 75, 75, 75, 75, 75,…
+## $ np1_length                <dbl> 6, 19, 13, 13, 27, 26, 16, 7, 20, 19, 26, 9, 5, 11, 7, 6, 28, 21, 11, 19, 13, 13, 11, 11, 11, 32, 12, 8…
+## $ np2_length                <dbl> 23, 16, 18, 18, 6, 9, 28, 27, 21, 16, 31, 35, 34, 30, 37, 37, 1, 17, 27, 24, 4, 15, 3, 3, 8, 6, 10, 13,…
+## $ duplicate_count           <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1…
+## $ sample_id                 <chr> "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h", "-1h"…
+## $ clone_id                  <chr> "1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",…
+```
+
+```r
+# Plot a histogram of inter clonal distances
 plot(results, binwidth=0.02)
 ```
 
-![plot of chunk Scoper-Vignette-9](figure/Scoper-Vignette-9-1.png)
+![plot of chunk Scoper-Vignette-7](figure/Scoper-Vignette-7-1.png)
 
+```r
+# Get summary data.frame
+glimpse(summary(results))
+```
+
+```
+## Rows: 156
+## Columns: 7
+## $ vjl_group       <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31…
+## $ sequence_count  <int> 20, 1, 1, 1, 12, 7, 3, 1, 12, 5, 37, 4, 5, 10, 6, 9, 5, 4, 5, 2, 4, 1, 2, 1, 2, 1, 24, 25, 7, 2, 3, 3, 12, 1, 15,…
+## $ v_call          <chr> "Homsap IGHV1-18*01 F", "Homsap IGHV1-46*01 F,Homsap IGHV1-46*03 F", "Homsap IGHV5-10-1*01 F", "Homsap IGHV5-10-1…
+## $ j_call          <chr> "Homsap IGHJ4*02 F,Homsap IGHJ4*03 F,Homsap IGHJ4*01 F", "Homsap IGHJ2*01 F", "Homsap IGHJ2*01 F", "Homsap IGHJ3*…
+## $ junction_length <int> 81, 81, 60, 102, 69, 66, 84, 96, 66, 75, 75, 84, 93, 60, 75, 87, 54, 63, 51, 60, 75, 60, 69, 57, 57, 78, 54, 63, …
+## $ clone_count     <int> 19, 1, 1, 1, 6, 7, 3, 1, 11, 4, 9, 4, 3, 7, 5, 9, 4, 3, 3, 2, 3, 1, 2, 1, 2, 1, 21, 11, 4, 1, 3, 2, 10, 1, 4, 11,…
+## $ clone_id        <chr> "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19", "465", "514", "585", "619,620,621,622,623,624", "682,683,684,6…
+```
 
