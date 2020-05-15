@@ -350,11 +350,11 @@ calculateInterVsIntra <- function(db,
                           seqs <- db[[ifelse(cdr3, cdr3_col, junction)]][db[[clone]] %in% clones]
                           names(seqs) <- db[[clone]][db[[clone]] %in% clones]
                           ### make a dataframe of unique seqs in each clone
-                          seqs_db <- data.frame(value = seqs, name = names(seqs)) %>%
+                          seqs_db <- data.frame(value = seqs, name = names(seqs), stringsAsFactors = FALSE) %>%
                               dplyr::group_by(!!!rlang::syms(c("name", "value"))) %>% # alternatively: group_by(name) if name value pair is always unique
                               slice(1) %>%
                               ungroup()
-                          seqs <- as.character(seqs_db$value)
+                          seqs <- seqs_db$value
                           names(seqs) <- seqs_db$name
                           ### calculate distance matrix among all seqs
                           dist_mtx <- pairwiseDist(seqs, dist_mat=getDNAMatrix(gap = 0))
