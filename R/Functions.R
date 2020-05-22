@@ -1133,6 +1133,7 @@ defineClonesScoper <- function(db,
     db_cloned <- foreach(gp = 1:n_groups,
                          .combine = "rbind",
                          .inorder = TRUE,
+                         .packages = "dplyr",
                          .errorhandling='stop') %dopar% { 
                              # *********************************************************************************
                              # filter each group
