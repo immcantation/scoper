@@ -5,6 +5,11 @@ load(file.path("..", "data-tests", "ExampleDb.rda"), envir=e1)
 db <- get("ExampleDb", envir=e1)
 rm(e1)
 
+# Check for pipelines environment
+pipeline_env <- Sys.getenv("CI") == "true"
+cat("Bitbucket Pipelines:", pipeline_env, "\n")
+pipeline_env <- FALSE
+
 #### clone - identicalClones ####
 
 test_that("Test identicalClones", {
@@ -19,12 +24,14 @@ test_that("Test identicalClones", {
     expect_identical(clones, expects)
     
     # Test parallel
-    db <- identicalClones(ExampleDb, method ="nt",
-                          junction = "junction", v_call = "v_call",
-                          j_call = "j_call", summarize_clones = FALSE,
-                          nproc=4)
-    clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
-    expect_identical(clones, expects)
+    if (!pipeline_env) {
+        db <- identicalClones(ExampleDb, method ="nt",
+                              junction = "junction", v_call = "v_call",
+                              j_call = "j_call", summarize_clones = FALSE,
+                              nproc=2)
+        clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
+        expect_identical(clones, expects)
+    }
 })
 
 #### clone - hierarchicalClones ####
@@ -43,14 +50,16 @@ test_that("Test hierarchicalClones", {
     expect_identical(clones, expects)
     
     # Test parallel
-    db <- hierarchicalClones(ExampleDb, threshold = 0.15,
-                             method = "nt", linkage = "single",
-                             junction = "junction",
-                             v_call = "v_call", j_call = "j_call",
-                             summarize_clones = FALSE,
-                             nproc=4)
-    clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
-    expect_identical(clones, expects)
+    if (!pipeline_env) {
+        db <- hierarchicalClones(ExampleDb, threshold = 0.15,
+                                 method = "nt", linkage = "single",
+                                 junction = "junction",
+                                 v_call = "v_call", j_call = "j_call",
+                                 summarize_clones = FALSE,
+                                 nproc=2)
+        clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
+        expect_identical(clones, expects)
+    }
 })
 
 #### clone - spectralClones - novj method ####
@@ -68,13 +77,15 @@ test_that("Test spectralClones - novj", {
     expect_identical(clones, expects)
     
     # Test parallel
-    db <- spectralClones(ExampleDb, method = "novj",
-                         junction = "junction", v_call = "v_call",
-                         j_call = "j_call", threshold=0.15,
-                         summarize_clones = FALSE,
-                         nproc=4)
-    clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
-    expect_identical(clones, expects)
+    if (!pipeline_env) {
+        db <- spectralClones(ExampleDb, method = "novj",
+                             junction = "junction", v_call = "v_call",
+                             j_call = "j_call", threshold=0.15,
+                             summarize_clones = FALSE,
+                             nproc=2)
+        clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
+        expect_identical(clones, expects)
+    }
 })
 
 #### clone - spectralClones - vj method ####
@@ -94,14 +105,16 @@ test_that("Test spectralClones - vj", {
     expect_identical(clones, expects)
     
     # Test parallel
-    db <- spectralClones(ExampleDb, method = "vj",
-                         germline = "germline_alignment_d_mask",
-                         sequence = "sequence_alignment",
-                         junction = "junction", v_call = "v_call",
-                         j_call = "j_call", threshold=0.15,
-                         summarize_clones = FALSE,
-                         nproc=4)
-    clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
-    expect_identical(clones, expects)
+    if (!pipeline_env) {
+        db <- spectralClones(ExampleDb, method = "vj",
+                             germline = "germline_alignment_d_mask",
+                             sequence = "sequence_alignment",
+                             junction = "junction", v_call = "v_call",
+                             j_call = "j_call", threshold=0.15,
+                             summarize_clones = FALSE,
+                             nproc=2)
+        clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
+        expect_identical(clones, expects)
+    }
 })
 
