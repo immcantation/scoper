@@ -341,7 +341,7 @@ calculateInterVsIntra <- function(db,
     # open dataframes
     vec_ff <- foreach(k=1:n_groups,
                       .combine="c",
-                      .packages=c("dplyr", "magrittr"),
+                      .packages=c("dplyr", "magrittr", "alakazam"),
                       .errorhandling='stop') %dopar% {
                           
                           # *********************************************************************************
