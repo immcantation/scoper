@@ -1,7 +1,7 @@
 Package: scoper
 Type: Package
-Version: 1.0.0
-Date: 2020-05-15
+Version: 1.0.1
+Date: 2020-05-24
 Authors@R: c(person("Nima", "Nouri", role=c("aut"), 
                     email="nima.nouri@yale.edu"),
              person("Edel", "Aron", role=c("ctb"), 
@@ -37,6 +37,7 @@ Imports:
     doParallel,
     dplyr (>= 0.8.1),
     foreach,
+    magrittr,
     methods,
     Rcpp (>= 0.12.12),
     rlang,

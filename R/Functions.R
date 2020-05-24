@@ -341,6 +341,7 @@ calculateInterVsIntra <- function(db,
     # open dataframes
     vec_ff <- foreach(k=1:n_groups,
                       .combine="c",
+                      .packages=c("dplyr", "magrittr"),
                       .errorhandling='stop') %dopar% {
                           
                           # *********************************************************************************
@@ -729,7 +730,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' @export
 identicalClones <- function(db, method=c("nt", "aa"), junction="junction", 
                             v_call="v_call", j_call="j_call", clone="clone_id",
-                            first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc = 1,
+                            first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                             verbose=FALSE, log=NULL, 
                             summarize_clones=TRUE) {
     
@@ -1130,10 +1131,10 @@ defineClonesScoper <- function(db,
     
     ### perform clustering for each group
     gp <- NULL
-    db_cloned <- foreach(gp = 1:n_groups,
-                         .combine = "rbind",
-                         .inorder = TRUE,
-                         .packages = "dplyr",
+    db_cloned <- foreach(gp=1:n_groups,
+                         .final=dplyr::bind_rows,
+                         .inorder=TRUE,
+                         .packages=c("dplyr", "magrittr"),
                          .errorhandling='stop') %dopar% { 
                              # *********************************************************************************
                              # filter each group
@@ -1142,8 +1143,7 @@ defineClonesScoper <- function(db,
                              gp_jcall <- vjl_gps$group_j_call[gp]
                              gp_lent <- vjl_gps$group_junction_length[gp]
                              gp_size <- vjl_gps$group_size[gp]
-                             db_gp <- db %>%
-                                 dplyr::filter(!!rlang::sym("vjl_group") == vjl_gp)
+                             db_gp <- dplyr::filter(db, !!rlang::sym("vjl_group") == vjl_gp)
                              
                              # pass the group for clustering
                              # cat(paste(vjl_gp, "here"), sep="\n")  # for tests
