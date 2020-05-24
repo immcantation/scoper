@@ -331,6 +331,12 @@ calculateInterVsIntra <- function(db,
         stop('Nproc must be positive.')
     }
     
+    ### expoer function to clusters
+    if (nproc > 1) { 
+        export_functions <- list("pairwiseDist", "getDNAMatrix")
+        parallel::clusterExport(cluster, export_functions, envir=environment())
+    }
+    
     n_groups <- nrow(vjl_gps)  
     ### check the progressbar
     if (verbose) {
@@ -341,7 +347,7 @@ calculateInterVsIntra <- function(db,
     # open dataframes
     vec_ff <- foreach(k=1:n_groups,
                       .combine="c",
-                      .packages=c("dplyr", "magrittr", "alakazam"),
+                      .packages=c("dplyr", "magrittr"),
                       .errorhandling='stop') %dopar% {
                           
                           # *********************************************************************************
