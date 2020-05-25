@@ -31,7 +31,7 @@ Depends:
     R (>= 3.5.0),
     ggplot2 (>= 3.2.0)
 Imports: 
-    alakazam (>= 1.0.0),
+    alakazam (>= 1.0.1),
     shazam (>= 1.0.0), 
     data.table,
     doParallel,
