@@ -222,8 +222,9 @@ It is not mandatory, but a fixed threshold can also be provided to `spectralClon
 (`threshold` argument) which will enforce an upper-limit cut-off. When specifying the `threshold` 
 argument, any sequence with distances above the threshold value from all sequences will become a 
 singleton. The threshold can be defined as discussed above using nearest-neighbor distance 
-distribution methods provided in the [shazam](https://shazam.readthedocs.io).
-Technical details can be found in:
+distribution methods provided in the [shazam](https://shazam.readthedocs.io). If `method="vj"`, 
+the `threshold` will be applied on the distances caculated combining junction region homology 
+and V/J mutation profiles. Technical details can be found in:
 
     Nouri N and Kleinstein SH (2018). A spectral clustering-based method for
         identifying clones from high-throughput B cell repertoire sequencing data.
