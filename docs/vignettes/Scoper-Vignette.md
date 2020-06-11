@@ -180,7 +180,7 @@ glimpse(results_db)
 ```
 
 ```r
-# Plot a histogram of inter clonal distances
+# Plot a histogram of inter and intra clonal distances
 plot(results, binwidth=0.02)
 ```
 
@@ -234,19 +234,39 @@ and V/J mutation profiles. Technical details can be found in:
         identification of B cell clonal families from next-generation sequencing data,
         bioRxiv doi: 10.1101/788620.
 
-The following example calls the `spectralClones` function using the same (optional) threshold used 
-previously to defined clones using the hierachical approach:
+The following examples calls the `spectralClones` function with(out) the same 
+(optional) threshold used previously to define clones using the hierachical approach.
+The results data.frame, summary plots, and summary table are accessed in the 
+same manner as shown above using the hierachical approach.
 
 
 ```r
-# Clonal assignment using the spectral clustering
+# Clonal assignment using the spectral clustering method novj
+results <- spectralClones(ExampleDb, method="novj")
+# Plot a histogram of inter and intra clonal distances
+plot(results, binwidth=0.02)
+```
+
+![plot of chunk Scoper-Vignette-6](figure/Scoper-Vignette-6-1.png)
+
+
+```r
+# Clonal assignment using the spectral clustering method novj with threshold
+results <- spectralClones(ExampleDb, method="novj",
+                          threshold=0.15)
+# Plot a histogram of inter and intra clonal distances
+plot(results, binwidth=0.02)
+```
+
+![plot of chunk Scoper-Vignette-7](figure/Scoper-Vignette-7-1.png)
+
+
+```r
+# Clonal assignment using the spectral clustering method vj
 results <- spectralClones(ExampleDb, method="vj",
                           threshold=0.15,
                           germline="germline_alignment_d_mask")
 ```
-
-The results data.frame, summary plots, and summary table are accessed in the same manner as shown 
-above using the hierachical approach.
 
 
 ```r
@@ -277,11 +297,11 @@ glimpse(results_db)
 ```
 
 ```r
-# Plot a histogram of inter clonal distances
+# Plot a histogram of inter and intra clonal distances
 plot(results, binwidth=0.02)
 ```
 
-![plot of chunk Scoper-Vignette-7](figure/Scoper-Vignette-7-1.png)
+![plot of chunk Scoper-Vignette-9](figure/Scoper-Vignette-9-1.png)
 
 ```r
 # Get summary data.frame
