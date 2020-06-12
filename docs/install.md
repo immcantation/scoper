@@ -34,7 +34,7 @@ To install the latest development code via devtools:
 
 ```R
 library(devtools)
-install_bitbucket("kleinstein/scoper@default")
+install_bitbucket("kleinstein/scoper@master")
 ```
 
 Note, using `install_bitbucket` will not build the documentation. To generate the 
