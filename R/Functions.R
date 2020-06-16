@@ -1410,18 +1410,20 @@ passToClustering_lev1 <- function (db_gp,
             juncs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
             junc_length <- unique(stri_length(juncs))
             # find unique seqs
-            df <- as.data.table(seqs)[, list(list(.I)), by = seqs]
+            seqs <- paste(seqs, juncs, germs, sep = "|")
+            df <- as.data.table(seqs)[, list(list(.I)), by=seqs] %>%
+                tidyr::separate(col = seqs, into = c("seqs_unq", "juncs_unq", "germs_unq"), sep = "\\|")
             n_unq <- nrow(df)
             ind_unq <- df$V1
-            seqs_unq <- df$seqs
             if (n_unq == 1) {
                 return(list("idCluster" = rep(1, n), 
                             "n_cluster" = 1, 
                             "eigen_vals" = rep(0, n)))
             }
             # find corresponding unique germs and junctions
-            germs_unq <- sapply(1:n_unq, function(x){ unique(germs[ind_unq[[x]]]) })
-            juncs_unq <- sapply(1:n_unq, function(x){ unique(juncs[ind_unq[[x]]]) })
+            seqs_unq <- df$seqs_unq
+            germs_unq <- df$germs_unq
+            juncs_unq <- df$juncs_unq
             # calculate unique junctions distance matrix
             dist_mtx <- pairwiseDist(seq = juncs_unq, 
                                      dist_mat = getDNAMatrix(gap = 0))
