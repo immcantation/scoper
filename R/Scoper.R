@@ -52,6 +52,7 @@
 #' @importFrom  stats       density kmeans sd cor
 #'                          as.dist hclust cutree
 #' @importFrom  stringi     stri_split_fixed stri_length stri_count
+#' @importFrom  tidyr       separate
 #' @useDynLib   scoper, .registration=TRUE
 NULL
 
