@@ -197,7 +197,7 @@ plot(results, binwidth=0.02)
 ```
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE}
-# Clonal assignment using the spectral clustering method vj
+# Clonal assignment using the spectral clustering method vj with threshold
 results <- spectralClones(ExampleDb, method="vj",
                           threshold=0.15,
                           germline="germline_alignment_d_mask")

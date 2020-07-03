@@ -17,6 +17,10 @@ junction = "junction",
 v_call = "v_call",
 j_call = "j_call",
 clone = "clone_id",
+cell_id = NULL,
+locus = NULL,
+only_igh = TRUE,
+split_igl = TRUE,
 first = FALSE,
 cdr3 = FALSE,
 mod3 = FALSE,
@@ -50,6 +54,23 @@ j_call
 
 clone
 :   the output column name containing the clonal clustering identifiers.
+
+cell_id
+:   name of the column containing cell IDs. Only 
+applicable and required for single-cell mode.
+
+locus
+:   name of the column containing locus information. 
+Only applicable and required for single-cell mode.
+
+only_igh
+:   use only heavy chain (`IGH`) sequences for grouping,
+disregarding light chains. Only applicable and required for
+single-cell mode. Default is `TRUE`.
+
+split_igl
+:   split clones by light chains. Only applicable and required for
+single-cell mode. Default is `TRUE`.
 
 first
 :   specifies how to handle multiple V(D)J assignments for initial grouping. 
@@ -108,7 +129,27 @@ Details
 `identicalClones` provides a computational platform to explore the B cell clonal 
 relationships in high-throughput Adaptive Immune Receptor Repertoire sequencing (AIRR-seq) 
 data sets. This function performs clustering among sequences of B cell receptors 
-(BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and identical junction:
+(BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and identical junction: 
+
+To invoke single-cell mode, both `cell_id` and `locus` must be supplied. Otherwise,
+the function will run under non-single-cell mode, using all input sequences regardless of the
+value in the `locus` column. If only one of these arguments be supplied, the function will 
+returns an error message and stops.
+
+Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
+should be done using heavy chain (`IGH`) sequences only, or using both heavy chain
+(`IGH`) and light chain (`IGK`, `IGL`) sequences. This is governed by 
+`only_igh`.
+
+Values in the `locus` column must be one of `"IGH"`, `"IGK"`, and `"IGL"`.
+Otherwise, the function will returns an error message and stops.
+
+Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
+by light chain (`IGK`, `IGL`) sequences. This is governed by `split_igl`.
+
+Under single-cell mode the cloning is perfomred based on the heavy chain (`IGH`) sequences only. 
+It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
+an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id.
 
 
 
@@ -132,7 +173,8 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) plotting summary results.
+See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupGenes) for 
+more details about grouping requirements.
 
 
 

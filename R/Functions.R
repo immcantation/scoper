@@ -186,7 +186,8 @@ pairwiseMutions <- function(germ_imgt,
                             junc_length, 
                             len_limit = NULL,
                             cdr3 = FALSE,
-                            mutabs = NULL) {
+                            mutabs = NULL,
+                            norm_fact = TRUE) {
     
     ##### get number of seqs
     n <- unique(c(length(seq_imgt), length(germ_imgt)))
@@ -259,7 +260,11 @@ pairwiseMutions <- function(germ_imgt,
         if ( eff_germ_lent > lenConsensus)  { eff_germ <- substr( eff_germ, start = 1, stop = lenConsensus) }  
     }
     ##### count informative positions
-    informative_pos <- sapply(1:n, function(x){ sum(stri_count(seq_imgt[x], fixed = c("A","C","G","T"))) })
+    if (norm_fact) {
+        informative_pos <- sapply(1:n, function(x){ sum(stri_count(seq_imgt[x], fixed = c("A","C","G","T"))) })   
+    } else {
+        informative_pos <- rep(1, n)
+    }
     ##### convert eff_germ and seq_imgt to matrices
     seqsMtx <- matrix(NA, nrow=n, ncol=lenConsensus)
     effMtx <- matrix(NA, nrow=n, ncol=lenConsensus)
@@ -464,6 +469,7 @@ logVerbose <- function(out_dir, log_verbose_name,
 prepare_db <- function(db, 
                        junction = "junction", v_call = "v_call", j_call = "j_call",
                        first = FALSE, cdr3 = FALSE, 
+                       cell_id = NULL, locus = NULL, only_igh = TRUE,
                        mod3 = FALSE, max_n = 0) {
     # add junction length column
     db$junction_l <- stri_length(db[[junction]])
@@ -507,6 +513,10 @@ prepare_db <- function(db,
     db <- groupGenes(db,
                      v_call = v_call,
                      j_call = j_call,
+                     junc_len = NULL,
+                     cell_id = cell_id,
+                     locus = locus,
+                     only_igh = only_igh,
                      first = first)
     
     ### groups to use
@@ -685,6 +695,15 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' @param    v_call             character name of the column containing the V-segment allele calls.
 #' @param    j_call             character name of the column containing the J-segment allele calls.
 #' @param    clone              the output column name containing the clonal clustering identifiers.
+#' @param    cell_id            name of the column containing cell IDs. Only 
+#'                              applicable and required for single-cell mode.
+#' @param    locus              name of the column containing locus information. 
+#'                              Only applicable and required for single-cell mode.
+#' @param    only_igh           use only heavy chain (\code{IGH}) sequences for grouping,
+#'                              disregarding light chains. Only applicable and required for
+#'                              single-cell mode. Default is \code{TRUE}.
+#' @param    split_igl          split clones by light chains. Only applicable and required for
+#'                              single-cell mode. Default is \code{TRUE}.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
@@ -721,7 +740,28 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' data sets. This function performs clustering among sequences of B cell receptors 
 #' (BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and identical junction: 
 #'
-#' @seealso  See \link{plotCloneSummary} plotting summary results.
+#' To invoke single-cell mode, both \code{cell_id} and \code{locus} must be supplied. Otherwise,
+#' the function will run under non-single-cell mode, using all input sequences regardless of the
+#' value in the \code{locus} column. If only one of these arguments be supplied, the function will 
+#' returns an error message and stops.
+#' 
+#' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
+#' should be done using heavy chain (\code{IGH}) sequences only, or using both heavy chain
+#' (\code{IGH}) and light chain (\code{IGK}, \code{IGL}) sequences. This is governed by 
+#' \code{only_igh}.
+#' 
+#' Values in the \code{locus} column must be one of \code{"IGH"}, \code{"IGK"}, and \code{"IGL"}.
+#' Otherwise, the function will returns an error message and stops.
+#' 
+#' Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
+#' by light chain (\code{IGK}, \code{IGL}) sequences. This is governed by \code{split_igl}.
+#' 
+#' Under single-cell mode the cloning is perfomred based on the heavy chain (\code{IGH}) sequences only. 
+#' It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
+#' an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id. 
+#'
+#' @seealso See \link{plotCloneSummary} for plotting summary results. See \link{groupGenes} for 
+#' more details about grouping requirements.
 #'
 #' @examples
 #' # Find clonal groups
@@ -736,6 +776,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' @export
 identicalClones <- function(db, method=c("nt", "aa"), junction="junction", 
                             v_call="v_call", j_call="j_call", clone="clone_id",
+                            cell_id=NULL, locus=NULL, only_igh=TRUE, split_igl=TRUE,
                             first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                             verbose=FALSE, log=NULL, 
                             summarize_clones=TRUE) {
@@ -743,6 +784,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone,
+                                  cell_id = cell_id, locus = locus, only_igh = only_igh, split_igl = split_igl,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,        
                                   verbose = verbose, log = log, 
                                   summarize_clones = summarize_clones)
@@ -782,6 +824,15 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' @param    v_call             character name of the column containing the V-segment allele calls.
 #' @param    j_call             character name of the column containing the J-segment allele calls.
 #' @param    clone              the output column name containing the clonal cluster identifiers.
+#' @param    cell_id            name of the column containing cell IDs. Only 
+#'                              applicable and required for single-cell mode.
+#' @param    locus              name of the column containing locus information. 
+#'                              Only applicable and required for single-cell mode.
+#' @param    only_igh           use only heavy chain (\code{IGH}) sequences for grouping,
+#'                              disregarding light chains. Only applicable and required for
+#'                              single-cell mode. Default is \code{TRUE}.
+#' @param    split_igl          split clones by light chains. Only applicable and required for
+#'                              single-cell mode. Default is \code{TRUE}.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
@@ -820,8 +871,29 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' data sets. This function performs hierarchical clustering among sequences of B cell receptors 
 #' (BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and junction length 
 #' based on the junction sequence similarity: 
-#'
-#' @seealso  See \link{plotCloneSummary} plotting summary results.
+#' 
+#' To invoke single-cell mode, both \code{cell_id} and \code{locus} must be supplied. Otherwise,
+#' the function will run under non-single-cell mode, using all input sequences regardless of the
+#' value in the \code{locus} column. If only one of these arguments be supplied, the function will 
+#' returns an error message and stops.
+#' 
+#' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
+#' should be done using heavy chain (\code{IGH}) sequences only, or using both heavy chain
+#' (\code{IGH}) and light chain (\code{IGK}, \code{IGL}) sequences. This is governed by 
+#' \code{only_igh}.
+#' 
+#' Values in the \code{locus} column must be one of \code{"IGH"}, \code{"IGK"}, and \code{"IGL"}.
+#' Otherwise, the function will returns an error message and stops.
+#' 
+#' Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
+#' by light chain (\code{IGK}, \code{IGL}) sequences. This is governed by \code{split_igl}.
+#' 
+#' Under single-cell mode the cloning is perfomred based on the heavy chain (\code{IGH}) sequences only. 
+#' It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
+#' an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id. 
+#' 
+#' @seealso See \link{plotCloneSummary} for plotting summary results. See \link{groupGenes} for 
+#' more details about grouping requirements.
 #'
 #' @examples
 #' # Find clonal groups
@@ -837,6 +909,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("single", "average", "complete"), 
                                normalize=c("len", "none"), junction="junction", 
                                v_call="v_call", j_call="j_call", clone="clone_id",
+                               cell_id=NULL, locus=NULL, only_igh=TRUE, split_igl=TRUE,
                                first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                                verbose=FALSE, log=NULL,
                                summarize_clones=TRUE) {
@@ -844,6 +917,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
                                   method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone,
+                                  cell_id = cell_id, locus = locus, only_igh = only_igh, split_igl = split_igl,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
                                   verbose = verbose, log = log, 
                                   summarize_clones = summarize_clones)
@@ -878,6 +952,15 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' @param    v_call             character name of the column containing the V-segment allele calls.
 #' @param    j_call             character name of the column containing the J-segment allele calls.
 #' @param    clone              the output column name containing the clone ids.
+#' @param    cell_id            name of the column containing cell IDs. Only 
+#'                              applicable and required for single-cell mode.
+#' @param    locus              name of the column containing locus information. 
+#'                              Only applicable and required for single-cell mode.
+#' @param    only_igh           use only heavy chain (\code{IGH}) sequences for grouping,
+#'                              disregarding light chains. Only applicable and required for
+#'                              single-cell mode. Default is \code{TRUE}.
+#' @param    split_igl          split clones by light chains. Only applicable and required for
+#'                              single-cell mode. Default is \code{TRUE}.
 #' @param    targeting_model    \link{TargetingModel} object. Only applicable if \code{method} = \code{"vj"}. 
 #'                              See Details for description.
 #' @param    len_limit          \link{IMGT_V} object defining the regions and boundaries of the Ig 
@@ -940,7 +1023,28 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'       become a singleton.
 #' }
 #'
-#' @seealso  See \link{plotCloneSummary} plotting summary results.
+#' To invoke single-cell mode, both \code{cell_id} and \code{locus} must be supplied. Otherwise,
+#' the function will run under non-single-cell mode, using all input sequences regardless of the
+#' value in the \code{locus} column. If only one of these arguments be supplied, the function will 
+#' returns an error message and stops.
+#' 
+#' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
+#' should be done using heavy chain (\code{IGH}) sequences only, or using both heavy chain
+#' (\code{IGH}) and light chain (\code{IGK}, \code{IGL}) sequences. This is governed by 
+#' \code{only_igh}.
+#' 
+#' Values in the \code{locus} column must be one of \code{"IGH"}, \code{"IGK"}, and \code{"IGL"}.
+#' Otherwise, the function will returns an error message and stops.
+#' 
+#' Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
+#' by light chain (\code{IGK}, \code{IGL}) sequences. This is governed by \code{split_igl}.
+#' 
+#' Under single-cell mode the cloning is perfomred based on the heavy chain (\code{IGH}) sequences only. 
+#' It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
+#' an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id. 
+#'
+#' @seealso See \link{plotCloneSummary} for plotting summary results. See \link{groupGenes} for 
+#' more details about grouping requirements.
 #'
 #' @examples
 #' # Subset example data
@@ -958,6 +1062,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' @export
 spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignment", sequence="sequence_alignment",
                            junction="junction", v_call="v_call", j_call="j_call", clone="clone_id",
+                           cell_id=NULL, locus=NULL, only_igh=TRUE, split_igl=TRUE,
                            targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, 
                            threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
                            verbose=FALSE, log=NULL,
@@ -966,6 +1071,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
                                   germline = germline, sequence = sequence,
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone, 
+                                  cell_id = cell_id, locus = locus, only_igh = only_igh, split_igl = split_igl,
                                   targeting_model = targeting_model, len_limit = len_limit,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n,
                                   threshold = threshold, base_sim = base_sim,
@@ -995,6 +1101,7 @@ defineClonesScoper <- function(db,
                                linkage = c("single", "average", "complete"), normalize = c("len", "none"),
                                germline = "germline_alignment", sequence = "sequence_alignment",
                                junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
+                               cell_id = NULL, locus = NULL, only_igh = TRUE, split_igl = TRUE,
                                targeting_model = NULL, len_limit = NULL,
                                first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = 0, 
                                threshold = NULL, base_sim = 0.95,
@@ -1061,20 +1168,41 @@ defineClonesScoper <- function(db,
     
     ### Check general required columns
     columns <- c(junction, v_call, j_call) #, fields
-    columns <- columns[!is.null(columns)]
     check <- checkColumns(db, columns)
-    if (!check) { 
-        stop("columns ", paste(columns, collapse = " and "), " are not found.") 
+    if (is.character(check)) { 
+        stop(check)
     }
     
     ### Check required columns for method "vj"
     if (model == "spectral" & method == "vj") {
         columns <- c(germline, sequence) #, fields
-        columns <- columns[!is.null(columns)]
-        check_ham_mut <- checkColumns(db, columns)
-        if (!check_ham_mut) { 
-            stop("columns ", paste(columns, collapse = " and "), " are not found.") 
+        check <- checkColumns(db, columns)
+        if (is.character(check)) { 
+            stop(check)
         }
+    } 
+    
+    ### Check single-cell mode
+    single_cell <- FALSE
+    if (!is.null(cell_id) | !is.null(locus)) {
+        # Check required columns for single-cell mode
+        columns <- c(cell_id, locus) #, fields
+        check <- checkColumns(db, columns)
+        if (is.character(check)) { 
+            stop(check) 
+        }
+        # check lucus column
+        check <- !all(unique(db[[locus]]) %in% c("IGH", "IGK", "IGL"))
+        if (check) {
+            stop("The locus column must contains one of {IGH, IGK, IGL}.")
+        }
+        # check multiple heavy chains
+        multi_h_id <- sum(table(db[[cell_id]][db[[locus]] == "IGH"]) > 1)
+        if (multi_h_id > 0) {
+            stop(paste(multi_h_id, "cell(s) with multiple heavy chains found. One heavy chain per cell is expected."))
+        }
+        # if passed
+        single_cell <- TRUE
     } 
     
     ### check verbose and log
@@ -1093,6 +1221,7 @@ defineClonesScoper <- function(db,
     results_prep <- prepare_db(db = db, 
                                junction = junction, v_call = v_call, j_call = j_call,
                                first = first, cdr3 = cdr3, 
+                               cell_id = cell_id, locus = locus, only_igh = only_igh,
                                mod3 = mod3, max_n = max_n)
     db <- results_prep$db
     n_rmv_mod3 <- results_prep$n_rmv_mod3
@@ -1100,6 +1229,14 @@ defineClonesScoper <- function(db,
     n_rmv_N <- results_prep$n_rmv_N
     junction_l <- results_prep$junction_l
     cdr3_col <-  results_prep$cdr3_col
+    
+    ### for single-cell mode: separates heavy and light chain data frames
+    ### performs cloning only on heavy chains
+    if (single_cell) {
+        db_l <- db[db[[locus]] != "IGH", ]
+        db_h <- db[db[[locus]] == "IGH", ]
+        db <- db_h
+    }
     
     ### summary of the groups
     vjl_gps <- db %>% 
@@ -1201,12 +1338,14 @@ defineClonesScoper <- function(db,
     ### Stop the cluster
     if (nproc > 1) { parallel::stopCluster(cluster) }
     
+    ### sort clone ids
     db_cloned$clone_temp <- db_cloned %>%
         dplyr::group_by(!!rlang::sym(clone)) %>%
         dplyr::group_indices()
     db_cloned[[clone]] <- db_cloned$clone_temp
     db_cloned <- db_cloned[order(db_cloned[[clone]]), ]
     db_cloned[[clone]] <- as.character(db_cloned[[clone]])
+    db_cloned$clone_temp <- NULL
     
     ### report removed sequences
     if (mod3) {
@@ -1295,6 +1434,62 @@ defineClonesScoper <- function(db,
     
     ### remove extra columns
     db_cloned <- db_cloned[, !(names(db_cloned) %in% temp_cols)]
+    
+    ### singl cell pipeline
+    if (single_cell) {
+        db_l <- db_l[, !(names(db_l) %in% temp_cols)]
+        db_l[[clone]] <- NA
+        # copy clone ids from heavy chains into light chains
+        cell_ids_h <- unique(db_cloned[[cell_id]])
+        cell_ids_l <- unique(db_l[[cell_id]])
+        for (cellid in cell_ids_l) {
+            if (cellid %in% cell_ids_h) {
+                db_l[[clone]][db_l[[cell_id]] == cellid] <- db_cloned[[clone]][db_cloned[[cell_id]] == cellid]
+            } 
+        }
+        # bind heavy and light chain data.frames
+        stopifnot(all(names(db_cloned) == names(db_l)))
+        db_cloned <- bind_rows(db_cloned, db_l)
+        # split clones by light chains
+        if (split_igl) {
+            clones <- unique(db_cloned[[clone]])
+            clones <- clones[!is.na(clones)]
+            for (cloneid in clones) {
+                db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
+                if (length(unique(db_c[[cell_id]])) == 1) next()
+                db_c <- groupGenes(data = db_c,
+                                   v_call = v_call,
+                                   j_call = j_call,
+                                   junc_len = NULL,
+                                   cell_id = cell_id,
+                                   locus = locus,
+                                   only_igh = FALSE,
+                                   first = FALSE)
+                if (length(unique(db_c$vj_group)) == 1) next()
+                db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_") 
+                for (cellid in unique(db_c[[cell_id]])) {
+                    db_cloned[[clone]][db_cloned[[clone]] == cloneid & db_cloned[[cell_id]] == cellid] <- 
+                        db_c[[clone]][db_c[[cell_id]] == cellid]
+                }
+            }
+        }
+        # sort clone ids
+        na.count <- sum(is.na(db_cloned[[clone]]))
+        if (na.count > 0) {
+            db_na <- db_cloned[is.na(db_cloned[[clone]]), ]
+            db_cloned <- db_cloned[!is.na(db_cloned[[clone]]), ]        
+        }
+        db_cloned$clone_temp <- db_cloned %>%
+            dplyr::group_by(!!rlang::sym(clone)) %>%
+            dplyr::group_indices()
+        db_cloned[[clone]] <- db_cloned$clone_temp
+        db_cloned <- db_cloned[order(db_cloned[[clone]]), ]
+        db_cloned[[clone]] <- as.character(db_cloned[[clone]])
+        db_cloned$clone_temp <- NULL
+        if (na.count > 0) {
+            db_cloned <- bind_rows(db_cloned, db_na)
+        }
+    }
     
     # return results
     if (summarize_clones) {
