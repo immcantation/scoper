@@ -20,7 +20,7 @@ clone = "clone_id",
 cell_id = NULL,
 locus = NULL,
 only_igh = TRUE,
-split_igl = TRUE,
+split_light = TRUE,
 first = FALSE,
 cdr3 = FALSE,
 mod3 = FALSE,
@@ -68,7 +68,7 @@ only_igh
 disregarding light chains. Only applicable and required for
 single-cell mode. Default is `TRUE`.
 
-split_igl
+split_light
 :   split clones by light chains. Only applicable and required for
 single-cell mode. Default is `TRUE`.
 
@@ -145,7 +145,7 @@ Values in the `locus` column must be one of `"IGH"`, `"IGK"`, and `"IGL"`.
 Otherwise, the function will returns an error message and stops.
 
 Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
-by light chain (`IGK`, `IGL`) sequences. This is governed by `split_igl`.
+by light chain (`IGK`, `IGL`) sequences. This is governed by `split_light`.
 
 Under single-cell mode the cloning is perfomred based on the heavy chain (`IGH`) sequences only. 
 It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
