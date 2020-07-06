@@ -1144,7 +1144,9 @@ defineClonesScoper <- function(db,
         if (!method %in% c("novj", "vj")) { 
             stop(paste0("'method' should be one of 'novj' or 'vj' for model '", model, "'.")) 
         }
-    } 
+    }  else {
+        stop("model must be one of 'identical', 'hierarchical', or 'spectral'.")
+    }
     
     ### Check for invalid characters
     valid_chars <- colnames(getDNAMatrix(gap = 0))
@@ -1298,8 +1300,6 @@ defineClonesScoper <- function(db,
                                                               germline = germline,
                                                               sequence = sequence,
                                                               junction = junction,
-                                                              v_call = v_call,
-                                                              j_call = j_call,
                                                               mutabs = targeting_model,
                                                               len_limit = len_limit,
                                                               cdr3 = cdr3,
@@ -1518,8 +1518,6 @@ passToClustering_lev1 <- function (db_gp,
                                    len_limit = NULL,
                                    cdr3 = FALSE,
                                    cdr3_col = NA,
-                                   v_call = "v_call",
-                                   j_call = "j_call",
                                    threshold = NULL,
                                    base_sim = 0.95,
                                    iter_max = 1000, 
@@ -1527,138 +1525,225 @@ passToClustering_lev1 <- function (db_gp,
     ### get model
     model <- match.arg(model)
     
+    ### begin clustering
+    if (model == "identical") {
+        clone_results <- identicalClones_helper(db_gp,
+                                                method = method,
+                                                junction = junction,
+                                                cdr3 = cdr3,
+                                                cdr3_col = cdr3_col)
+    } else if (model == "hierarchical") {
+        clone_results <- hierarchicalClones_helper(db_gp,
+                                                   method = method,
+                                                   linkage = linkage,
+                                                   normalize = normalize,
+                                                   junction = junction,
+                                                   cdr3 = cdr3,
+                                                   cdr3_col = cdr3_col,
+                                                   threshold = threshold)
+    } else if (model == "spectral") {
+        clone_results <- spectralClones_helper(db_gp,
+                                               method = method,
+                                               germline = germline,
+                                               sequence = sequence,
+                                               junction = junction,
+                                               mutabs = mutabs,
+                                               len_limit = len_limit,
+                                               cdr3 = cdr3,
+                                               cdr3_col = cdr3_col,
+                                               threshold = threshold,
+                                               base_sim = base_sim,
+                                               iter_max = iter_max, 
+                                               nstart = nstart)
+    }
+    
+    ### retrun results
+    return_list <- list("idCluster" = clone_results$idCluster, 
+                        "n_cluster" = clone_results$n_cluster, 
+                        "eigen_vals" = clone_results$eigen_vals)
+    return(return_list)
+}
+# *****************************************************************************
+
+# *****************************************************************************
+identicalClones_helper <- function(db_gp,
+                                   method = c("nt", "aa"),
+                                   junction = "junction",
+                                   cdr3 = FALSE,
+                                   cdr3_col = NA) {
     ### get method
     method <- match.arg(method)
     
     ### number of sequences
     n <- nrow(db_gp)
     
-    ### begin clustering
-    if (model == "identical") {
-        seq_col <- ifelse(cdr3, cdr3_col, junction)
-        if (method == "aa") {
-            db_gp[[seq_col]] <- translateDNA(db_gp[[seq_col]])
+    ### cloning
+    seq_col <- ifelse(cdr3, cdr3_col, junction)
+    if (method == "aa") {
+        db_gp[[seq_col]] <- translateDNA(db_gp[[seq_col]])
+    }
+    idCluster <- db_gp %>% 
+        dplyr::group_by(!!rlang::sym(seq_col)) %>% 
+        group_indices()
+    n_cluster <- length(unique(idCluster))
+    eigen_vals <- rep(0, n)
+    
+    ### retrun results
+    return_list <- list("idCluster" = idCluster, 
+                        "n_cluster" = n_cluster, 
+                        "eigen_vals" = eigen_vals)
+    return(return_list)
+}
+# *****************************************************************************
+
+# *****************************************************************************
+hierarchicalClones_helper <- function(db_gp,
+                                      method = c("nt", "aa"),
+                                      linkage = c("single", "average", "complete"),
+                                      normalize = c("len", "none"),
+                                      junction = "junction",
+                                      cdr3 = FALSE,
+                                      cdr3_col = NA,
+                                      threshold = NULL) {
+    ### get method
+    method <- match.arg(method)
+
+    # get linkage
+    linkage <- match.arg(linkage)
+    
+    # get normalize
+    normalize <- match.arg(normalize)
+    
+    ### number of sequences
+    n <- nrow(db_gp)
+    
+    # get sequences
+    if (method == "nt") {
+        seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]   
+    } else if (method == "aa") {
+        # translate amino acid for method "aa"
+        seqs <- translateDNA(db_gp[[ifelse(cdr3, cdr3_col, junction)]])
+    }
+    
+    # find unique seqs
+    df <- as.data.table(seqs)[, list(list(.I)), by = seqs]
+    n_unq <- nrow(df)
+    ind_unq <- df$V1
+    seqs_unq <- df$seqs
+    if (n_unq == 1) {
+        return(list("idCluster" = rep(1, n), 
+                    "n_cluster" = 1, 
+                    "eigen_vals" = rep(0, n)))
+    }
+    
+    # calculate distance matrix
+    if (method == "nt") {
+        dist_mtx <- pairwiseDist(seq = seqs_unq, 
+                                 dist_mat = getDNAMatrix(gap = 0))
+    } else if (method == "aa") {
+        dist_mtx <- pairwiseDist(seq = seqs_unq, 
+                                 dist_mat = getAAMatrix(gap = 0))
+    }
+    
+    # perform hierarchical clustering
+    if (normalize == "len") {
+        # calculate normalization factor
+        junc_length <- unique(stri_length(seqs_unq))
+        hc <- hclust(as.dist(dist_mtx/junc_length), method = linkage)    
+    } else if (normalize == "none") {
+        hc <- hclust(as.dist(dist_mtx), method = linkage)    
+    }
+    
+    # cut the tree
+    idCluster_unq <- cutree(hc, h = threshold)
+    
+    # back to reality
+    idCluster <- rep(NA, n)
+    for (i in 1:n_unq) {
+        idCluster[ind_unq[[i]]] <- idCluster_unq[i]
+    }
+    n_cluster <- length(unique(idCluster))
+    eigen_vals <- rep(0, n)
+    
+    ### retrun results
+    return_list <- list("idCluster" = idCluster, 
+                        "n_cluster" = n_cluster, 
+                        "eigen_vals" = eigen_vals)
+    return(return_list)
+}
+# *****************************************************************************
+
+# *****************************************************************************
+spectralClones_helper <- function(db_gp,
+                                  method = c("novj", "vj"),
+                                  germline = "germline_alignment",
+                                  sequence = "sequence_alignment",
+                                  junction = "junction",
+                                  mutabs = NULL,
+                                  len_limit = NULL,
+                                  cdr3 = FALSE,
+                                  cdr3_col = NA,
+                                  threshold = NULL,
+                                  base_sim = 0.95,
+                                  iter_max = 1000, 
+                                  nstart = 1000) {
+    
+    ### get method
+    method <- match.arg(method)
+    
+    ### number of sequences
+    n <- nrow(db_gp)
+    
+    ### cloning
+    if (method == "vj") {
+        ### check targeting model
+        if (!is.null(mutabs)) { 
+            mutabs <- mutabs@mutability 
+        } else {
+            mutabs <- NULL
         }
-        idCluster <- db_gp %>% 
-            dplyr::group_by(!!rlang::sym(seq_col)) %>% 
-            group_indices()
-        n_cluster <- length(unique(idCluster))
-        eigen_vals <- rep(0, n)
-    } else if (model == "hierarchical") {
-        # get linkage
-        linkage <- match.arg(linkage)
-        # get normalize
-        normalize <- match.arg(normalize)
-        # get sequences
-        if (method == "nt") {
-            seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]   
-        } else if (method == "aa") {
-            # translate amino acid for method "aa"
-            seqs <- translateDNA(db_gp[[ifelse(cdr3, cdr3_col, junction)]])
-        }
+        # get required info based on the method
+        germs <- db_gp[[germline]]
+        seqs <- db_gp[[sequence]]
+        juncs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
+        junc_length <- unique(stri_length(juncs))
         # find unique seqs
-        df <- as.data.table(seqs)[, list(list(.I)), by = seqs]
+        seqs <- paste(seqs, juncs, germs, sep = "|")
+        df <- as.data.table(seqs)[, list(list(.I)), by=seqs] %>%
+            tidyr::separate(col = seqs, into = c("seqs_unq", "juncs_unq", "germs_unq"), sep = "\\|")
         n_unq <- nrow(df)
         ind_unq <- df$V1
-        seqs_unq <- df$seqs
         if (n_unq == 1) {
             return(list("idCluster" = rep(1, n), 
                         "n_cluster" = 1, 
                         "eigen_vals" = rep(0, n)))
         }
-        # calculate distance matrix
-        if (method == "nt") {
-            dist_mtx <- pairwiseDist(seq = seqs_unq, 
-                                     dist_mat = getDNAMatrix(gap = 0))
-        } else if (method == "aa") {
-            dist_mtx <- pairwiseDist(seq = seqs_unq, 
-                                     dist_mat = getAAMatrix(gap = 0))
-        }
-        # perform hierarchical clustering
-        if (normalize == "len") {
-            # calculate normalization factor
-            junc_length <- unique(stri_length(seqs_unq))
-            hc <- hclust(as.dist(dist_mtx/junc_length), method = linkage)    
-        } else if (normalize == "none") {
-            hc <- hclust(as.dist(dist_mtx), method = linkage)    
-        }
-        # cut the tree
-        idCluster_unq <- cutree(hc, h = threshold)
-        # back to reality
-        idCluster <- rep(NA, n)
-        for (i in 1:n_unq) {
-            idCluster[ind_unq[[i]]] <- idCluster_unq[i]
-        }
-        n_cluster <- length(unique(idCluster))
-        eigen_vals <- rep(0, n)
-    } else if (model == "spectral") {
-        if (method == "vj") {
-            ### check targeting model
-            if (!is.null(mutabs)) { 
-                mutabs <- mutabs@mutability 
-            } else {
-                mutabs <- NULL
-            }
-            # get required info based on the method
-            germs <- db_gp[[germline]]
-            seqs <- db_gp[[sequence]]
-            juncs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
-            junc_length <- unique(stri_length(juncs))
-            # find unique seqs
-            seqs <- paste(seqs, juncs, germs, sep = "|")
-            df <- as.data.table(seqs)[, list(list(.I)), by=seqs] %>%
-                tidyr::separate(col = seqs, into = c("seqs_unq", "juncs_unq", "germs_unq"), sep = "\\|")
-            n_unq <- nrow(df)
-            ind_unq <- df$V1
-            if (n_unq == 1) {
-                return(list("idCluster" = rep(1, n), 
-                            "n_cluster" = 1, 
-                            "eigen_vals" = rep(0, n)))
-            }
-            # find corresponding unique germs and junctions
-            seqs_unq <- df$seqs_unq
-            germs_unq <- df$germs_unq
-            juncs_unq <- df$juncs_unq
-            # calculate unique junctions distance matrix
-            dist_mtx <- pairwiseDist(seq = juncs_unq, 
-                                     dist_mat = getDNAMatrix(gap = 0))
-            # count mutations from unique sequence imgt
-            results <- pairwiseMutions(germ_imgt = germs_unq, 
-                                       seq_imgt = seqs_unq,
-                                       junc_length = junc_length, 
-                                       len_limit = len_limit,
-                                       cdr3 = cdr3,
-                                       mutabs = mutabs)
-            tot_mtx <- results$pairWiseTotalMut
-            sh_mtx <- results$pairWiseSharedMut
-            mutab_mtx <- results$pairWiseMutability
-            # calculate likelihhod matrix
-            lkl_mtx <- likelihoods(tot_mtx = tot_mtx, 
-                                   sh_mtx = sh_mtx, 
-                                   mutab_mtx = mutab_mtx)
-            # calculate weighted matrix  
-            disim_mtx <- dist_mtx * (1.0 - lkl_mtx)
-            # check if vj method made any changes, otherwise go back to method "novj"
-            # check if one of the rows is all zeros, meaning vj mathod cannot decide (a highly rare case)
-            if (all(disim_mtx == dist_mtx) | any(rowSums(disim_mtx) == 0)) {
-                # get required info based on the method
-                seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
-                junc_length <- unique(stri_length(seqs))
-                # find unique seqs
-                df <- as.data.table(seqs)[, list(list(.I)), by = seqs]
-                n_unq <- nrow(df)
-                ind_unq <- df$V1
-                seqs_unq <- df$seqs
-                if (n_unq == 1) {
-                    return(list("idCluster" = rep(1, n), 
-                                "n_cluster" = 1, 
-                                "eigen_vals" = rep(0, n)))
-                }
-                # calculate unique seuences distance matrix
-                disim_mtx <- pairwiseDist(seq = seqs_unq, 
-                                          dist_mat = getDNAMatrix(gap = 0))
-            } 
-        } else if (method == "novj") {
+        # find corresponding unique germs and junctions
+        seqs_unq <- df$seqs_unq
+        germs_unq <- df$germs_unq
+        juncs_unq <- df$juncs_unq
+        # calculate unique junctions distance matrix
+        dist_mtx <- pairwiseDist(seq = juncs_unq, 
+                                 dist_mat = getDNAMatrix(gap = 0))
+        # count mutations from unique sequence imgt
+        results <- pairwiseMutions(germ_imgt = germs_unq, 
+                                   seq_imgt = seqs_unq,
+                                   junc_length = junc_length, 
+                                   len_limit = len_limit,
+                                   cdr3 = cdr3,
+                                   mutabs = mutabs)
+        tot_mtx <- results$pairWiseTotalMut
+        sh_mtx <- results$pairWiseSharedMut
+        mutab_mtx <- results$pairWiseMutability
+        # calculate likelihhod matrix
+        lkl_mtx <- likelihoods(tot_mtx = tot_mtx, 
+                               sh_mtx = sh_mtx, 
+                               mutab_mtx = mutab_mtx)
+        # calculate weighted matrix  
+        disim_mtx <- dist_mtx * (1.0 - lkl_mtx)
+        # check if vj method made any changes, otherwise go back to method "novj"
+        # check if one of the rows is all zeros, meaning vj mathod cannot decide (a highly rare case)
+        if (all(disim_mtx == dist_mtx) | any(rowSums(disim_mtx) == 0)) {
             # get required info based on the method
             seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
             junc_length <- unique(stri_length(seqs))
@@ -1675,23 +1760,40 @@ passToClustering_lev1 <- function (db_gp,
             # calculate unique seuences distance matrix
             disim_mtx <- pairwiseDist(seq = seqs_unq, 
                                       dist_mat = getDNAMatrix(gap = 0))
+        } 
+    } else if (method == "novj") {
+        # get required info based on the method
+        seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]
+        junc_length <- unique(stri_length(seqs))
+        # find unique seqs
+        df <- as.data.table(seqs)[, list(list(.I)), by = seqs]
+        n_unq <- nrow(df)
+        ind_unq <- df$V1
+        seqs_unq <- df$seqs
+        if (n_unq == 1) {
+            return(list("idCluster" = rep(1, n), 
+                        "n_cluster" = 1, 
+                        "eigen_vals" = rep(0, n)))
         }
-        ### pass to clustering pipeline
-        result <- passToClustering_lev2(mtx = disim_mtx, 
-                                        junc_length = junc_length,
-                                        threshold = threshold, 
-                                        base_sim = base_sim, 
-                                        iter_max = iter_max, 
-                                        nstart = nstart)
-        idCluster_unq <- result$idCluster
-        eigen_vals <- result$eigen_vals
-        ### back to reality
-        idCluster <- rep(NA, n)
-        for (i in 1:n_unq) {
-            idCluster[ind_unq[[i]]] <- idCluster_unq[i]
-        }
-        n_cluster <- length(unique(idCluster))
+        # calculate unique seuences distance matrix
+        disim_mtx <- pairwiseDist(seq = seqs_unq, 
+                                  dist_mat = getDNAMatrix(gap = 0))
     }
+    ### pass to clustering pipeline
+    result <- passToClustering_lev2(mtx = disim_mtx, 
+                                    junc_length = junc_length,
+                                    threshold = threshold, 
+                                    base_sim = base_sim, 
+                                    iter_max = iter_max, 
+                                    nstart = nstart)
+    idCluster_unq <- result$idCluster
+    eigen_vals <- result$eigen_vals
+    ### back to reality
+    idCluster <- rep(NA, n)
+    for (i in 1:n_unq) {
+        idCluster[ind_unq[[i]]] <- idCluster_unq[i]
+    }
+    n_cluster <- length(unique(idCluster))
     
     ### retrun results
     return_list <- list("idCluster" = idCluster, 
