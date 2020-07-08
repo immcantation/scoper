@@ -177,19 +177,6 @@ Examples
 # Find clonal groups
 results <- hierarchicalClones(ExampleDb, threshold=0.15)
 
-```
-
-*
-Attaching package: ‘dplyr’
-**The following objects are masked from ‘package:stats’:
-
-    filter, lag
-**The following objects are masked from ‘package:base’:
-
-    intersect, setdiff, setequal, union
-*
-```R
-
 # Retrieve modified input data with clonal clustering identifiers
 df <- as.data.frame(results)
 
@@ -197,7 +184,7 @@ df <- as.data.frame(results)
 plot(results, binwidth=0.02)
 ```
 
-![6](hierarchicalClones-6.png)
+![2](hierarchicalClones-2.png)
 
 
 See also

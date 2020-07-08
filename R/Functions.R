@@ -352,7 +352,7 @@ calculateInterVsIntra <- function(db,
     # open dataframes
     vec_ff <- foreach(k=1:n_groups,
                       .combine="c",
-                      .packages=c("dplyr", "magrittr"),
+                      .packages=c("magrittr"),
                       .errorhandling='stop') %dopar% {
                           
                           # *********************************************************************************
@@ -364,8 +364,8 @@ calculateInterVsIntra <- function(db,
                           ### make a dataframe of unique seqs in each clone
                           seqs_db <- data.frame(value = seqs, name = names(seqs), stringsAsFactors = FALSE) %>%
                               dplyr::group_by(!!!rlang::syms(c("name", "value"))) %>% # alternatively: group_by(name) if name value pair is always unique
-                              slice(1) %>%
-                              ungroup()
+                              dplyr::slice(1) %>%
+                              dplyr::ungroup()
                           seqs <- seqs_db$value
                           names(seqs) <- seqs_db$name
                           ### calculate distance matrix among all seqs
@@ -1279,7 +1279,7 @@ defineClonesScoper <- function(db,
     db_cloned <- foreach(gp=1:n_groups,
                          .final=dplyr::bind_rows,
                          .inorder=TRUE,
-                         .packages=c("dplyr", "magrittr"),
+                         .packages=c("magrittr"),
                          .errorhandling='stop') %dopar% { 
                              # *********************************************************************************
                              # filter each group
@@ -1958,8 +1958,8 @@ passToClustering_lev4 <- function(aff_mtx, idCluster) {
                 l <- length(gr_ls[!is.na(gr_ls)])
                 for (x in 1:l) {
                     if (1 > l) break
-                    if (length(intersect(ids, gr_ls[[x]])) > 0) {
-                        ids <- union(ids, gr_ls[[x]])
+                    if (length(base::intersect(ids, gr_ls[[x]])) > 0) {
+                        ids <- base::union(ids, gr_ls[[x]])
                         gr_ls[[x]] <- NA
                     }
                 }
