@@ -750,13 +750,14 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' (\code{IGH}) and light chain (\code{IGK}, \code{IGL}) sequences. This is governed by 
 #' \code{only_igh}.
 #' 
-#' Values in the \code{locus} column must be one of \code{"IGH"}, \code{"IGK"}, and \code{"IGL"}.
-#' Otherwise, the function will returns an error message and stops.
+#' Values in the \code{locus} column must be one of 
+#' \code{c("IGH", "IGI", "IGK", "IGL", "TRA", "TRB", "TRD", "TRG")}
+#' Otherwise, the function returns an error message and stops.
 #' 
 #' Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
 #' by light chain (\code{IGK}, \code{IGL}) sequences. This is governed by \code{split_light}.
 #' 
-#' Under single-cell mode the cloning is perfomred based on the heavy chain (\code{IGH}) sequences only. 
+#' Under single-cell mode the cloning is performed based on the heavy chain (\code{IGH}) sequences only. 
 #' It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
 #' an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id. 
 #'
@@ -1193,15 +1194,26 @@ defineClonesScoper <- function(db,
         if (is.character(check)) { 
             stop(check) 
         }
-        # check lucus column
-        check <- !all(unique(db[[locus]]) %in% c("IGH", "IGK", "IGL"))
+        # check locus column
+        valid_loci <- c("IGH", "IGI", "IGK", "IGL", "TRA", "TRB", "TRD", "TRG")
+        check <- !all(unique(db[[locus]]) %in% valid_loci)
         if (check) {
-            stop("The locus column must contains one of {IGH, IGK, IGL}.")
+            stop("The locus column contains invalid loci annotations.")
         }
         # check multiple heavy chains
-        multi_h_id <- sum(table(db[[cell_id]][db[[locus]] == "IGH"]) > 1)
-        if (multi_h_id > 0) {
-            stop(paste(multi_h_id, "cell(s) with multiple heavy chains found. One heavy chain per cell is expected."))
+        x <- sum(table(db[[cell_id]][db[[locus]] == "IGH"]) > 1)
+        if (x > 0) {
+            stop(paste(x, "cell(s) with multiple heavy chains found. One heavy chain per cell is expected."))
+        }
+        # check multiple beta chains
+        x <- sum(table(db[[cell_id]][db[[locus]] == "TRB"]) > 1)
+        if (x > 0) {
+            stop(paste(x, "cell(s) with multiple beta chains found. One beta chain per cell is expected."))
+        }
+        # check multiple delta chains
+        x <- sum(table(db[[cell_id]][db[[locus]] == "TRD"]) > 1)
+        if (x > 0) {
+            stop(paste(x, "cell(s) with multiple delta chains found. One delta chain per cell is expected."))
         }
         # if passed
         single_cell <- TRUE
