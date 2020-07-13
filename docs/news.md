@@ -1,6 +1,7 @@
-Version 1.0.1.999: July 06, 2020
+Version 1.0.1.999: July 13, 2020
 -------------------------------------------------------------------------------
 
++ Added TCR support for cloning.
 + Added the single-cell mode cloning.
 
 

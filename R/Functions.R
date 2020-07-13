@@ -469,7 +469,7 @@ logVerbose <- function(out_dir, log_verbose_name,
 prepare_db <- function(db, 
                        junction = "junction", v_call = "v_call", j_call = "j_call",
                        first = FALSE, cdr3 = FALSE, 
-                       cell_id = NULL, locus = NULL, only_igh = TRUE,
+                       cell_id = NULL, locus = NULL, only_heavy = TRUE,
                        mod3 = FALSE, max_n = 0) {
     # add junction length column
     db$junction_l <- stri_length(db[[junction]])
@@ -516,7 +516,7 @@ prepare_db <- function(db,
                      junc_len = NULL,
                      cell_id = cell_id,
                      locus = locus,
-                     only_igh = only_igh,
+                     only_heavy = only_heavy,
                      first = first)
     
     ### groups to use
@@ -699,8 +699,8 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              applicable and required for single-cell mode.
 #' @param    locus              name of the column containing locus information. 
 #'                              Only applicable and required for single-cell mode.
-#' @param    only_igh           use only heavy chain (\code{IGH}) sequences for grouping,
-#'                              disregarding light chains. Only applicable and required for
+#' @param    only_heavy         use only \code{IGH} (for BCR) or \code{TRB/TRD} (for TCR) 
+#'                              sequences for grouping. Only applicable and required for 
 #'                              single-cell mode. Default is \code{TRUE}.
 #' @param    split_light        split clones by light chains. Only applicable and required for
 #'                              single-cell mode. Default is \code{TRUE}.
@@ -745,17 +745,18 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' value in the \code{locus} column. If only one of these arguments be supplied, the function will 
 #' returns an error message and stops.
 #' 
-#' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
-#' should be done using heavy chain (\code{IGH}) sequences only, or using both heavy chain
-#' (\code{IGH}) and light chain (\code{IGK}, \code{IGL}) sequences. This is governed by 
-#' \code{only_igh}.
+#' Values in the \code{locus} column must be one of \code{c("IGH", "IGI", "IGK", "IGL"} for BCR 
+#' or \code{"TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the function returns an 
+#' error message and stops.
 #' 
-#' Values in the \code{locus} column must be one of 
-#' \code{c("IGH", "IGI", "IGK", "IGL", "TRA", "TRB", "TRD", "TRG")}
-#' Otherwise, the function returns an error message and stops.
+#' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
+#' should be done using \code{IGH} for BCR or \code{TRB/TRD} for TCR sequences only, or using 
+#' both \code{IGH, IGK/IGL} for BCR or \code{TRB/TRD, TRA/TRG} for TCR sequences. 
+#' This is governed by \code{only_heavy}.
 #' 
 #' Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
-#' by light chain (\code{IGK}, \code{IGL}) sequences. This is governed by \code{split_light}.
+#' by \code{IGK/IGL} for BCR sequences or \code{TRA/TRG} for TCR sequences. 
+#' This is governed by \code{split_light}.
 #' 
 #' Under single-cell mode the cloning is performed based on the heavy chain (\code{IGH}) sequences only. 
 #' It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
@@ -777,7 +778,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' @export
 identicalClones <- function(db, method=c("nt", "aa"), junction="junction", 
                             v_call="v_call", j_call="j_call", clone="clone_id",
-                            cell_id=NULL, locus=NULL, only_igh=TRUE, split_light=TRUE,
+                            cell_id=NULL, locus=NULL, only_heavy=TRUE, split_light=TRUE,
                             first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                             verbose=FALSE, log=NULL, 
                             summarize_clones=TRUE) {
@@ -785,7 +786,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone,
-                                  cell_id = cell_id, locus = locus, only_igh = only_igh, split_light = split_light,
+                                  cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,        
                                   verbose = verbose, log = log, 
                                   summarize_clones = summarize_clones)
@@ -829,8 +830,8 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              applicable and required for single-cell mode.
 #' @param    locus              name of the column containing locus information. 
 #'                              Only applicable and required for single-cell mode.
-#' @param    only_igh           use only heavy chain (\code{IGH}) sequences for grouping,
-#'                              disregarding light chains. Only applicable and required for
+#' @param    only_heavy         use only \code{IGH} (for BCR) or \code{TRB/TRD} (for TCR) 
+#'                              sequences for grouping. Only applicable and required for 
 #'                              single-cell mode. Default is \code{TRUE}.
 #' @param    split_light        split clones by light chains. Only applicable and required for
 #'                              single-cell mode. Default is \code{TRUE}.
@@ -878,16 +879,19 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' value in the \code{locus} column. If only one of these arguments be supplied, the function will 
 #' returns an error message and stops.
 #' 
-#' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
-#' should be done using heavy chain (\code{IGH}) sequences only, or using both heavy chain
-#' (\code{IGH}) and light chain (\code{IGK}, \code{IGL}) sequences. This is governed by 
-#' \code{only_igh}.
+#' Values in the \code{locus} column must be one of \code{c("IGH", "IGI", "IGK", "IGL"} for BCR 
+#' or \code{"TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the function returns an 
+#' error message and stops.
 #' 
-#' Values in the \code{locus} column must be one of \code{"IGH"}, \code{"IGK"}, and \code{"IGL"}.
-#' Otherwise, the function will returns an error message and stops.
+#' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
+#' should be done using \code{IGH} for BCR or \code{TRB/TRD} for TCR sequences only, or using 
+#' both \code{IGH, IGK/IGL} for BCR or \code{TRB/TRD, TRA/TRG} for TCR sequences.  
+#' This is governed by \code{only_heavy}.
+#' 
 #' 
 #' Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
-#' by light chain (\code{IGK}, \code{IGL}) sequences. This is governed by \code{split_light}.
+#' by \code{IGK/IGL} for BCR sequences or \code{TRA/TRG} for TCR sequences. 
+#' This is governed by \code{split_light}.
 #' 
 #' Under single-cell mode the cloning is perfomred based on the heavy chain (\code{IGH}) sequences only. 
 #' It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
@@ -910,7 +914,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("single", "average", "complete"), 
                                normalize=c("len", "none"), junction="junction", 
                                v_call="v_call", j_call="j_call", clone="clone_id",
-                               cell_id=NULL, locus=NULL, only_igh=TRUE, split_light=TRUE,
+                               cell_id=NULL, locus=NULL, only_heavy=TRUE, split_light=TRUE,
                                first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                                verbose=FALSE, log=NULL,
                                summarize_clones=TRUE) {
@@ -918,7 +922,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
                                   method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone,
-                                  cell_id = cell_id, locus = locus, only_igh = only_igh, split_light = split_light,
+                                  cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
                                   verbose = verbose, log = log, 
                                   summarize_clones = summarize_clones)
@@ -957,8 +961,8 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              applicable and required for single-cell mode.
 #' @param    locus              name of the column containing locus information. 
 #'                              Only applicable and required for single-cell mode.
-#' @param    only_igh           use only heavy chain (\code{IGH}) sequences for grouping,
-#'                              disregarding light chains. Only applicable and required for
+#' @param    only_heavy         use only \code{IGH} (for BCR) or \code{TRB/TRD} (for TCR) 
+#'                              sequences for grouping. Only applicable and required for 
 #'                              single-cell mode. Default is \code{TRUE}.
 #' @param    split_light        split clones by light chains. Only applicable and required for
 #'                              single-cell mode. Default is \code{TRUE}.
@@ -1029,16 +1033,19 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' value in the \code{locus} column. If only one of these arguments be supplied, the function will 
 #' returns an error message and stops.
 #' 
-#' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
-#' should be done using heavy chain (\code{IGH}) sequences only, or using both heavy chain
-#' (\code{IGH}) and light chain (\code{IGK}, \code{IGL}) sequences. This is governed by 
-#' \code{only_igh}.
+#' Values in the \code{locus} column must be one of \code{c("IGH", "IGI", "IGK", "IGL"} for BCR 
+#' or \code{"TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the function returns an 
+#' error message and stops.
 #' 
-#' Values in the \code{locus} column must be one of \code{"IGH"}, \code{"IGK"}, and \code{"IGL"}.
-#' Otherwise, the function will returns an error message and stops.
+#' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
+#' should be done using \code{IGH} for BCR or \code{TRB/TRD} for TCR sequences only, or using 
+#' both \code{IGH, IGK/IGL} for BCR or \code{TRB/TRD, TRA/TRG} for TCR sequences. 
+#' This is governed by \code{only_heavy}.
+#' 
 #' 
 #' Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
-#' by light chain (\code{IGK}, \code{IGL}) sequences. This is governed by \code{split_light}.
+#' by \code{IGK/IGL} for BCR sequences or \code{TRA/TRG} for TCR sequences. 
+#' This is governed by \code{split_light}.
 #' 
 #' Under single-cell mode the cloning is perfomred based on the heavy chain (\code{IGH}) sequences only. 
 #' It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
@@ -1063,7 +1070,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' @export
 spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignment", sequence="sequence_alignment",
                            junction="junction", v_call="v_call", j_call="j_call", clone="clone_id",
-                           cell_id=NULL, locus=NULL, only_igh=TRUE, split_light=TRUE,
+                           cell_id=NULL, locus=NULL, only_heavy=TRUE, split_light=TRUE,
                            targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, 
                            threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
                            verbose=FALSE, log=NULL,
@@ -1072,7 +1079,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
                                   germline = germline, sequence = sequence,
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone, 
-                                  cell_id = cell_id, locus = locus, only_igh = only_igh, split_light = split_light,
+                                  cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   targeting_model = targeting_model, len_limit = len_limit,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n,
                                   threshold = threshold, base_sim = base_sim,
@@ -1102,7 +1109,7 @@ defineClonesScoper <- function(db,
                                linkage = c("single", "average", "complete"), normalize = c("len", "none"),
                                germline = "germline_alignment", sequence = "sequence_alignment",
                                junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
-                               cell_id = NULL, locus = NULL, only_igh = TRUE, split_light = TRUE,
+                               cell_id = NULL, locus = NULL, only_heavy = TRUE, split_light = TRUE,
                                targeting_model = NULL, len_limit = NULL,
                                first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = 0, 
                                threshold = NULL, base_sim = 0.95,
@@ -1235,7 +1242,7 @@ defineClonesScoper <- function(db,
     results_prep <- prepare_db(db = db, 
                                junction = junction, v_call = v_call, j_call = j_call,
                                first = first, cdr3 = cdr3, 
-                               cell_id = cell_id, locus = locus, only_igh = only_igh,
+                               cell_id = cell_id, locus = locus, only_heavy = only_heavy,
                                mod3 = mod3, max_n = max_n)
     db <- results_prep$db
     n_rmv_mod3 <- results_prep$n_rmv_mod3
@@ -1247,8 +1254,8 @@ defineClonesScoper <- function(db,
     ### for single-cell mode: separates heavy and light chain data frames
     ### performs cloning only on heavy chains
     if (single_cell) {
-        db_l <- db[db[[locus]] != "IGH", ]
-        db_h <- db[db[[locus]] == "IGH", ]
+        db_l <- db[db[[locus]] %in% c("IGK", "IGL", "TRA", "TRG"), ]
+        db_h <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
         db <- db_h
     }
     
@@ -1475,7 +1482,7 @@ defineClonesScoper <- function(db,
                                    junc_len = NULL,
                                    cell_id = cell_id,
                                    locus = locus,
-                                   only_igh = FALSE,
+                                   only_heavy = FALSE,
                                    first = FALSE)
                 if (length(unique(db_c$vj_group)) == 1) next()
                 db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_") 

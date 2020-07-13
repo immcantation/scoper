@@ -22,7 +22,7 @@ j_call = "j_call",
 clone = "clone_id",
 cell_id = NULL,
 locus = NULL,
-only_igh = TRUE,
+only_heavy = TRUE,
 split_light = TRUE,
 targeting_model = NULL,
 len_limit = NULL,
@@ -77,9 +77,9 @@ locus
 :   name of the column containing locus information. 
 Only applicable and required for single-cell mode.
 
-only_igh
-:   use only heavy chain (`IGH`) sequences for grouping,
-disregarding light chains. Only applicable and required for
+only_heavy
+:   use only `IGH` (for BCR) or `TRB/TRD` (for TCR) 
+sequences for grouping. Only applicable and required for 
 single-cell mode. Default is `TRUE`.
 
 split_light
@@ -188,16 +188,19 @@ the function will run under non-single-cell mode, using all input sequences rega
 value in the `locus` column. If only one of these arguments be supplied, the function will 
 returns an error message and stops.
 
-Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
-should be done using heavy chain (`IGH`) sequences only, or using both heavy chain
-(`IGH`) and light chain (`IGK`, `IGL`) sequences. This is governed by 
-`only_igh`.
+Values in the `locus` column must be one of `c("IGH", "IGI", "IGK", "IGL"` for BCR 
+or `"TRA", "TRB", "TRD", "TRG")` for TCR sequences. Otherwise, the function returns an 
+error message and stops.
 
-Values in the `locus` column must be one of `"IGH"`, `"IGK"`, and `"IGL"`.
-Otherwise, the function will returns an error message and stops.
+Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
+should be done using `IGH` for BCR or `TRB/TRD` for TCR sequences only, or using 
+both `IGH, IGK/IGL` for BCR or `TRB/TRD, TRA/TRG` for TCR sequences. 
+This is governed by `only_heavy`.
+
 
 Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
-by light chain (`IGK`, `IGL`) sequences. This is governed by `split_light`.
+by `IGK/IGL` for BCR sequences or `TRA/TRG` for TCR sequences. 
+This is governed by `split_light`.
 
 Under single-cell mode the cloning is perfomred based on the heavy chain (`IGH`) sequences only. 
 It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
