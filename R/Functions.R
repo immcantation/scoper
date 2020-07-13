@@ -745,22 +745,22 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' value in the \code{locus} column. If only one of these arguments be supplied, the function will 
 #' returns an error message and stops.
 #' 
-#' Values in the \code{locus} column must be one of \code{c("IGH", "IGI", "IGK", "IGL"} for BCR 
-#' or \code{"TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the function returns an 
+#' Values in the \code{locus} column must be one of \code{"IGH", "IGI", "IGK"}, or \code{"IGL"} for BCR 
+#' or \code{"TRA", "TRB", "TRD"}, or \code{"TRG"} for TCR sequences. Otherwise, the function returns an 
 #' error message and stops.
 #' 
 #' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
 #' should be done using \code{IGH} for BCR or \code{TRB/TRD} for TCR sequences only, or using 
-#' both \code{IGH, IGK/IGL} for BCR or \code{TRB/TRD, TRA/TRG} for TCR sequences. 
+#' both \code{IGH} and \code{IGK/IGL} for BCR or \code{TRB/TRD} and \code{TRA/TRG} for TCR sequences. 
 #' This is governed by \code{only_heavy}.
 #' 
 #' Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
 #' by \code{IGK/IGL} for BCR sequences or \code{TRA/TRG} for TCR sequences. 
 #' This is governed by \code{split_light}.
 #' 
-#' Under single-cell mode the cloning is performed based on the heavy chain (\code{IGH}) sequences only. 
-#' It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
-#' an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id. 
+#' Note that for cloning under single-cell mode, a cell with multiple \code{IGH} (for BCR) or 
+#' multiple \code{TRB/TRD} (for TCR) sequences is not allowed. If observed, the function will returns 
+#' an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id.
 #'
 #' @seealso See \link{plotCloneSummary} for plotting summary results. See \link{groupGenes} for 
 #' more details about grouping requirements.
@@ -879,23 +879,22 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' value in the \code{locus} column. If only one of these arguments be supplied, the function will 
 #' returns an error message and stops.
 #' 
-#' Values in the \code{locus} column must be one of \code{c("IGH", "IGI", "IGK", "IGL"} for BCR 
-#' or \code{"TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the function returns an 
+#' Values in the \code{locus} column must be one of \code{"IGH", "IGI", "IGK"}, or \code{"IGL"} for BCR 
+#' or \code{"TRA", "TRB", "TRD"}, or \code{"TRG"} for TCR sequences. Otherwise, the function returns an 
 #' error message and stops.
 #' 
 #' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
 #' should be done using \code{IGH} for BCR or \code{TRB/TRD} for TCR sequences only, or using 
-#' both \code{IGH, IGK/IGL} for BCR or \code{TRB/TRD, TRA/TRG} for TCR sequences.  
+#' both \code{IGH} and \code{IGK/IGL} for BCR or \code{TRB/TRD} and \code{TRA/TRG} for TCR sequences. 
 #' This is governed by \code{only_heavy}.
-#' 
 #' 
 #' Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
 #' by \code{IGK/IGL} for BCR sequences or \code{TRA/TRG} for TCR sequences. 
 #' This is governed by \code{split_light}.
 #' 
-#' Under single-cell mode the cloning is perfomred based on the heavy chain (\code{IGH}) sequences only. 
-#' It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
-#' an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id. 
+#' Note that for cloning under single-cell mode, a cell with multiple \code{IGH} (for BCR) or 
+#' multiple \code{TRB/TRD} (for TCR) sequences is not allowed. If observed, the function will returns 
+#' an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id.
 #' 
 #' @seealso See \link{plotCloneSummary} for plotting summary results. See \link{groupGenes} for 
 #' more details about grouping requirements.
@@ -1033,23 +1032,22 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' value in the \code{locus} column. If only one of these arguments be supplied, the function will 
 #' returns an error message and stops.
 #' 
-#' Values in the \code{locus} column must be one of \code{c("IGH", "IGI", "IGK", "IGL"} for BCR 
-#' or \code{"TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the function returns an 
+#' Values in the \code{locus} column must be one of \code{"IGH", "IGI", "IGK"}, or \code{"IGL"} for BCR 
+#' or \code{"TRA", "TRB", "TRD"}, or \code{"TRG"} for TCR sequences. Otherwise, the function returns an 
 #' error message and stops.
 #' 
 #' Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
 #' should be done using \code{IGH} for BCR or \code{TRB/TRD} for TCR sequences only, or using 
-#' both \code{IGH, IGK/IGL} for BCR or \code{TRB/TRD, TRA/TRG} for TCR sequences. 
+#' both \code{IGH} and \code{IGK/IGL} for BCR or \code{TRB/TRD} and \code{TRA/TRG} for TCR sequences. 
 #' This is governed by \code{only_heavy}.
-#' 
 #' 
 #' Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
 #' by \code{IGK/IGL} for BCR sequences or \code{TRA/TRG} for TCR sequences. 
 #' This is governed by \code{split_light}.
 #' 
-#' Under single-cell mode the cloning is perfomred based on the heavy chain (\code{IGH}) sequences only. 
-#' It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
-#' an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id. 
+#' Note that for cloning under single-cell mode, a cell with multiple \code{IGH} (for BCR) or 
+#' multiple \code{TRB/TRD} (for TCR) sequences is not allowed. If observed, the function will returns 
+#' an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id.
 #'
 #' @seealso See \link{plotCloneSummary} for plotting summary results. See \link{groupGenes} for 
 #' more details about grouping requirements.

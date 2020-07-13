@@ -153,22 +153,21 @@ the function will run under non-single-cell mode, using all input sequences rega
 value in the `locus` column. If only one of these arguments be supplied, the function will 
 returns an error message and stops.
 
-Values in the `locus` column must be one of `c("IGH", "IGI", "IGK", "IGL"` for BCR 
-or `"TRA", "TRB", "TRD", "TRG")` for TCR sequences. Otherwise, the function returns an 
+Values in the `locus` column must be one of `"IGH", "IGI", "IGK"`, or `"IGL"` for BCR 
+or `"TRA", "TRB", "TRD"`, or `"TRG"` for TCR sequences. Otherwise, the function returns an 
 error message and stops.
 
 Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
 should be done using `IGH` for BCR or `TRB/TRD` for TCR sequences only, or using 
-both `IGH, IGK/IGL` for BCR or `TRB/TRD, TRA/TRG` for TCR sequences.  
+both `IGH` and `IGK/IGL` for BCR or `TRB/TRD` and `TRA/TRG` for TCR sequences. 
 This is governed by `only_heavy`.
-
 
 Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
 by `IGK/IGL` for BCR sequences or `TRA/TRG` for TCR sequences. 
 This is governed by `split_light`.
 
-Under single-cell mode the cloning is perfomred based on the heavy chain (`IGH`) sequences only. 
-It is required that only one heavy chain per cell exists. Otherwise, the function will returns 
+Note that for cloning under single-cell mode, a cell with multiple `IGH` (for BCR) or 
+multiple `TRB/TRD` (for TCR) sequences is not allowed. If observed, the function will returns 
 an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id.
 
 
