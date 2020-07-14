@@ -315,6 +315,19 @@ pairwiseMutions <- function(germ_imgt,
 # *****************************************************************************
 
 # *****************************************************************************
+### make a dataframe of unique seqs in each clone
+uniqueSeq <- function(seqs) {
+    seqs_db <- data.frame(value = seqs, name = names(seqs), stringsAsFactors = FALSE) %>%
+        dplyr::group_by(!!!rlang::syms(c("name", "value"))) %>% # alternatively: group_by(name) if name value pair is always unique
+        dplyr::slice(1) %>%
+        dplyr::ungroup()
+    seqs <- seqs_db$value
+    names(seqs) <- seqs_db$name
+    return(seqs)
+}
+# *****************************************************************************
+
+# *****************************************************************************
 # inter-clone-distance vs intra-clone-distance
 calculateInterVsIntra <- function(db,
                                   clone,
@@ -338,7 +351,7 @@ calculateInterVsIntra <- function(db,
     
     ### expoer function to clusters
     if (nproc > 1) { 
-        export_functions <- list("pairwiseDist", "getDNAMatrix")
+        export_functions <- list("pairwiseDist", "getDNAMatrix", "uniqueSeq")
         parallel::clusterExport(cluster, export_functions, envir=environment())
     }
     
@@ -352,7 +365,6 @@ calculateInterVsIntra <- function(db,
     # open dataframes
     vec_ff <- foreach(k=1:n_groups,
                       .combine="c",
-                      .packages=c("magrittr"),
                       .errorhandling='stop') %dopar% {
                           
                           # *********************************************************************************
@@ -361,13 +373,7 @@ calculateInterVsIntra <- function(db,
                           n_clones <- length(clones)
                           seqs <- db[[ifelse(cdr3, cdr3_col, junction)]][db[[clone]] %in% clones]
                           names(seqs) <- db[[clone]][db[[clone]] %in% clones]
-                          ### make a dataframe of unique seqs in each clone
-                          seqs_db <- data.frame(value = seqs, name = names(seqs), stringsAsFactors = FALSE) %>%
-                              dplyr::group_by(!!!rlang::syms(c("name", "value"))) %>% # alternatively: group_by(name) if name value pair is always unique
-                              dplyr::slice(1) %>%
-                              dplyr::ungroup()
-                          seqs <- seqs_db$value
-                          names(seqs) <- seqs_db$name
+                          seqs <- uniqueSeq(seqs)
                           ### calculate distance matrix among all seqs
                           dist_mtx <- pairwiseDist(seqs, dist_mat=getDNAMatrix(gap = 0))
                           ### prealoocate a vector = no. of max-dist in each clone (intra) + no. of min-dist between clones (inter)
@@ -1296,7 +1302,6 @@ defineClonesScoper <- function(db,
     db_cloned <- foreach(gp=1:n_groups,
                          .final=dplyr::bind_rows,
                          .inorder=TRUE,
-                         .packages=c("magrittr"),
                          .errorhandling='stop') %dopar% { 
                              # *********************************************************************************
                              # filter each group

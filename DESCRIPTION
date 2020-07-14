@@ -37,7 +37,6 @@ Imports:
     doParallel,
     dplyr (>= 0.8.1),
     foreach,
-    magrittr,
     methods,
     Rcpp (>= 0.12.12),
     rlang,

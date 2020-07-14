@@ -40,11 +40,11 @@
 #'                          padSeqEnds progressBar groupGenes baseTheme translateDNA
 #' @importFrom  data.table  as.data.table .I
 #' @importFrom  doParallel  registerDoParallel
-#' @importFrom  dplyr       n filter select arrange bind_rows
+#' @importFrom  dplyr       n %>%
+#'                          filter select arrange bind_rows
 #'                          group_by ungroup group_indices
 #'                          mutate summarize slice 
 #' @importFrom  foreach     foreach %dopar% registerDoSEQ
-#' @importFrom  magrittr    %>%
 #' @importFrom  rlang       sym syms
 #' @importFrom  Rcpp        evalCpp
 #' @importFrom  scales      pretty_breaks

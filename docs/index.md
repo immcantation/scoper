@@ -18,7 +18,7 @@ For help and questions please contact the
 # Dependencies
 
 **Depends:** ggplot2  
-**Imports:** alakazam, shazam, data.table, doParallel, dplyr, foreach, magrittr, methods, Rcpp, rlang, scales, stats, stringi, tidyr  
+**Imports:** alakazam, shazam, data.table, doParallel, dplyr, foreach, methods, Rcpp, rlang, scales, stats, stringi, tidyr  
 **Suggests:** knitr, rmarkdown, testthat
 
 
