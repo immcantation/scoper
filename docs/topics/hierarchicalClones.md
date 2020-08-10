@@ -3,7 +3,7 @@
 Description
 --------------------
 
-`hierarchicalClones` provides an hierarchical agglomerative clustering 
+`hierarchicalClones` provides a hierarchical agglomerative clustering 
 approach to infer clonal relationships in high-throughput Adaptive Immune Receptor 
 Repertoire sequencing (AIRR-seq) data. This approach clusters B or T cell receptor 
 sequences based on junction region sequence similarity within partitions that share the 

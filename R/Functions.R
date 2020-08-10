@@ -690,7 +690,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 
 #' Sequence identity method for clonal partitioning
 #'
-#' The \code{identicalClones} provides a simple sequence identity based partitioning 
+#' \code{identicalClones} provides a simple sequence identity based partitioning 
 #' approach for inferring clonal relationships in high-throughput Adaptive Immune Receptor 
 #' Repertoire sequencing (AIRR-seq) data. This approach partitions B or T cell receptor 
 #' sequences into clonal groups based on junction region sequence identity within 
@@ -816,7 +816,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 
 #' Hierarchical clustering method for clonal partitioning
 #'
-#' \code{hierarchicalClones} provides an hierarchical agglomerative clustering 
+#' \code{hierarchicalClones} provides a hierarchical agglomerative clustering 
 #' approach to infer clonal relationships in high-throughput Adaptive Immune Receptor 
 #' Repertoire sequencing (AIRR-seq) data. This approach clusters B or T cell receptor 
 #' sequences based on junction region sequence similarity within partitions that share the 
@@ -947,7 +947,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 
 #' Spectral clustering method for clonal partitioning
 #'
-#' The \code{spectralClones} provides an unsupervised spectral clustering 
+#' \code{spectralClones} provides an unsupervised spectral clustering 
 #' approach to infer clonal relationships in high-throughput Adaptive Immune Receptor 
 #' Repertoire sequencing (AIRR-seq) data. This approach clusters B or T cell receptor 
 #' sequences based on junction region sequence similarity and shared mutations within 

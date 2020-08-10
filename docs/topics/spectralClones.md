@@ -3,7 +3,7 @@
 Description
 --------------------
 
-The `spectralClones` provides an unsupervised spectral clustering 
+`spectralClones` provides an unsupervised spectral clustering 
 approach to infer clonal relationships in high-throughput Adaptive Immune Receptor 
 Repertoire sequencing (AIRR-seq) data. This approach clusters B or T cell receptor 
 sequences based on junction region sequence similarity and shared mutations within 

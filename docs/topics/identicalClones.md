@@ -3,7 +3,7 @@
 Description
 --------------------
 
-The `identicalClones` provides a simple sequence identity based partitioning 
+`identicalClones` provides a simple sequence identity based partitioning 
 approach for inferring clonal relationships in high-throughput Adaptive Immune Receptor 
 Repertoire sequencing (AIRR-seq) data. This approach partitions B or T cell receptor 
 sequences into clonal groups based on junction region sequence identity within 
