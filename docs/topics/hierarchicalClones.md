@@ -1,11 +1,13 @@
-**hierarchicalClones** - *Hierarchical clustering-based method for partitioning Ig sequences into clones.*
+**hierarchicalClones** - *Hierarchical clustering method for clonal partitioning*
 
 Description
 --------------------
 
-The `hierarchicalClones` function provides a computational pipline for assigning Ig 
-sequences into clonal groups sharing same V gene, J gene, and junction length, based on the 
-junction sequence similarity.
+The `hierarchicalClones` provides an hierarchical agglomerative clustering 
+approach to infer clonal relationships in high-throughput Adaptive Immune Receptor 
+Repertoire sequencing (AIRR-seq) data. This approach clusters B or T cell receptor 
+sequences based on junction region sequence similarity within partitions that share the 
+same V gene, J gene, and junction length, allowing for ambiguous V or J gene annotations.
 
 
 Usage
@@ -22,7 +24,7 @@ v_call = "v_call",
 j_call = "j_call",
 clone = "clone_id",
 cell_id = NULL,
-locus = NULL,
+locus = "locus",
 only_heavy = TRUE,
 split_light = TRUE,
 first = FALSE,
@@ -70,21 +72,24 @@ clone
 :   the output column name containing the clonal cluster identifiers.
 
 cell_id
-:   name of the column containing cell IDs. Only 
-applicable and required for single-cell mode.
+:   name of the column containing cell identifiers or barcodes. 
+If specified, grouping will be performed in single-cell mode
+with the behavior governed by the `locus` and 
+`only_heavy` arguments. If set to `NULL` then the 
+bulk sequencing data is assumed.
 
 locus
 :   name of the column containing locus information. 
-Only applicable and required for single-cell mode.
+Only applicable to single-cell data.
+Ignored if `cell_id=NULL`.
 
 only_heavy
-:   use only `IGH` (for BCR) or `TRB/TRD` (for TCR) 
-sequences for grouping. Only applicable and required for 
-single-cell mode. Default is `TRUE`.
+:   use only the IGH (BCR) or TRB/TRD (TCR) sequences 
+for grouping. Only applicable to single-cell data.
+Ignored if `cell_id=NULL`.
 
 split_light
-:   split clones by light chains. Only applicable and required for
-single-cell mode. Default is `TRUE`.
+:   split clones by light chains. Ignored if `cell_id=NULL`.
 
 first
 :   specifies how to handle multiple V(D)J assignments for initial grouping. 
@@ -142,33 +147,36 @@ specified `clone` column.
 Details
 -------------------
 
-`hierarchicalClones` provides a computational platform to explore the B cell clonal 
-relationships in high-throughput Adaptive Immune Receptor Repertoire sequencing (AIRR-seq) 
-data sets. This function performs hierarchical clustering among sequences of B cell receptors 
-(BCRs, immunoglobulins, Ig) that share the same V gene, J gene, and junction length 
-based on the junction sequence similarity: 
+`hierarchicalClones` provides an hierarchical agglomerative clustering approach to 
+infer clonal relationships in high-throughput Adaptive Immune Receptor Repertoire 
+sequencing (AIRR-seq) data sets. This 
+approach clusters B or T cell receptor sequences based on junctional sequence similarity
+within partitions that the same V gene, J gene, and junction length.
 
-To invoke single-cell mode, both `cell_id` and `locus` must be supplied. Otherwise,
-the function will run under non-single-cell mode, using all input sequences regardless of the
-value in the `locus` column. If only one of these arguments be supplied, the function will 
-returns an error message and stops.
 
-Values in the `locus` column must be one of `"IGH", "IGI", "IGK"`, or `"IGL"` for BCR 
-or `"TRA", "TRB", "TRD"`, or `"TRG"` for TCR sequences. Otherwise, the function returns an 
-error message and stops.
+Single-cell data
+-------------------
 
-Under single-cell mode for VH:VL paired sequences, there is a choice of whether grouping
-should be done using `IGH` for BCR or `TRB/TRD` for TCR sequences only, or using 
-both `IGH` and `IGK/IGL` for BCR or `TRB/TRD` and `TRA/TRG` for TCR sequences. 
-This is governed by `only_heavy`.
 
-Under single-cell mode for VH:VL paired sequences, there is a choice to split the inferred clones
-by `IGK/IGL` for BCR sequences or `TRA/TRG` for TCR sequences. 
-This is governed by `split_light`.
+To invoke single-cell mode the `cell_id` argument must be specified and the `locus` 
+column must be correct. Otherwise, clustering will be performed with bulk sequencing assumptions, 
+using all input sequences regardless of the values in the `locus` column.
 
-Note that for cloning under single-cell mode, a cell with multiple `IGH` (for BCR) or 
-multiple `TRB/TRD` (for TCR) sequences is not allowed. If observed, the function will returns 
-an error message and stops. Cells without any heavy chain will be assigned by a "NA" clone id.
+Values in the `locus` column must be one of `c("IGH", "IGI", "IGK", "IGL")` for BCR 
+or `c("TRA", "TRB", "TRD", "TRG")` for TCR sequences. Otherwise, the operation will exit and 
+return and error message.
+
+Under single-cell mode with paired-chain sequences, there is a choice of whether 
+grouping should be done by (a) using IGH (BCR) or TRB/TRD (TCR) sequences only or
+(b) using IGH plus IGK/IGL (BCR) or TRB/TRD plus TRA/TRG (TCR) sequences. 
+This is governed by the `only_heavy` argument. There is also choice as to whether 
+inferred clones should be split by the light/short chain (IGK, IGL, TRA, TRG) following 
+heavy/long chain clustering, which is governed by the `split_light` argument.
+
+In single-cell mode, clonal clustering will not be performed on data were cells are 
+assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation 
+will exit and return an error message. Cells that lack a heavy/long chain sequence (i.e., cells with 
+light/short chains only) will be assigned a `clone_id` of `NA`.
 
 
 
