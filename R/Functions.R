@@ -816,18 +816,11 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 
 #' Hierarchical clustering method for clonal partitioning
 #'
-#' The \code{hierarchicalClones} provides an hierarchical agglomerative clustering 
+#' \code{hierarchicalClones} provides an hierarchical agglomerative clustering 
 #' approach to infer clonal relationships in high-throughput Adaptive Immune Receptor 
 #' Repertoire sequencing (AIRR-seq) data. This approach clusters B or T cell receptor 
 #' sequences based on junction region sequence similarity within partitions that share the 
 #' same V gene, J gene, and junction length, allowing for ambiguous V or J gene annotations.
-#' 
-#' @details
-#' \code{hierarchicalClones} provides an hierarchical agglomerative clustering approach to 
-#' infer clonal relationships in high-throughput Adaptive Immune Receptor Repertoire 
-#' sequencing (AIRR-seq) data sets. This 
-#' approach clusters B or T cell receptor sequences based on junctional sequence similarity
-#' within partitions that the same V gene, J gene, and junction length.
 #'
 #' @param    db                 data.frame containing sequence data.
 #' @param    threshold          a numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
