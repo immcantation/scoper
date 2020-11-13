@@ -23,6 +23,7 @@ junction = "junction",
 v_call = "v_call",
 j_call = "j_call",
 clone = "clone_id",
+fields = NULL,
 cell_id = NULL,
 locus = "locus",
 only_heavy = TRUE,
@@ -71,6 +72,9 @@ j_call
 
 clone
 :   the output column name containing the clone ids.
+
+fields
+:   additional fields to use for grouping.
 
 cell_id
 :   name of the column containing cell identifiers or barcodes. 
@@ -150,7 +154,8 @@ The default is `NULL` for no action.
 summarize_clones
 :   if `TRUE` performs a series of analysis to assess the clonal landscape
 and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` then
-a modified input `db` is returned.
+a modified input `db` is returned. When grouping by `fields`, 
+`summarize_clones` should be `FALSE`.
 
 
 
