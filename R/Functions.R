@@ -505,12 +505,12 @@ prepare_db <- function(db,
         cdr3_col <- NA
     }
     
-    ### check for N's
-    # Count the number of 'N's in junction
+    ### check for degenerate characters (non-ATCG's)
+    # Count the number of non-ATCG's in junction
     if (!is.null(max_n)) {
-        n_rmv_N <- sum(stri_count(db[[junction]], regex = "N") > max_n)
+        n_rmv_N <- sum(stri_count(db[[junction]], regex = "[^ATCG]") > max_n)
         db <- db %>% 
-            dplyr::filter(stri_count(!!rlang::sym(junction), regex = "N") <= max_n)
+            dplyr::filter(stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
     } else {
         n_rmv_N <- 0
     }
@@ -727,7 +727,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              The maximum number of N's to permit in the junction sequence before excluding the 
+#' @param    max_n              The maximum number of degenerate characters to permit in the junction sequence before excluding the 
 #'                              record from clonal assignment. Default is set to be zero. Set it as \code{"NULL"} for no 
 #'                              action.
 #' @param    nproc              number of cores to distribute the function over.
@@ -856,7 +856,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              The maximum number of \code{N} characters to permit in the junction sequence 
+#' @param    max_n              The maximum number of degenerate characters to permit in the junction sequence 
 #'                              before excluding the record from clonal assignment. Note, with 
 #'                              \code{linkage="single"} non-informative positions can create artifactual 
 #'                              links between unrelated sequences. Use with caution. 
@@ -990,7 +990,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              the maximum number of N's to permit in the junction sequence before excluding the 
+#' @param    max_n              the maximum number of degenerate characters to permit in the junction sequence before excluding the 
 #'                              record from clonal assignment. Default is set to be zero. Set it as \code{"NULL"} 
 #'                              for no action.
 #' @param    threshold          the supervising cut-off to enforce an upper-limit distance for clonal grouping.
