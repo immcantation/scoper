@@ -8,7 +8,7 @@ rm(e1)
 # Check for pipelines environment
 # pipeline_env <- Sys.getenv("CI") == "true"
 # cat("Bitbucket Pipelines:", pipeline_env, "\n")
-pipeline_env <- FALSE
+pipeline_env <- TRUE
 
 #### clone - identicalClones ####
 
