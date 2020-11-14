@@ -66,7 +66,7 @@ test_that("Test hierarchicalClones", {
 
 test_that("Test spectralClones - novj", {
     # Truth
-    expects <- as.integer(c(7, 7, 7, 7, 8, 9, 11, 12, 192, 491))
+    expects <- as.integer(c(7, 7, 7, 7, 8, 9, 10, 12, 192, 491))
     
     # Reproduce example
     db <- spectralClones(ExampleDb, method = "novj", 

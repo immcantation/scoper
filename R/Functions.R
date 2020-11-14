@@ -128,8 +128,8 @@ krnlMtxGenerator <- function(mtx) {
         }
     }
     krnl_mtx[is.nan(krnl_mtx)] <- 1  # if mtx[i,j] and epsilon == 0
-    # krnl_mtx[krnl_mtx < 0.05] <- 0
-    # krnl_mtx <- round(krnl_mtx, 3)
+    krnl_mtx <- round(krnl_mtx, 6)
+    krnl_mtx[krnl_mtx < 0.05] <- 0
     return(krnl_mtx)
 }
 # *****************************************************************************
@@ -1982,7 +1982,7 @@ passToClustering_lev3 <- function(mtx,
         ### kmeans clustering
         set.seed(12345)
         # set.seed(12345, kind = "Mersenne-Twister", normal.kind = "Inversion")
-        idCluster <- kmeans(x = round(eigenVecs, 10), 
+        idCluster <- kmeans(x = round(eigenVecs, 6), 
                             centers = k, 
                             iter.max = iter_max, 
                             nstart = nstart)$cluster
