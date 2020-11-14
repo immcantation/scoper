@@ -87,13 +87,13 @@ infer <- function(vec) {
     n <- length(vec)
     d <- NA
     # upper level search
-    if (n > 2) {
-        d <- findGapSmooth(vec=vec)    
-        if (!is.na(d)) { 
-            # d <- max(vec[vec <= d]) 
-            d <- ifelse(max(vec[vec <= d]) == 0, d, max(vec[vec <= d]))
-        }
-    }
+    # if (n > 2) {
+    #     d <- findGapSmooth(vec=vec)    
+    #     if (!is.na(d)) { 
+    #         # d <- max(vec[vec <= d]) 
+    #         d <- ifelse(max(vec[vec <= d]) == 0, d, max(vec[vec <= d]))
+    #     }
+    # }
     # lower level search
     if (is.na(d)) {
         diffVec <- diff(vec)
