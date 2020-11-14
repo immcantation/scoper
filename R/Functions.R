@@ -1982,7 +1982,7 @@ passToClustering_lev3 <- function(mtx,
         ### kmeans clustering
         set.seed(12345)
         # set.seed(12345, kind = "Mersenne-Twister", normal.kind = "Inversion")
-        idCluster <- kmeans(x = round(eigenVecs, 6), 
+        idCluster <- kmeans(x = round(eigenVecs, 10), 
                             centers = k, 
                             iter.max = iter_max, 
                             nstart = nstart)$cluster

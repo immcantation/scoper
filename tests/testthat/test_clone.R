@@ -74,6 +74,7 @@ test_that("Test spectralClones - novj", {
                          j_call = "j_call", threshold=0.15,
                          summarize_clones = FALSE)
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
+    cat(paste(clones))
     expect_identical(clones, expects)
     
     # Test parallel
