@@ -65,8 +65,8 @@ findGapSmooth <- function(vec) {
     # bandwidth <- kedd::h.ucv(vec, 4)$h
     # bandwidth <- density(vec)$bw
     # dens <- KernSmooth::bkde(vec, canonical=TRUE) #, bandwidth=bandwidth
-    suppressWarnings(dens <- density(vec, kernel="gaussian", adjust=1, bw="ucv"))  #"nrd0"
-    # dens <- density(vec)
+    # suppressWarnings(dens <- density(vec, kernel="gaussian", adjust=1, bw="ucv"))  #"nrd0"
+    dens <- density(vec)
     tryCatch({
         idy <- which(diff(sign(diff(dens$y))) == 2) + 1
         idx <- idy[which.min(dens$y[idy])]
@@ -1980,8 +1980,8 @@ passToClustering_lev3 <- function(mtx,
         eigenVecs <- eigens$vectors
         eigenVecs <- eigenVecs[, (n-k+1):(n)]
         ### kmeans clustering
-        # set.seed(12345)
-        set.seed(12345, kind = "Mersenne-Twister", normal.kind = "Inversion")
+        set.seed(12345)
+        # set.seed(12345, kind = "Mersenne-Twister", normal.kind = "Inversion")
         idCluster <- kmeans(x = round(eigenVecs, 6), 
                             centers = k, 
                             iter.max = iter_max, 
