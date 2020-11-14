@@ -128,7 +128,7 @@ krnlMtxGenerator <- function(mtx) {
         }
     }
     krnl_mtx[is.nan(krnl_mtx)] <- 1  # if mtx[i,j] and epsilon == 0
-    krnl_mtx[krnl_mtx < 0.05] <- 0
+    # krnl_mtx[krnl_mtx < 0.05] <- 0
     # krnl_mtx <- round(krnl_mtx, 3)
     return(krnl_mtx)
 }
