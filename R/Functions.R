@@ -1000,7 +1000,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' @param    split_light        split clones by light chains. Ignored if \code{cell_id=NULL}.
 #' @param    targeting_model    \link[shazam]{TargetingModel} object. Only applicable if 
 #'                              \code{method="vj"}. See Details for description.
-#' @param    len_limit          \link{IMGT_V} object defining the regions and boundaries of the Ig 
+#' @param    len_limit          \link[shazam]{IMGT_V} object defining the regions and boundaries of the Ig 
 #'                              sequences. If NULL, mutations are counted for entire sequence. Only 
 #'                              applicable if \code{method} = \code{"vj"}.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
