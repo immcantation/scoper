@@ -5,6 +5,12 @@ load(file.path("..", "data-tests", "ExampleDb.rda"), envir=e1)
 db <- get("ExampleDb", envir=e1)
 rm(e1)
 
+#ensure older version of sample() used
+R_v <- paste(version$major, version$minor,sep=".")
+if ( numeric_version(R_v) >= numeric_version("3.6.0") ) {
+    RNGkind(sample.kind="Round")   
+}
+
 # Check for pipelines environment
 # pipeline_env <- Sys.getenv("CI") == "true"
 # cat("Bitbucket Pipelines:", pipeline_env, "\n")
@@ -69,6 +75,7 @@ test_that("Test spectralClones - novj", {
     expects <- as.integer(c(7, 7, 7, 7, 8, 9, 11, 12, 192, 491))
     
     # Reproduce example
+    set.seed(12345)
     db <- spectralClones(ExampleDb, method = "novj", 
                          junction = "junction", v_call = "v_call", 
                          j_call = "j_call", threshold=0.15,
@@ -79,6 +86,7 @@ test_that("Test spectralClones - novj", {
     
     # Test parallel
     if (!pipeline_env) {
+        set.seed(12345)
         db <- spectralClones(ExampleDb, method = "novj",
                              junction = "junction", v_call = "v_call",
                              j_call = "j_call", threshold=0.15,
@@ -96,6 +104,7 @@ test_that("Test spectralClones - vj", {
     expects <- as.integer(c(11, 12, 12, 13, 14, 15, 16, 29, 35, 683))
     
     # Reproduce example
+    set.seed(12345)
     db <- spectralClones(ExampleDb, method = "vj", 
                          germline = "germline_alignment_d_mask",
                          sequence = "sequence_alignment", 
@@ -108,6 +117,7 @@ test_that("Test spectralClones - vj", {
     
     # Test parallel
     if (!pipeline_env) {
+        set.seed(12345)
         db <- spectralClones(ExampleDb, method = "vj",
                              germline = "germline_alignment_d_mask",
                              sequence = "sequence_alignment",
