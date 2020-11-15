@@ -122,7 +122,7 @@ mod3
 3 in nucleotide space.
 
 max_n
-:   the maximum number of N's to permit in the junction sequence before excluding the 
+:   the maximum number of degenerate characters to permit in the junction sequence before excluding the 
 record from clonal assignment. Default is set to be zero. Set it as `"NULL"` 
 for no action.
 
@@ -241,7 +241,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupGenes) for 
+See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See groupGenes for 
 more details about grouping requirements.
 
 

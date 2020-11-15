@@ -112,7 +112,7 @@ mod3
 3 in nucleotide space.
 
 max_n
-:   The maximum number of `N` characters to permit in the junction sequence 
+:   The maximum number of degenerate characters to permit in the junction sequence 
 before excluding the record from clonal assignment. Note, with 
 `linkage="single"` non-informative positions can create artifactual 
 links between unrelated sequences. Use with caution. 
@@ -195,7 +195,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupGenes) for 
+See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See groupGenes for 
 more details about grouping requirements.
 
 
