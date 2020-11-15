@@ -72,7 +72,7 @@ test_that("Test hierarchicalClones", {
 
 test_that("Test spectralClones - novj", {
     # Truth
-    expects <- as.integer(c(7, 7, 7, 7, 8, 9, 11, 12, 192, 491))
+    expects <- as.integer(c(7, 7, 7, 7, 8, 10, 11, 12, 192, 491))
     
     # Reproduce example
     set.seed(12345)
@@ -81,7 +81,6 @@ test_that("Test spectralClones - novj", {
                          j_call = "j_call", threshold=0.15,
                          summarize_clones = FALSE)
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
-    cat(paste(clones))
     expect_identical(clones, expects)
     
     # Test parallel
@@ -112,7 +111,6 @@ test_that("Test spectralClones - vj", {
                          j_call = "j_call", threshold=0.15,
                          summarize_clones = FALSE)
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
-    cat(paste(clones))
     expect_identical(clones, expects)
     
     # Test parallel
