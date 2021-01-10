@@ -600,7 +600,7 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' # Find clones
 #' results <- hierarchicalClones(ExampleDb, threshold=0.15)
 #' 
-#' # Plot clonal summaries 
+#' # Plot clonal summaries
 #' plot(results, binwidth=0.02)
 #' 
 #' @export
@@ -770,7 +770,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' 
 #' Values in the \code{locus} column must be one of \code{c("IGH", "IGI", "IGK", "IGL")} for BCR 
 #' or \code{c("TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the operation will exit and 
-#' return and error message.
+#' return an error message.
 #' 
 #' Under single-cell mode with paired-chain sequences, there is a choice of whether 
 #' grouping should be done by (a) using IGH (BCR) or TRB/TRD (TCR) sequences only or
@@ -779,12 +779,12 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' inferred clones should be split by the light/short chain (IGK, IGL, TRA, TRG) following 
 #' heavy/long chain clustering, which is governed by the \code{split_light} argument.
 #' 
-#' In single-cell mode, clonal clustering will not be performed on data were cells are 
+#' In single-cell mode, clonal clustering will not be performed on data where cells are 
 #' assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation 
 #' will exit and return an error message. Cells that lack a heavy/long chain sequence (i.e., cells with 
 #' light/short chains only) will be assigned a \code{clone_id} of \code{NA}.
 #'
-#' @seealso See \link{plotCloneSummary} for plotting summary results. See \link{groupGenes} for 
+#' @seealso See \link{plotCloneSummary} for plotting summary results. See \href{https://alakazam.readthedocs.io/en/stable/topics/groupGenes/}{groupGenes} for 
 #' more details about grouping requirements.
 #'
 #' @examples
@@ -794,7 +794,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
 #' 
-#' # Plot clonal summaries 
+#' # Plot clonal summaries
 #' plot(results, binwidth=0.02)
 #' 
 #' @export
@@ -905,7 +905,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' 
 #' Values in the \code{locus} column must be one of \code{c("IGH", "IGI", "IGK", "IGL")} for BCR 
 #' or \code{c("TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the operation will exit and 
-#' return and error message.
+#' return an error message.
 #' 
 #' Under single-cell mode with paired-chain sequences, there is a choice of whether 
 #' grouping should be done by (a) using IGH (BCR) or TRB/TRD (TCR) sequences only or
@@ -914,13 +914,13 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' inferred clones should be split by the light/short chain (IGK, IGL, TRA, TRG) following 
 #' heavy/long chain clustering, which is governed by the \code{split_light} argument.
 #' 
-#' In single-cell mode, clonal clustering will not be performed on data were cells are 
+#' In single-cell mode, clonal clustering will not be performed on data where cells are 
 #' assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation 
 #' will exit and return an error message. Cells that lack a heavy/long chain sequence (i.e., cells with 
 #' light/short chains only) will be assigned a \code{clone_id} of \code{NA}.
 #' 
 #' @seealso 
-#' See \link{plotCloneSummary} for plotting summary results. See \link{groupGenes} for 
+#' See \link{plotCloneSummary} for plotting summary results. See \href{https://alakazam.readthedocs.io/en/stable/topics/groupGenes/}{groupGenes} for 
 #' more details about grouping requirements.
 #'
 #' @examples
@@ -930,7 +930,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
 #' 
-#' # Plot clonal summaries 
+#' # Plot clonal summaries
 #' plot(results, binwidth=0.02)
 #' 
 #' @export
@@ -1065,7 +1065,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' 
 #' Values in the \code{locus} column must be one of \code{c("IGH", "IGI", "IGK", "IGL")} for BCR 
 #' or \code{c("TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the operation will exit and 
-#' return and error message.
+#' return an error message.
 #' 
 #' Under single-cell mode with paired-chain sequences, there is a choice of whether 
 #' grouping should be done by (a) using IGH (BCR) or TRB/TRD (TCR) sequences only or
@@ -1080,7 +1080,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' light/short chains only) will be assigned a \code{clone_id} of \code{NA}.
 #'
 #' @seealso
-#' See \link{plotCloneSummary} for plotting summary results. See \link{groupGenes} for 
+#' See \link{plotCloneSummary} for plotting summary results. See \href{https://alakazam.readthedocs.io/en/stable/topics/groupGenes/}{groupGenes} for 
 #' more details about grouping requirements.
 #'
 #' @examples
@@ -1093,7 +1093,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
 #'   
-#' # Plot clonal summaries 
+#' # Plot clonal summaries
 #' plot(results, binwidth=0.02)
 #' 
 #' @export
