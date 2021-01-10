@@ -202,7 +202,7 @@ using all input sequences regardless of the values in the `locus` column.
 
 Values in the `locus` column must be one of `c("IGH", "IGI", "IGK", "IGL")` for BCR 
 or `c("TRA", "TRB", "TRD", "TRG")` for TCR sequences. Otherwise, the operation will exit and 
-return and error message.
+return an error message.
 
 Under single-cell mode with paired-chain sequences, there is a choice of whether 
 grouping should be done by (a) using IGH (BCR) or TRB/TRD (TCR) sequences only or
@@ -231,7 +231,7 @@ results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask
 # Retrieve modified input data with clonal clustering identifiers
 df <- as.data.frame(results)
 
-# Plot clonal summaries 
+# Plot clonal summaries
 plot(results, binwidth=0.02)
 ```
 
@@ -241,7 +241,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See groupGenes for 
+See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](https://alakazam.readthedocs.io/en/stable/topics/groupGenes/) for 
 more details about grouping requirements.
 
 

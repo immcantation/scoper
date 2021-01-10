@@ -159,7 +159,7 @@ using all input sequences regardless of the values in the `locus` column.
 
 Values in the `locus` column must be one of `c("IGH", "IGI", "IGK", "IGL")` for BCR 
 or `c("TRA", "TRB", "TRD", "TRG")` for TCR sequences. Otherwise, the operation will exit and 
-return and error message.
+return an error message.
 
 Under single-cell mode with paired-chain sequences, there is a choice of whether 
 grouping should be done by (a) using IGH (BCR) or TRB/TRD (TCR) sequences only or
@@ -168,7 +168,7 @@ This is governed by the `only_heavy` argument. There is also choice as to whethe
 inferred clones should be split by the light/short chain (IGK, IGL, TRA, TRG) following 
 heavy/long chain clustering, which is governed by the `split_light` argument.
 
-In single-cell mode, clonal clustering will not be performed on data were cells are 
+In single-cell mode, clonal clustering will not be performed on data where cells are 
 assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation 
 will exit and return an error message. Cells that lack a heavy/long chain sequence (i.e., cells with 
 light/short chains only) will be assigned a `clone_id` of `NA`.
@@ -185,7 +185,7 @@ results <- hierarchicalClones(ExampleDb, threshold=0.15)
 # Retrieve modified input data with clonal clustering identifiers
 df <- as.data.frame(results)
 
-# Plot clonal summaries 
+# Plot clonal summaries
 plot(results, binwidth=0.02)
 ```
 
@@ -195,7 +195,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See groupGenes for 
+See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](https://alakazam.readthedocs.io/en/stable/topics/groupGenes/) for 
 more details about grouping requirements.
 
 
