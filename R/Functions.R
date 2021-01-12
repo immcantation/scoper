@@ -349,14 +349,14 @@ calculateInterVsIntra <- function(db,
         stop('Nproc must be positive.')
     }
     
-    ### expoer function to clusters
+    ### export function to clusters
     if (nproc > 1) { 
         export_functions <- list("pairwiseDist", "getDNAMatrix", "uniqueSeq")
         parallel::clusterExport(cluster, export_functions, envir=environment())
     }
     
     n_groups <- nrow(vjl_gps)  
-    ### check the progressbar
+    ### check the progress bar
     if (verbose) {
         pb <- progressBar(n_groups)
     }
@@ -404,14 +404,14 @@ calculateInterVsIntra <- function(db,
                               names(vec_f)[n] <- paste(clones[j], "NA", "intra", sep="_")
                           }
                           
-                          # Update progress
+                          # update progress
                           if (verbose) { pb$tick() }
                           
                           return(vec_f)
                           # *********************************************************************************
                       }
     
-    ### Stop the cluster
+    ### stop the cluster
     if (nproc > 1) { parallel::stopCluster(cluster) }
     
     # convert to a data.frame
@@ -1212,14 +1212,14 @@ defineClonesScoper <- function(db,
         stop("when grouping by `fields`, 'summarize_clones' should be `FALSE`.")
     }
     
-    ### Check general required columns
+    ### check general required columns
     columns <- c(junction, v_call, j_call, fields) 
     check <- checkColumns(db, columns)
     if (is.character(check)) { 
         stop(check)
     }
     
-    ### Check required columns for method "vj"
+    ### check required columns for method "vj"
     if (model == "spectral" & method == "vj") {
         columns <- c(germline, sequence) 
         check <- checkColumns(db, columns)
@@ -1228,7 +1228,7 @@ defineClonesScoper <- function(db,
         }
     } 
     
-    ### Check single-cell mode
+    ### check single-cell mode
     single_cell <- FALSE
     if (!is.null(cell_id) & !is.null(locus)) {
         # Check required columns for single-cell mode
@@ -1282,7 +1282,7 @@ defineClonesScoper <- function(db,
         log_verbose <- 0
     }
 
-    ### Prepare db
+    ### prepare db
     results_prep <- prepare_db(db = db, 
                                junction = junction, v_call = v_call, j_call = j_call,
                                first = first, cdr3 = cdr3, fields = fields,
@@ -1319,7 +1319,7 @@ defineClonesScoper <- function(db,
                                       function(i){ paste(unique(strsplit(vjl_gps$group_j_call[i], split=",")[[1]]), collapse=",") })
     n_groups <- nrow(vjl_gps)
     
-    ### Create cluster of nproc size and export namespaces
+    ### create cluster of nproc size and export namespaces
     if(nproc == 1) {
         # If needed to run on a single core/cpu then, register DoSEQ
         # (needed for 'foreach' in non-parallel mode)
@@ -1331,7 +1331,7 @@ defineClonesScoper <- function(db,
         stop('Nproc must be positive.')
     }
     
-    ### expoer function to clusters
+    ### export function to clusters
     if (nproc > 1) { 
         export_functions <- list("passToClustering_lev1", "passToClustering_lev2", "passToClustering_lev3", "passToClustering_lev4",
                                  "findGapSmooth", "infer", "krnlMtxGenerator", "makeAffinity", "laplacianMtx", 
@@ -1400,7 +1400,7 @@ defineClonesScoper <- function(db,
                              # *********************************************************************************
                          }
     
-    ### Stop the cluster
+    ### stop the cluster
     if (nproc > 1) { parallel::stopCluster(cluster) }
     
     ### sort clone ids
@@ -1501,7 +1501,7 @@ defineClonesScoper <- function(db,
     if (!is.null(fields) & single_cell) { temp_cols <- temp_cols[temp_cols != cell_id]}
     db_cloned <- db_cloned[, !(names(db_cloned) %in% temp_cols)]
     
-    ### singl cell pipeline
+    ### single cell pipeline
     if (single_cell) {
         db_l <- db_l[, !(names(db_l) %in% temp_cols)]
         db_l[[clone]] <- NA
