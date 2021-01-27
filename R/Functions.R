@@ -1298,9 +1298,12 @@ defineClonesScoper <- function(db,
     ### for single-cell mode: separates heavy and light chain data frames
     ### performs cloning only on heavy chains
     if (single_cell) {
+        message("Running identicalClones in single cell mode")
         db_l <- db[db[[locus]] %in% c("IGK", "IGL", "TRA", "TRG"), ]
         db_h <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
         db <- db_h
+    } else {
+        message("Running identicalClones in bulk mode")
     }
     
     ### groups to use
@@ -1505,56 +1508,64 @@ defineClonesScoper <- function(db,
     if (single_cell) {
         db_l <- db_l[, !(names(db_l) %in% temp_cols)]
         db_l[[clone]] <- NA
-        # copy clone ids from heavy chains into light chains
-        cell_ids_h <- unique(db_cloned[[cell_id]])
-        cell_ids_l <- unique(db_l[[cell_id]])
-        for (cellid in cell_ids_l) {
-            if (cellid %in% cell_ids_h) {
-                db_l[[clone]][db_l[[cell_id]] == cellid] <- db_cloned[[clone]][db_cloned[[cell_id]] == cellid]
-            } 
-        }
-        # bind heavy and light chain data.frames
-        stopifnot(all(names(db_cloned) == names(db_l)))
-        db_cloned <- bind_rows(db_cloned, db_l)
-        # split clones by light chains
-        if (split_light) {
-            clones <- unique(db_cloned[[clone]])
-            clones <- clones[!is.na(clones)]
-            for (cloneid in clones) {
-                db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
-                if (length(unique(db_c[[cell_id]])) == 1) next()
-                db_c <- groupGenes(data = db_c,
-                                   v_call = v_call,
-                                   j_call = j_call,
-                                   junc_len = NULL,
-                                   cell_id = cell_id,
-                                   locus = locus,
-                                   only_heavy = FALSE,
-                                   first = FALSE)
-                if (length(unique(db_c$vj_group)) == 1) next()
-                db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_") 
-                for (cellid in unique(db_c[[cell_id]])) {
-                    db_cloned[[clone]][db_cloned[[clone]] == cloneid & db_cloned[[cell_id]] == cellid] <- 
-                        db_c[[clone]][db_c[[cell_id]] == cellid]
+        
+        # If there is light chain info
+        if (nrow(db_l) < 1) {
+            warning("Single cell mode requested, but `db` doesn't contain light chain data. Skipping.")
+        } else {
+            # copy clone ids from heavy chains into light chains
+            cell_ids_h <- unique(db_cloned[[cell_id]])
+            cell_ids_l <- unique(db_l[[cell_id]])
+            for (cellid in cell_ids_l) {
+                if (cellid %in% cell_ids_h) {
+                    db_l[[clone]][db_l[[cell_id]] == cellid] <- db_cloned[[clone]][db_cloned[[cell_id]] == cellid]
+                } 
+            }
+            # bind heavy and light chain data.frames
+            stopifnot(all(names(db_cloned) == names(db_l)))
+            db_cloned <- bind_rows(db_cloned, db_l)
+            # split clones by light chains
+            if (split_light) {
+                clones <- unique(db_cloned[[clone]])
+                clones <- clones[!is.na(clones)]
+                for (cloneid in clones) {
+                    db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
+                    if (length(unique(db_c[[cell_id]])) == 1) next()
+                    db_c <- groupGenes(data = db_c,
+                                       v_call = v_call,
+                                       j_call = j_call,
+                                       junc_len = NULL,
+                                       cell_id = cell_id,
+                                       locus = locus,
+                                       only_heavy = FALSE,
+                                       first = FALSE)
+                    if (length(unique(db_c$vj_group)) == 1) next()
+                    db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_") 
+                    for (cellid in unique(db_c[[cell_id]])) {
+                        db_cloned[[clone]][db_cloned[[clone]] == cloneid & db_cloned[[cell_id]] == cellid] <- 
+                            db_c[[clone]][db_c[[cell_id]] == cellid]
+                    }
                 }
+            }  
+            
+            # sort clone ids
+            na.count <- sum(is.na(db_cloned[[clone]]))
+            if (na.count > 0) {
+                db_na <- db_cloned[is.na(db_cloned[[clone]]), ]
+                db_cloned <- db_cloned[!is.na(db_cloned[[clone]]), ]        
+            }
+            db_cloned$clone_temp <- db_cloned %>%
+                dplyr::group_by(!!rlang::sym(clone)) %>%
+                dplyr::group_indices()
+            db_cloned[[clone]] <- db_cloned$clone_temp
+            db_cloned <- db_cloned[order(db_cloned[[clone]]), ]
+            db_cloned[[clone]] <- as.character(db_cloned[[clone]])
+            db_cloned$clone_temp <- NULL
+            if (na.count > 0) {
+                db_cloned <- bind_rows(db_cloned, db_na)
             }
         }
-        # sort clone ids
-        na.count <- sum(is.na(db_cloned[[clone]]))
-        if (na.count > 0) {
-            db_na <- db_cloned[is.na(db_cloned[[clone]]), ]
-            db_cloned <- db_cloned[!is.na(db_cloned[[clone]]), ]        
-        }
-        db_cloned$clone_temp <- db_cloned %>%
-            dplyr::group_by(!!rlang::sym(clone)) %>%
-            dplyr::group_indices()
-        db_cloned[[clone]] <- db_cloned$clone_temp
-        db_cloned <- db_cloned[order(db_cloned[[clone]]), ]
-        db_cloned[[clone]] <- as.character(db_cloned[[clone]])
-        db_cloned$clone_temp <- NULL
-        if (na.count > 0) {
-            db_cloned <- bind_rows(db_cloned, db_na)
-        }
+        
     }
     if (!is.null(fields) & single_cell) { db_cloned[[cell_id]] <- NULL}
     
