@@ -1298,12 +1298,12 @@ defineClonesScoper <- function(db,
     ### for single-cell mode: separates heavy and light chain data frames
     ### performs cloning only on heavy chains
     if (single_cell) {
-        message("Running identicalClones in single cell mode")
+        message("Running defineClonesScoper in single cell mode")
         db_l <- db[db[[locus]] %in% c("IGK", "IGL", "TRA", "TRG"), ]
         db_h <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
         db <- db_h
     } else {
-        message("Running identicalClones in bulk mode")
+        message("Running defineClonesScoper in bulk mode")
     }
     
     ### groups to use
