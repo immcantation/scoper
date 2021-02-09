@@ -228,6 +228,11 @@ db <- subset(ExampleDb, sample_id == "-1h")
 # Find clonal groups
 results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask")
 
+```
+
+*Running identicalClones in Bulk mode*
+```R
+
 # Retrieve modified input data with clonal clustering identifiers
 df <- as.data.frame(results)
 
@@ -235,7 +240,7 @@ df <- as.data.frame(results)
 plot(results, binwidth=0.02)
 ```
 
-![2](spectralClones-2.png)
+![4](spectralClones-4.png)
 
 
 See also

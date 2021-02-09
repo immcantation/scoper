@@ -78,11 +78,16 @@ Examples
 # Find clones
 results <- hierarchicalClones(ExampleDb, threshold=0.15)
 
-# Plot clonal summaries 
+```
+
+*Running identicalClones in Bulk mode*
+```R
+
+# Plot clonal summaries
 plot(results, binwidth=0.02)
 ```
 
-![2](plotCloneSummary-2.png)
+![4](plotCloneSummary-4.png)
 
 
 See also

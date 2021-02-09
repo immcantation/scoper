@@ -1,8 +1,10 @@
-Version 1.1.0.999: November 13, 2020
+Version 1.1.0.999: January 27, 2021
 -------------------------------------------------------------------------------
 
 + added `fields` argument for additional grouping.
-
++ Fixed a bug in `defineClonesScoper` which caused the function to stop with 
+  an error when using single cell mode with data with only heavy chain 
+  information.
 
 Version 1.1.0: August 10, 2020
 -------------------------------------------------------------------------------

@@ -182,6 +182,11 @@ Examples
 # Find clonal groups
 results <- hierarchicalClones(ExampleDb, threshold=0.15)
 
+```
+
+*Running identicalClones in Bulk mode*
+```R
+
 # Retrieve modified input data with clonal clustering identifiers
 df <- as.data.frame(results)
 
@@ -189,7 +194,7 @@ df <- as.data.frame(results)
 plot(results, binwidth=0.02)
 ```
 
-![2](hierarchicalClones-2.png)
+![4](hierarchicalClones-4.png)
 
 
 See also
