@@ -75,13 +75,13 @@ test_that("Test hierarchicalClones", {
 
 test_that("Test spectralClones - novj", {
     # Truth
-    expects <- c(7, 7, 7, 7, 8, 9, 11, 12, 192, 491)
+    expects <- c(6, 7, 7, 7, 7, 8, 10, 11, 12, 679)
     
     # Reproduce example
     set.seed(12345)
     db <- spectralClones(ExampleDb, method = "novj", 
                          junction = "junction", v_call = "v_call", 
-                         j_call = "j_call", threshold=0.15,
+                         j_call = "j_call", threshold=0.20,
                          summarize_clones = FALSE)
     clones  <- as.numeric(tail(sort(table(db$clone_id)), 10))
     expect_identical(clones, expects)
@@ -91,7 +91,7 @@ test_that("Test spectralClones - novj", {
         set.seed(12345)
         db <- spectralClones(ExampleDb, method = "novj",
                              junction = "junction", v_call = "v_call",
-                             j_call = "j_call", threshold=0.15,
+                             j_call = "j_call", threshold=0.20,
                              summarize_clones = FALSE,
                              nproc=2)
         clones  <- as.numeric(tail(sort(table(db$clone_id)), 10))
