@@ -716,10 +716,12 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              \code{"aa"} for amino acid based clustering.
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
-#' @param    v_call             character name of the column containing the V-segment allele calls.
-#' @param    j_call             character name of the column containing the J-segment allele calls.
-#' @param    clone              the output column name containing the clonal clustering identifiers.
-#' @param    fields	            additional fields to use for grouping.
+#' @param    v_call             name of the column containing the V-segment allele calls.
+#' @param    j_call             name of the column containing the J-segment allele calls.
+#' @param    clone              output column name containing the clonal cluster identifiers.
+#' @param    fields	            character vector of additional columns to use for grouping. 
+#'                              Sequences with disjoint values in the specified fields will be classified 
+#'                              as separate clones.
 #' @param    cell_id            name of the column containing cell identifiers or barcodes. 
 #'                              If specified, grouping will be performed in single-cell mode
 #'                              with the behavior governed by the \code{locus} and 
@@ -799,8 +801,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' 
 #' @export
 identicalClones <- function(db, method=c("nt", "aa"), junction="junction", 
-                            v_call="v_call", j_call="j_call", clone="clone_id",
-                            fields=NULL,
+                            v_call="v_call", j_call="j_call", clone="clone_id", fields=NULL,
                             cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=TRUE,
                             first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                             verbose=FALSE, log=NULL, 
@@ -808,8 +809,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
     
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
-                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone,
-                                  fields = fields,
+                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,        
                                   verbose = verbose, log = log, 
@@ -841,7 +841,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' same V gene, J gene, and junction length, allowing for ambiguous V or J gene annotations.
 #'
 #' @param    db                 data.frame containing sequence data.
-#' @param    threshold          a numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
+#' @param    threshold          numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
 #' @param    method             one of the \code{"nt"} for nucleotide based clustering or 
 #'                              \code{"aa"} for amino acid based clustering.
 #' @param    linkage            available linkage are \code{"single"}, \code{"average"}, and \code{"complete"}.
@@ -849,10 +849,12 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              of the sequence group. If \code{"none"} then no normalization if performed.
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
-#' @param    v_call             character name of the column containing the V-segment allele calls.
-#' @param    j_call             character name of the column containing the J-segment allele calls.
-#' @param    clone              the output column name containing the clonal cluster identifiers.
-#' @param    fields	            additional fields to use for grouping.
+#' @param    v_call             name of the column containing the V-segment allele calls.
+#' @param    j_call             name of the column containing the J-segment allele calls.
+#' @param    clone              output column name containing the clonal cluster identifiers.
+#' @param    fields	            character vector of additional columns to use for grouping. 
+#'                              Sequences with disjoint values in the specified fields will be classified 
+#'                              as separate clones.
 #' @param    cell_id            name of the column containing cell identifiers or barcodes. 
 #'                              If specified, grouping will be performed in single-cell mode
 #'                              with the behavior governed by the \code{locus} and 
@@ -936,8 +938,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' @export
 hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("single", "average", "complete"), 
                                normalize=c("len", "none"), junction="junction", 
-                               v_call="v_call", j_call="j_call", clone="clone_id",
-                               fields=NULL,
+                               v_call="v_call", j_call="j_call", clone="clone_id", fields=NULL,
                                cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=TRUE,
                                first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                                verbose=FALSE, log=NULL,
@@ -945,8 +946,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
                                   method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
-                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone,
-                                  fields = fields,
+                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
                                   verbose = verbose, log = log, 
@@ -982,10 +982,12 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' @param    sequence           character name of the column containing input sequences. 
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
-#' @param    v_call             character name of the column containing the V-segment allele calls.
-#' @param    j_call             character name of the column containing the J-segment allele calls.
-#' @param    clone              the output column name containing the clone ids.
-#' @param    fields	            additional fields to use for grouping.
+#' @param    v_call             name of the column containing the V-segment allele calls.
+#' @param    j_call             name of the column containing the J-segment allele calls.
+#' @param    clone              output column name containing the clonal cluster identifiers.
+#' @param    fields	            character vector of additional columns to use for grouping. 
+#'                              Sequences with disjoint values in the specified fields will be classified 
+#'                              as separate clones.
 #' @param    cell_id            name of the column containing cell identifiers or barcodes. 
 #'                              If specified, grouping will be performed in single-cell mode
 #'                              with the behavior governed by the \code{locus} and 
@@ -1098,8 +1100,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' 
 #' @export
 spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignment", sequence="sequence_alignment",
-                           junction="junction", v_call="v_call", j_call="j_call", clone="clone_id",
-                           fields=NULL,
+                           junction="junction", v_call="v_call", j_call="j_call", clone="clone_id", fields=NULL,
                            cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=TRUE,
                            targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, 
                            threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
@@ -1108,8 +1109,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
     
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
                                   germline = germline, sequence = sequence,
-                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone,
-                                  fields = fields,
+                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   targeting_model = targeting_model, len_limit = len_limit,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n,
