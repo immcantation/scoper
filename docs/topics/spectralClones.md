@@ -65,16 +65,18 @@ junction
 Also used to determine sequence length for grouping.
 
 v_call
-:   character name of the column containing the V-segment allele calls.
+:   name of the column containing the V-segment allele calls.
 
 j_call
-:   character name of the column containing the J-segment allele calls.
+:   name of the column containing the J-segment allele calls.
 
 clone
-:   the output column name containing the clone ids.
+:   output column name containing the clonal cluster identifiers.
 
 fields
-:   additional fields to use for grouping.
+:   character vector of additional columns to use for grouping. 
+Sequences with disjoint values in the specified fields will be classified 
+as separate clones.
 
 cell_id
 :   name of the column containing cell identifiers or barcodes. 
@@ -230,7 +232,7 @@ results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask
 
 ```
 
-*Running identicalClones in Bulk mode*
+*Running defineClonesScoper in bulk mode*
 ```R
 
 # Retrieve modified input data with clonal clustering identifiers

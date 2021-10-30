@@ -1,5 +1,4 @@
 site_name: scoper
-site_favicon: img/favicon.ico
 repo_url: https://bitbucket.org/kleinstein/scoper
 edit_uri: src/master/docs/
 theme: readthedocs
@@ -10,13 +9,13 @@ markdown_extensions:
   - toc:
       permalink: True
 docs_dir: 'docs'
-pages:
+nav:
+  - 'Immcantation Portal': 'https://immcantation.readthedocs.io'
   - 'About':
     - 'Introduction': index.md
     - 'Download & Installation': install.md
     - 'Package Overview': topics/scoper.md
     - 'Release Notes': news.md
-    - 'Related Projects': projects.md
   - 'Vignettes':
     - 'Clonal Partitioning': vignettes/Scoper-Vignette.md
   - 'Help Topics':

@@ -80,7 +80,7 @@ results <- hierarchicalClones(ExampleDb, threshold=0.15)
 
 ```
 
-*Running identicalClones in Bulk mode*
+*Running defineClonesScoper in bulk mode*
 ```R
 
 # Plot clonal summaries
