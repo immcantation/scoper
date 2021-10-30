@@ -1147,9 +1147,6 @@ defineClonesScoper <- function(db,
                                iter_max = 1000, nstart = 1000, nproc = 1,
                                verbose = FALSE, log = NULL,
                                summarize_clones = TRUE) {
-
-    set.seed(12345)
-    
     ### get model
     model <- match.arg(model)
     
@@ -1767,8 +1764,6 @@ spectralClones_helper <- function(db_gp,
                                   base_sim = 0.95,
                                   iter_max = 1000, 
                                   nstart = 1000) {
-    set.seed(12345)
-    
     ### get method
     method <- match.arg(method)
     
@@ -1995,7 +1990,7 @@ passToClustering_lev3 <- function(mtx,
         eigenVecs <- eigenVecs[, (n-k+1):(n)]
         ### kmeans clustering
         # set.seed(12345)
-        # set.seed(12345, kind = "Mersenne-Twister", normal.kind = "Inversion")
+        set.seed(12345, kind = "Mersenne-Twister", normal.kind = "Inversion")
         idCluster <- kmeans(x = round(eigenVecs, 6), 
                             centers = k, 
                             iter.max = iter_max, 
