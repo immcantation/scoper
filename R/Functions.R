@@ -221,7 +221,7 @@ pairwiseMutions <- function(germ_imgt,
             return(paste(x, collapse=""))
         })
         ##### Pads ragged ends
-        l <- unique(nchar(seq_imgt))
+        l <- unique(stri_length(seq_imgt))
         if (length(l) > 1) {
             seq_imgt <- padSeqEnds(seq = seq_imgt, len = NULL, start = FALSE, pad_char = "N")
         }
@@ -232,7 +232,7 @@ pairwiseMutions <- function(germ_imgt,
             return(paste(x, collapse=""))
         })
         ##### Pads ragged ends
-        l <- unique(nchar(germ_imgt))
+        l <- unique(stri_length(germ_imgt))
         if (length(l) > 1) {
             germ_imgt <- padSeqEnds(seq = germ_imgt, len = NULL, start = FALSE, pad_char = "N")
         }
@@ -250,9 +250,9 @@ pairwiseMutions <- function(germ_imgt,
                                              breakTiesByColumns = NULL, 
                                              db = NULL)$cons)
         ##### check germ and seqs lengths
-        seq_imgt_lent <- unique(nchar(seq_imgt))
-        germ_imgt_lent <- unique(nchar(germ_imgt))
-        eff_germ_lent <- nchar(eff_germ)
+        seq_imgt_lent <- unique(stri_length(seq_imgt))
+        germ_imgt_lent <- unique(stri_length(germ_imgt))
+        eff_germ_lent <- stri_length(eff_germ)
         lenConsensus <- min(seq_imgt_lent, germ_imgt_lent, eff_germ_lent) 
         ##### trim extra characters
         if ( seq_imgt_lent > lenConsensus)  { seq_imgt <- substr( seq_imgt, start = 1, stop = lenConsensus) }
@@ -1148,6 +1148,8 @@ defineClonesScoper <- function(db,
                                verbose = FALSE, log = NULL,
                                summarize_clones = TRUE) {
 
+    set.seed(12345)
+    
     ### get model
     model <- match.arg(model)
     
@@ -1765,6 +1767,7 @@ spectralClones_helper <- function(db_gp,
                                   base_sim = 0.95,
                                   iter_max = 1000, 
                                   nstart = 1000) {
+    set.seed(12345)
     
     ### get method
     method <- match.arg(method)
