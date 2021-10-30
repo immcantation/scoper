@@ -1990,11 +1990,11 @@ passToClustering_lev3 <- function(mtx,
         eigenVecs <- eigenVecs[, (n-k+1):(n)]
         ### kmeans clustering
         # set.seed(12345)
-        set.seed(12345, kind = "Mersenne-Twister", normal.kind = "Inversion")
-        idCluster <- kmeans(x = round(eigenVecs, 6), 
-                            centers = k, 
-                            iter.max = iter_max, 
-                            nstart = nstart)$cluster
+        # set.seed(12345, kind = "Mersenne-Twister", normal.kind = "Inversion")
+        idCluster <- kmeans(x=round(eigenVecs, 5), 
+                            centers=k, 
+                            iter.max=iter_max, 
+                            nstart=nstart)$cluster
         ### check if idclusters and affinity matrix agrees
         idCluster <- passToClustering_lev4(aff_mtx = aff_mtx, 
                                            idCluster = idCluster)

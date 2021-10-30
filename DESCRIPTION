@@ -27,6 +27,7 @@ BuildVignettes: true
 VignetteBuilder: knitr
 Encoding: UTF-8
 SystemRequirements: C++11
+LinkingTo: Rcpp
 Depends:
     R (>= 4.0),
     ggplot2 (>= 3.3.4)
@@ -44,7 +45,6 @@ Imports:
     stats,
     stringi,
     tidyr (>= 1.0)
-LinkingTo: Rcpp
 Suggests:
     knitr,
     rmarkdown,
