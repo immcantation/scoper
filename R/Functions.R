@@ -786,7 +786,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' will exit and return an error message. Cells that lack a heavy/long chain sequence (i.e., cells with 
 #' light/short chains only) will be assigned a \code{clone_id} of \code{NA}.
 #'
-#' @seealso See \link{plotCloneSummary} for plotting summary results. See \href{https://alakazam.readthedocs.io/en/stable/topics/groupGenes/}{groupGenes} for 
+#' @seealso See \link{plotCloneSummary} for plotting summary results. See \link[alakazam]{groupGenes} for 
 #' more details about grouping requirements.
 #'
 #' @examples
@@ -922,7 +922,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' light/short chains only) will be assigned a \code{clone_id} of \code{NA}.
 #' 
 #' @seealso 
-#' See \link{plotCloneSummary} for plotting summary results. See \href{https://alakazam.readthedocs.io/en/stable/topics/groupGenes/}{groupGenes} for 
+#' See \link{plotCloneSummary} for plotting summary results. See \link[alakazam]{groupGenes} for 
 #' more details about grouping requirements.
 #'
 #' @examples
@@ -1082,7 +1082,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' light/short chains only) will be assigned a \code{clone_id} of \code{NA}.
 #'
 #' @seealso
-#' See \link{plotCloneSummary} for plotting summary results. See \href{https://alakazam.readthedocs.io/en/stable/topics/groupGenes/}{groupGenes} for 
+#' See \link{plotCloneSummary} for plotting summary results. See \link[alakazam]{groupGenes} for 
 #' more details about grouping requirements.
 #'
 #' @examples
