@@ -32,7 +32,7 @@ Depends:
     R (>= 4.0),
     ggplot2 (>= 3.3.4)
 Imports: 
-    alakazam (>= 1.1.0),
+    alakazam (>= 1.2.0),
     shazam (>= 1.1.0), 
     data.table,
     doParallel,
