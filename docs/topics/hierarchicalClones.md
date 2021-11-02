@@ -202,7 +202,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](https://alakazam.readthedocs.io/en/stable/topics/groupGenes/) for 
+See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupGenes) for 
 more details about grouping requirements.
 
 

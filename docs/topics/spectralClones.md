@@ -225,7 +225,7 @@ Examples
 
 ```R
 # Subset example data
-db <- subset(ExampleDb, sample_id == "-1h")
+db <- subset(ExampleDb, c_call == "IGHG")
 
 # Find clonal groups
 results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask")
@@ -248,7 +248,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](https://alakazam.readthedocs.io/en/stable/topics/groupGenes/) for 
+See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupGenes) for 
 more details about grouping requirements.
 
 
