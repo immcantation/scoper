@@ -184,9 +184,9 @@ and V/J mutation profiles. Technical details can be found in:
         identifying clones from high-throughput B cell repertoire sequencing data.
         Bioinformatics, 34(13):i341-i349.
 
-    Nouri N and Kleinstein SH (2019). Somatic hypermutation analysis for improved
+    Nouri N and Kleinstein SH (2020). Somatic hypermutation analysis for improved
         identification of B cell clonal families from next-generation sequencing data,
-        bioRxiv doi: 10.1101/788620.
+        PLoS Comput Biol 16(6): e1007977. https://doi.org/10.1371/journal.pcbi.1007977
 
 The following examples calls the `spectralClones` function with(out) the same 
 (optional) threshold used previously to define clones using the hierachical approach.
