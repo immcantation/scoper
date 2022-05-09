@@ -189,9 +189,9 @@ and V/J mutation profiles. Technical details can be found in:
         PLoS Comput Biol 16(6): e1007977. https://doi.org/10.1371/journal.pcbi.1007977
 
 The following examples calls the `spectralClones` function with(out) the same 
-(optional) threshold used previously to define clones using the hierachical approach.
+(optional) threshold used previously to define clones using the hierarchical approach.
 The results data.frame, summary plots, and summary table are accessed in the 
-same manner as shown above using the hierachical approach.
+same manner as shown above using the hierarchical approach.
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE}
 # Clonal assignment using the spectral clustering method novj

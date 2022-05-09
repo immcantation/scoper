@@ -1152,7 +1152,7 @@ defineClonesScoper <- function(db,
     
     ### get method
     method <- match.arg(method)
-
+    
     # Initial checks
     if (!is.data.frame(db)) {
         stop("'db' must be a data frame")
@@ -1280,7 +1280,7 @@ defineClonesScoper <- function(db,
     } else {
         log_verbose <- 0
     }
-
+    
     ### prepare db
     results_prep <- prepare_db(db = db, 
                                junction = junction, v_call = v_call, j_call = j_call,
@@ -1302,7 +1302,14 @@ defineClonesScoper <- function(db,
         db_h <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
         db <- db_h
     } else {
-        message("Running defineClonesScoper in bulk mode")
+        
+        ####################################################
+        #message("Running defineClonesScoper in bulk mode")
+        # if in bulk mode, only keep heavy chains
+        message("Running defineClonesScoper in bulk mode and only keep heavy chains")
+        db_h <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
+        db <- db_h
+        ####################################################
     }
     
     ### groups to use
@@ -1316,9 +1323,9 @@ defineClonesScoper <- function(db,
                          group_junction_length = unique(!!rlang::sym(junction_l)),
                          group_size = n())
     vjl_gps$group_v_call <- sapply(1:nrow(vjl_gps), 
-                                      function(i){ paste(unique(strsplit(vjl_gps$group_v_call[i], split=",")[[1]]), collapse=",") })
+                                   function(i){ paste(unique(strsplit(vjl_gps$group_v_call[i], split=",")[[1]]), collapse=",") })
     vjl_gps$group_j_call <- sapply(1:nrow(vjl_gps), 
-                                      function(i){ paste(unique(strsplit(vjl_gps$group_j_call[i], split=",")[[1]]), collapse=",") })
+                                   function(i){ paste(unique(strsplit(vjl_gps$group_j_call[i], split=",")[[1]]), collapse=",") })
     n_groups <- nrow(vjl_gps)
     
     ### create cluster of nproc size and export namespaces
@@ -1455,9 +1462,9 @@ defineClonesScoper <- function(db,
                              clone_count = length(unique(!!rlang::sym(clone))),
                              clone_id = paste(unique(!!rlang::sym(clone)), collapse = ","))
         vjl_gps$v_call <- sapply(1:nrow(vjl_gps),
-                                    function(i){ paste(unique(strsplit(vjl_gps$v_call[i], split=",")[[1]]), collapse=",") })
+                                 function(i){ paste(unique(strsplit(vjl_gps$v_call[i], split=",")[[1]]), collapse=",") })
         vjl_gps$j_call <- sapply(1:nrow(vjl_gps),
-                                    function(i){ paste(unique(strsplit(vjl_gps$j_call[i], split=",")[[1]]), collapse=",") })
+                                 function(i){ paste(unique(strsplit(vjl_gps$j_call[i], split=",")[[1]]), collapse=",") })
         
         ### calculate inter and intra distances
         df_inter_intra <- calculateInterVsIntra(db = db_cloned,
