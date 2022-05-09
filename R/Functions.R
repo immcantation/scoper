@@ -1299,16 +1299,18 @@ defineClonesScoper <- function(db,
     if (single_cell) {
         message("Running defineClonesScoper in single cell mode")
         db_l <- db[db[[locus]] %in% c("IGK", "IGL", "TRA", "TRG"), ]
-        db_h <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
-        db <- db_h
+        db <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
     } else {
         
         ####################################################
         #message("Running defineClonesScoper in bulk mode")
         # if in bulk mode, only keep heavy chains
         message("Running defineClonesScoper in bulk mode and only keep heavy chains")
-        db_h <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
-        db <- db_h
+        if (!locus %in% colnames(db)) {
+            message("... identifying heavy chains with getLocus(v_call).")
+            db[[locus]] <- getLocus(db[[v_call]])
+        }
+        db <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
         ####################################################
     }
     

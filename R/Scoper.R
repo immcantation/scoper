@@ -38,6 +38,7 @@
 #' @import      utils
 #' @importFrom  alakazam    pairwiseDist checkColumns getDNAMatrix getAAMatrix
 #'                          padSeqEnds progressBar groupGenes baseTheme translateDNA
+#'                          getLocus
 #' @importFrom  data.table  as.data.table .I
 #' @importFrom  doParallel  registerDoParallel
 #' @importFrom  dplyr       n %>% do
