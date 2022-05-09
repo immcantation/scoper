@@ -186,7 +186,7 @@ results <- hierarchicalClones(ExampleDb, threshold=0.15)
 
 ```
 
-*Running defineClonesScoper in bulk mode*
+*Running defineClonesScoper in bulk mode and only keep heavy chains**... identifying heavy chains with getLocus(v_call).*
 ```R
 
 # Retrieve modified input data with clonal clustering identifiers
@@ -196,7 +196,7 @@ df <- as.data.frame(results)
 plot(results, binwidth=0.02)
 ```
 
-![4](hierarchicalClones-4.png)
+![5](hierarchicalClones-5.png)
 
 
 See also

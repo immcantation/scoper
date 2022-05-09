@@ -232,7 +232,7 @@ results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask
 
 ```
 
-*Running defineClonesScoper in bulk mode*
+*Running defineClonesScoper in bulk mode and only keep heavy chains**... identifying heavy chains with getLocus(v_call).*
 ```R
 
 # Retrieve modified input data with clonal clustering identifiers
@@ -242,7 +242,7 @@ df <- as.data.frame(results)
 plot(results, binwidth=0.02)
 ```
 
-![4](spectralClones-4.png)
+![5](spectralClones-5.png)
 
 
 See also

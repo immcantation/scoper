@@ -1,3 +1,8 @@
+Version 1.2.0.999: May 9, 2022
+-------------------------------------------------------------------------------
+
++ Fixed a bug in the bulk clonal clustering method using light chain sequences.
+
 Version 1.2.0: November 2, 2021
 -------------------------------------------------------------------------------
 
