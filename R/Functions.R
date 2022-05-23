@@ -317,13 +317,16 @@ pairwiseMutions <- function(germ_imgt,
 # *****************************************************************************
 ### make a dataframe of unique seqs in each clone
 uniqueSeq <- function(seqs) {
+    # seqs_db <- data.frame(value = seqs, name = names(seqs), stringsAsFactors = FALSE) %>%
+    #     dplyr::group_by(!!!rlang::syms(c("name", "value"))) %>% # alternatively: group_by(name) if name value pair is always unique
+    #     dplyr::slice(1) %>%
+    #     dplyr::ungroup()
+    # seqs <- seqs_db$value
+    # names(seqs) <- seqs_db$name
+    # return(seqs)
     seqs_db <- data.frame(value = seqs, name = names(seqs), stringsAsFactors = FALSE) %>%
-        dplyr::group_by(!!!rlang::syms(c("name", "value"))) %>% # alternatively: group_by(name) if name value pair is always unique
-        dplyr::slice(1) %>%
-        dplyr::ungroup()
-    seqs <- seqs_db$value
-    names(seqs) <- seqs_db$name
-    return(seqs)
+        distinct()
+    setNames(seqs_db$value, seqs_db$name)
 }
 # *****************************************************************************
 
@@ -1310,7 +1313,7 @@ defineClonesScoper <- function(db,
             message("... identifying heavy chains with getLocus(v_call).")
             db[[locus]] <- getLocus(db[[v_call]])
         }
-        db <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
+        db <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ,drop=FALSE]
         ####################################################
     }
     

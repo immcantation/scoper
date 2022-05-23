@@ -44,7 +44,7 @@
 #' @importFrom  dplyr       n %>% do
 #'                          filter select arrange bind_rows
 #'                          group_by ungroup group_indices
-#'                          mutate summarize slice 
+#'                          mutate summarize slice  distinct
 #' @importFrom  foreach     foreach %dopar% registerDoSEQ
 #' @importFrom  rlang       sym syms
 #' @importFrom  Rcpp        evalCpp
