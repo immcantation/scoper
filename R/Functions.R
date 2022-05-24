@@ -353,8 +353,9 @@ calculateInterVsIntra <- function(db,
     }
     
     ### export function to clusters
+    DNAMatrix_gap0 <- getDNAMatrix(gap = 0)
     if (nproc > 1) { 
-        export_functions <- list("pairwiseDist", "getDNAMatrix", "uniqueSeq")
+        export_functions <- list("pairwiseDist", "DNAMatrix_gap0", "uniqueSeq")
         parallel::clusterExport(cluster, export_functions, envir=environment())
     }
     
@@ -378,7 +379,7 @@ calculateInterVsIntra <- function(db,
                           names(seqs) <- db[[clone]][db[[clone]] %in% clones]
                           seqs <- uniqueSeq(seqs)
                           ### calculate distance matrix among all seqs
-                          dist_mtx <- pairwiseDist(seqs, dist_mat=getDNAMatrix(gap = 0))
+                          dist_mtx <- pairwiseDist(seqs, dist_mat=DNAMatrix_gap0)
                           ### prealoocate a vector = no. of max-dist in each clone (intra) + no. of min-dist between clones (inter)
                           nrow_f <- n_clones + n_clones*(n_clones-1)/2
                           vec_f <- rep(NA, nrow_f)
@@ -1243,7 +1244,7 @@ defineClonesScoper <- function(db,
             db$cell_id_temp <- db %>%
                 dplyr::group_by(!!!rlang::syms(fields)) %>% 
                 dplyr::group_indices() 
-            db$cell_id_temp <- paste(db[[cell_id]], db$cell_id_temp, sep="_")     
+            db$cell_id_temp <- stri_join(db[[cell_id]], db$cell_id_temp, sep="_")     
             cell_id <- "cell_id_temp"
         }
         
@@ -1323,14 +1324,14 @@ defineClonesScoper <- function(db,
     ### summary of the groups
     vjl_gps <- db %>% 
         dplyr::group_by(!!!rlang::syms(groupBy)) %>%
-        dplyr::summarise(group_v_call = paste(unique(!!rlang::sym(v_call)), collapse=","),
-                         group_j_call = paste(unique(!!rlang::sym(j_call)), collapse=","),
+        dplyr::summarise(group_v_call = stri_join(unique(!!rlang::sym(v_call)), collapse=","),
+                         group_j_call = stri_join(unique(!!rlang::sym(j_call)), collapse=","),
                          group_junction_length = unique(!!rlang::sym(junction_l)),
                          group_size = n())
     vjl_gps$group_v_call <- sapply(1:nrow(vjl_gps), 
-                                   function(i){ paste(unique(strsplit(vjl_gps$group_v_call[i], split=",")[[1]]), collapse=",") })
+                                   function(i){ stri_join(unique(stri_split_fixed(vjl_gps$group_v_call[i], ",")[[1]]), collapse=",") })
     vjl_gps$group_j_call <- sapply(1:nrow(vjl_gps), 
-                                   function(i){ paste(unique(strsplit(vjl_gps$group_j_call[i], split=",")[[1]]), collapse=",") })
+                                   function(i){ stri_join(unique(stri_split_fixed(vjl_gps$group_j_call[i], ",")[[1]]), collapse=",") })
     n_groups <- nrow(vjl_gps)
     
     ### create cluster of nproc size and export namespaces
@@ -1407,7 +1408,7 @@ defineClonesScoper <- function(db,
                                                            gp_vcall, gp_jcall, gp_lent, gp_size, n_cluster) }
                              
                              # attache clones
-                             db_gp[[clone]] <- paste(gp, idCluster, sep="_")   
+                             db_gp[[clone]] <- stri_join(gp, idCluster, sep="_")   
                              
                              # return result from each proc
                              return(db_gp)
@@ -1467,9 +1468,9 @@ defineClonesScoper <- function(db,
                              clone_count = length(unique(!!rlang::sym(clone))),
                              clone_id = paste(unique(!!rlang::sym(clone)), collapse = ","))
         vjl_gps$v_call <- sapply(1:nrow(vjl_gps),
-                                 function(i){ paste(unique(strsplit(vjl_gps$v_call[i], split=",")[[1]]), collapse=",") })
+                                 function(i){ stri_join(unique(stri_split_fixed(vjl_gps$v_call[i], ",")[[1]]), collapse=",") })
         vjl_gps$j_call <- sapply(1:nrow(vjl_gps),
-                                 function(i){ paste(unique(strsplit(vjl_gps$j_call[i], split=",")[[1]]), collapse=",") })
+                                 function(i){ stri_join(unique(stri_split_fixed(vjl_gps$j_call[i], ",")[[1]]), collapse=",") })
         
         ### calculate inter and intra distances
         df_inter_intra <- calculateInterVsIntra(db = db_cloned,
