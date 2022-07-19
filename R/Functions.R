@@ -1341,7 +1341,6 @@ defineClonesScoper <- function(db,
         registerDoSEQ()
     } else if( nproc > 1 ) {
         cluster <- parallel::makeCluster(nproc, type="PSOCK", outfile = "")
-        registerDoParallel(cluster)
     } else {
         stop('Nproc must be positive.')
     }
@@ -1351,8 +1350,9 @@ defineClonesScoper <- function(db,
         export_functions <- list("passToClustering_lev1", "passToClustering_lev2", "passToClustering_lev3", "passToClustering_lev4",
                                  "findGapSmooth", "infer", "krnlMtxGenerator", "makeAffinity", "laplacianMtx", 
                                  "rangeAtoB", "likelihoods", "pairwiseMutions", "pairwiseMutMatrix",
-                                 "printVerbose", "logVerbose")
+                                 "printVerbose", "logVerbose","stri_join")
         parallel::clusterExport(cluster, export_functions, envir=environment())
+        registerDoParallel(cluster)
     }
     
     ### perform clustering for each group
