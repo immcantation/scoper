@@ -1,10 +1,18 @@
-Version 1.2.0.999: May 9, 2022
+Version 1.2.0.999: July 25, 2022
 -------------------------------------------------------------------------------
+
+Bug fixes:
 
 + Fixed a bug in the bulk clonal clustering. It was using light chain sequences.
   Now, light chain sequences are removed based on the `locus` information. If
   the column `locus` does not exist, it is created with 
   `alakazam::getLocus(v_call)`.
+ 
++ Fixed parallelization setup for `defineClonesScoper`.
+
+General:
+
++ Improved hierachical clustering performance. 
   
 Version 1.2.0: November 2, 2021
 -------------------------------------------------------------------------------
