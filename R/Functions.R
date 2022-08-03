@@ -1543,16 +1543,17 @@ defineClonesScoper <- function(db,
                 for (cloneid in clones) {
                     db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
                     if (length(unique(db_c[[cell_id]])) == 1) next()
+                    db_c[['junction_l']] <- stri_length(db_c[[junction]])
                     db_c <- groupGenes(data = db_c,
                                        v_call = v_call,
                                        j_call = j_call,
-                                       junc_len = NULL,
+                                       junc_len = 'junction_l', 
                                        cell_id = cell_id,
                                        locus = locus,
                                        only_heavy = FALSE,
                                        first = FALSE)
                     if (length(unique(db_c$vj_group)) == 1) next()
-                    db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_") 
+                    db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_")
                     for (cellid in unique(db_c[[cell_id]])) {
                         db_cloned[[clone]][db_cloned[[clone]] == cloneid & db_cloned[[cell_id]] == cellid] <- 
                             db_c[[clone]][db_c[[cell_id]] == cellid]

@@ -150,51 +150,119 @@ test_that("Test assigning clones works for heavy-only sc data", {
 
 test_that("Test hierarchicalClones light chain split works", {
     
-    ## TODO: These tests are work in progress
-    
+    ## TODO: These tests are work in progress. 
     db <- data.frame(
-        sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6"),
-        cell_id=c("cell1","cell1","cell2","cell2","cell3","cell3"),
-        v_call=c("IGHV1*01","IGLV1*01","IGHV1*01","IGLV1*01","IGHV1*01","IGLV2*01"),
-        d_call=c("IGHD1*01","IGHD1*01","IGHD1*01","IGHD1*01","IGHD1*01","IGHD1*01"),
-        j_call=c("IGHJ1*01","IGHJ1*01","IGHJ1*01","IGHJ1*01","IGHJ1*01","IGHJ1*01"),
-        junction=c("TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTTTTC","TCGAAATTC","TCGTTTTTC")
+        sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6","seq7","seq8"),
+        cell_id=c("cell1","cell1","cell2","cell2","cell3","cell3","cell4","cell4"),
+        v_call=c("IGHV1*01","IGLV1*01","IGHV1*01","IGLV1*01","IGHV1*01","IGLV2*01", "IGHV3*01,IGHV1*01","IGLV1*01"),
+        d_call=c("IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA),
+        j_call=c("IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01*01","IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01"),
+        junction=c("TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTTTTC","TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTC")
     )
     db$chain <- "light"
     db$chain[grepl("IGH",db[['v_call']])] <- "heavy"
     db$locus <- alakazam::getLocus(db$v_call)
-    db$junction_len <- stri_length(db[['junction']])  
-    
+    db$junction_len <- stringi::stri_length(db[['junction']])  
+
     # prepare_db uses groupGenes to find vj gene groups, but 
     # uses junc_len = NULL
     # It adds the junction length groups outside groupGenes
     # requires both cell_id and locus
     # scoper:::prepare_db
-    db_only_heavy_T_locus <- prepare_db(db,only_heavy = T, 
+    db_only_heavy_T_locus <- scoper:::prepare_db(db,only_heavy = T, 
                                                       cell_id="cell_id",
-                                                      locus="locus")$db
+                                                      locus="locus", first=F)$db
     expect_true(all(db_only_heavy_T_locus$vj_group =="G1"))
     
     # scoper:::prepare_db
-    db_only_heavy_F_locus <- prepare_db(db,only_heavy = F, 
+    db_only_heavy_F_locus_first_T <- scoper:::prepare_db(db,only_heavy = F, 
                                            cell_id="cell_id",
-                                           locus="locus")$db
-    expect_equal(db_only_heavy_F_locus$vj_group, c("G1","G1","G1","G1","G2","G2"))
+                                           locus="locus",
+                                           first=T)$db
+    expect_equal(db_only_heavy_F_locus_first_T$vj_group, c("G1","G1","G1","G1","G2","G2","G3","G3"))
     
-    # groupGenes(db, v_call="v_call",
-    #            j_call="j_call", junc_len='junction_len',
-    #            cell_id="cell_id", locus="locus",
-    #            only_heavy=FALSE,first=FALSE)
-    #     
-    # hierarchicalClones(
-    #     db,
-    #     threshold=1,
-    #     cell_id='cell_id',
-    #     locus='locus',
-    #     only_heavy=FALSE,
-    #     split_light=TRUE,
-    #     nproc=1)
-    # 
-    # expect_true(length(unique(clones@db$clone_id))>1)
+    db_only_heavy_F_locus_first_F <- scoper:::prepare_db(db,only_heavy = F, 
+                                                       cell_id="cell_id",
+                                                       locus="locus",
+                                                       first=F)$db
+    expect_equal(db_only_heavy_F_locus_first_F$vj_group, c("G1","G1","G1","G1","G2","G2","G1","G1"))
+    
+    
+    # heavy, no light split, no first
+    clones <- hierarchicalClones(
+        db,
+        threshold=0,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=TRUE,
+        split_light=FALSE,
+        first=F, # default is first=F
+        nproc=1)
+    expect_true(all(clones@db[['clone_id']] == "1"))
+    
+    # heavy, no light split, first
+    clones <- hierarchicalClones(
+        db,
+        threshold=0,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=TRUE,
+        split_light=FALSE,
+        first=T, # default is first=F
+        nproc=1)
+    expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))
+    
+    # heavy, light split, no first
+    clones <- hierarchicalClones(
+        db,
+        threshold=0,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=TRUE,
+        split_light=TRUE,
+        first=F, # default is first=F
+        nproc=1)
+    expect_equal(clones@db[['clone_id']], c("1","1","2","2","2","2","3","3"))
+    
+    # heavy, light split, first
+    clones <- hierarchicalClones(
+        db,
+        threshold=0,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=TRUE,
+        split_light=TRUE,
+        first=T, # default is first=F
+        nproc=1)
+    expect_equal(clones@db[['clone_id']], c("1","1","2","2","3","3","4","4"))
+    
+    # heavy and light, no light split, no first
+    clones <- hierarchicalClones(
+        db,
+        threshold=0,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=FALSE,
+        split_light=FALSE,
+        first=F, # default is first=F
+        nproc=1)
+    expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))    
+    
+    # heavy and light, no light split, first
+    clones <- hierarchicalClones(
+        db,
+        threshold=0,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=FALSE,
+        split_light=FALSE,
+        first=T, # default is first=F
+        nproc=1)
+    expect_equal(clones@db[['clone_id']],c("1","1","1","1","2","2","3","3"))    
+    
+    ## TODO what happens with the second groupGenes (inside the light chain split) when
+    # first=false, but the "linker" ambiguous call was left out of the same cluster id
+    # because of the distance threshold? This groupGenes could be splitting again by vj calls...
+ 
 
 })
