@@ -330,4 +330,6 @@ test_that("Test hierarchicalClones light chain split works", {
     expect_equal(clones_split_F@db[['clone_id']], clones_split_T@db[['clone_id']])
     
     ## TODO: multiple light chains?
+    
+    ## TODO: summaries etc are using clone ids created before the light chain split?
 })

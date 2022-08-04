@@ -1558,6 +1558,8 @@ defineClonesScoper <- function(db,
                     # and "linker" ambiguous calls were left out of the same cluster id
                     # because of the distance threshold. The goal now is to divide the 
                     # heavy chain clones using light chain info only.
+                    # TODO: this is probably inefficient. Test is groupGenes could handle
+                    # v_call=NULL and j_call=NULL. Or maybe add an option only_light.
                     db_c[[v_call]][db_c[['locus']] %in% c("IGH", "TRB", "TRD")] <- "IGHV0"
                     db_c[[j_call]][db_c[['locus']] %in% c("IGH", "TRB", "TRD")] <- "IGHJ0"
                     db_c <- groupGenes(data = db_c,
