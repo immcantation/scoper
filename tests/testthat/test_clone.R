@@ -150,7 +150,6 @@ test_that("Test assigning clones works for heavy-only sc data", {
 
 test_that("Test hierarchicalClones light chain split works", {
     
-    ## TODO: These tests are work in progress. 
     db <- data.frame(
         sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6","seq7","seq8"),
         cell_id=c("cell1","cell1","cell2","cell2","cell3","cell3","cell4","cell4"),
@@ -188,7 +187,18 @@ test_that("Test hierarchicalClones light chain split works", {
     expect_equal(db_only_heavy_F_locus_first_F$vj_group, c("G1","G1","G1","G1","G2","G2","G1","G1"))
     
     
-    # heavy, no light split, no first
+    ## Test hierachicalClones
+    ## case only_heavy   split_light first
+    ## 1    T            F           F
+    ## 2    T            F           T
+    ## 3    T            T           F
+    ## 4    T            T           T
+    ## 5    F            F           F
+    ## 6    F            F           T
+    ## 7    F            T           F
+    ## 8    F            T           T
+    
+    # Case 1
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -200,7 +210,7 @@ test_that("Test hierarchicalClones light chain split works", {
         nproc=1)
     expect_true(all(clones@db[['clone_id']] == "1"))
     
-    # heavy, no light split, first
+    # Case 2
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -212,7 +222,7 @@ test_that("Test hierarchicalClones light chain split works", {
         nproc=1)
     expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))
     
-    # heavy, light split, no first
+    # Case 3
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -224,7 +234,7 @@ test_that("Test hierarchicalClones light chain split works", {
         nproc=1)
     expect_equal(clones@db[['clone_id']], c("1","1","2","2","2","2","3","3"))
     
-    # heavy, light split, first
+    # Case 4
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -236,7 +246,7 @@ test_that("Test hierarchicalClones light chain split works", {
         nproc=1)
     expect_equal(clones@db[['clone_id']], c("1","1","2","2","3","3","4","4"))
     
-    # heavy and light, no light split, no first
+    # Case 5
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -248,7 +258,7 @@ test_that("Test hierarchicalClones light chain split works", {
         nproc=1)
     expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))    
     
-    # heavy and light, no light split, first
+    # Case 6
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -260,9 +270,64 @@ test_that("Test hierarchicalClones light chain split works", {
         nproc=1)
     expect_equal(clones@db[['clone_id']],c("1","1","1","1","2","2","3","3"))    
     
-    ## TODO what happens with the second groupGenes (inside the light chain split) when
+    # Case 7
+    clones <- hierarchicalClones(
+        db,
+        threshold=0,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=FALSE,
+        split_light=TRUE,
+        first=F, # default is first=F
+        nproc=1)
+    expect_equal(clones@db[['clone_id']],c("1","1","2","2","2","2","3","3"))    
+    
+    # Case 8
+    clones <- hierarchicalClones(
+        db,
+        threshold=0,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=FALSE,
+        split_light=TRUE,
+        first=T, # default is first=F
+        nproc=1)
+    expect_equal(clones@db[['clone_id']],c("1","1","2","2","3","3","4","4"))      
+    
+    ## Wwhat happens with the second groupGenes (inside the light chain split) when
     # first=false, but the "linker" ambiguous call was left out of the same cluster id
     # because of the distance threshold? This groupGenes could be splitting again by vj calls...
- 
-
+    # seq2 is the linker, and the juction is one nt different. Everything else is the same.
+    db <- data.frame(
+        sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6"),
+        cell_id=c("1","2","3","1","2","3"),
+        v_call=c("IGHV1", "IGHV1,IGHV2","IGHV2","IGLV1","IGLV1","IGLV1"),
+        j_call=c("IGHJ1","IGHJ1","IGHJ1","IGHJ1","IGHJ1","IGHJ1"),
+        junction=c("TCGAAATTC","TCGAACTTC","TCGAAATTC","TCGAAATTC","TCGAAATTC","TCGAAATTC")
+    )
+    db$locus <- alakazam::getLocus(db$v_call)
+    db
+    clones_split_F <- hierarchicalClones(
+        db,
+        threshold=0,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=TRUE,
+        split_light=FALSE,
+        first=F, # default is first=F
+        nproc=1)
+    
+    clones_split_T <- hierarchicalClones(
+        db,
+        threshold=0,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=TRUE,
+        split_light=TRUE,
+        first=F, # default is first=F
+        nproc=1)
+    # expecting same results because the light chains are the same.
+    expect_equal(clones_split_F@db[['clone_id']], clones_split_T@db[['clone_id']])
+    
+    ## TODO: multiple light chains?
 })

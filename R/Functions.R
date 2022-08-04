@@ -1286,6 +1286,15 @@ defineClonesScoper <- function(db,
     }
     
     ### prepare db
+    ### Creates the initial vjl groups to identify clonally related sequences
+    ### using the heavy chain.
+    ### The vj group is created with groupGenes, using heavy chaing v and j calls only
+    ### (only_heavy=T) or also considering the vj light chain call (only_heavy=F). 
+    ### Then an additional l group is added, based on the junction length, not
+    ### using thegroupGenes. As only the heavy chain data is used for cloning, 
+    ### only the heavy chain sequences' junction length matters. At this point,
+    ### single cell data has one heavy chain sequence per cell, and one cell can
+    ### only belong to a v+j+heavy-chain-junction-length group.
     results_prep <- prepare_db(db = db, 
                                junction = junction, v_call = v_call, j_call = j_call,
                                first = first, cdr3 = cdr3, fields = fields,
