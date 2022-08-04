@@ -1553,6 +1553,13 @@ defineClonesScoper <- function(db,
                     db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
                     if (length(unique(db_c[[cell_id]])) == 1) next()
                     db_c[['junction_l']] <- stri_length(db_c[[junction]])
+                    # Create temporary fake v_call and j_call, to avoid grouping 
+                    # again using heavy chain gene calls. This matters if first=FALSE
+                    # and "linker" ambiguous calls were left out of the same cluster id
+                    # because of the distance threshold. The goal now is to divide the 
+                    # heavy chain clones using light chain info only.
+                    db_c[[v_call]][db_c[['locus']] %in% c("IGH", "TRB", "TRD")] <- "IGHV0"
+                    db_c[[j_call]][db_c[['locus']] %in% c("IGH", "TRB", "TRD")] <- "IGHJ0"
                     db_c <- groupGenes(data = db_c,
                                        v_call = v_call,
                                        j_call = j_call,
