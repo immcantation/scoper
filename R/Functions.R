@@ -346,7 +346,7 @@ calculateInterVsIntra <- function(db,
         # (needed for 'foreach' in non-parallel mode)
         registerDoSEQ()
     } else if( nproc > 1 ) {
-        cluster <- parallel::makeCluster(nproc, type="PSOCK", outfile = "")
+        cluster <- parallel::makeCluster(nproc, type="PSOCK")
         registerDoParallel(cluster)
     } else {
         stop('Nproc must be positive.')
@@ -355,7 +355,7 @@ calculateInterVsIntra <- function(db,
     ### export function to clusters
     DNAMatrix_gap0 <- getDNAMatrix(gap = 0)
     if (nproc > 1) { 
-        export_functions <- list("pairwiseDist", "DNAMatrix_gap0", "uniqueSeq")
+        export_functions <- list("pairwiseDist", "DNAMatrix_gap0", "uniqueSeq", "stri_split_fixed")
         parallel::clusterExport(cluster, export_functions, envir=environment())
     }
     
@@ -372,11 +372,12 @@ calculateInterVsIntra <- function(db,
                       .errorhandling='stop') %dopar% {
                           
                           # *********************************************************************************
-                          clones <- strsplit(vjl_gps$clone_id[k], split=",")[[1]]
+                          clones <- stri_split_fixed(vjl_gps$clone_id[k], ",")[[1]]
                           l <- vjl_gps$junction_length[k]
                           n_clones <- length(clones)
-                          seqs <- db[[ifelse(cdr3, cdr3_col, junction)]][db[[clone]] %in% clones]
-                          names(seqs) <- db[[clone]][db[[clone]] %in% clones]
+                          in_clones <- db[[clone]] %in% clones
+                          seqs <- db[[ifelse(cdr3, cdr3_col, junction)]][in_clones]
+                          names(seqs) <- db[[clone]][in_clones]
                           seqs <- uniqueSeq(seqs)
                           ### calculate distance matrix among all seqs
                           dist_mtx <- pairwiseDist(seqs, dist_mat=DNAMatrix_gap0)
@@ -1327,6 +1328,10 @@ defineClonesScoper <- function(db,
         ####################################################
     }
     
+    if (nrow(db) == 0 ) {
+        stop("Cloning requires heavy chain sequences.")
+    }
+    
     ### groups to use
     groupBy <- c("vjl_group", fields)
     
@@ -1349,7 +1354,7 @@ defineClonesScoper <- function(db,
         # (needed for 'foreach' in non-parallel mode)
         registerDoSEQ()
     } else if( nproc > 1 ) {
-        cluster <- parallel::makeCluster(nproc, type="PSOCK", outfile = "")
+        cluster <- parallel::makeCluster(nproc, type="PSOCK")
     } else {
         stop('Nproc must be positive.')
     }

@@ -1,7 +1,7 @@
 Package: scoper
 Type: Package
 Version: 1.2.0.999
-Date: 2022-08-04
+Date: 2022-09-01
 Authors@R: c(person("Nima", "Nouri", role=c("aut"), 
                     email="nima.nouri@yale.edu"),
              person("Edel", "Aron", role=c("ctb"), 
@@ -49,7 +49,7 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 Collate: 
     'Data.R'
     'Scoper.R'
