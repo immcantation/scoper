@@ -51,7 +51,7 @@
 #' @importFrom  scales      pretty_breaks
 #' @importFrom  shazam      consensusSequence
 #' @importFrom  stats       density kmeans sd cor
-#'                          as.dist hclust cutree
+#'                          as.dist hclust cutree setNames
 #' @importFrom  stringi     stri_split_fixed stri_length stri_count stri_join
 #' @importFrom  tidyr       separate
 #' @useDynLib   scoper, .registration=TRUE
