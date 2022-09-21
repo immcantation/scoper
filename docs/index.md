@@ -32,6 +32,7 @@ For help and questions please contact the
 
 [Nima Nouri](mailto:nima.nouri@yale.edu) (aut)  
 [Edel Aron](mailto:edel.aron@yale.edu) (ctb)  
+[Susanna Marquez](mailto:susanna.marquez@yale.edu) (ctb)  
 [Jason Vander Heiden](mailto:jason.vanderheiden@gmail.com) (aut, cre)  
 [Steven Kleinstein](mailto:steven.kleinstein@yale.edu) (aut, cph)
 
