@@ -347,7 +347,7 @@ calculateInterVsIntra <- function(db,
         registerDoSEQ()
     } else if( nproc > 1 ) {
         cluster <- parallel::makeCluster(nproc, type="PSOCK")
-        registerDoParallel(cluster)
+        registerDoParallel(cluster,cores=nproc)
     } else {
         stop('Nproc must be positive.')
     }
@@ -1366,7 +1366,7 @@ defineClonesScoper <- function(db,
                                  "rangeAtoB", "likelihoods", "pairwiseMutions", "pairwiseMutMatrix",
                                  "printVerbose", "logVerbose","stri_join")
         parallel::clusterExport(cluster, export_functions, envir=environment())
-        registerDoParallel(cluster)
+        registerDoParallel(cluster, cores=nproc)
     }
     
     ### perform clustering for each group
