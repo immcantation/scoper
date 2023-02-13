@@ -1,7 +1,7 @@
 Package: scoper
 Type: Package
 Version: 1.2.1.999
-Date: 2022-11-22
+Date: 2023-02-13
 Authors@R: c(person("Nima", "Nouri", role=c("aut"), 
                     email="nima.nouri@yale.edu"),
              person("Edel", "Aron", role=c("ctb"), 
@@ -32,7 +32,7 @@ SystemRequirements: C++11
 LinkingTo: Rcpp
 Depends:
     R (>= 4.0),
-    ggplot2 (>= 3.3.4)
+    ggplot2 (>= 3.4.0)
 Imports: 
     alakazam (>= 1.2.0),
     shazam (>= 1.1.0), 
@@ -51,7 +51,7 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Collate: 
     'Data.R'
     'Scoper.R'

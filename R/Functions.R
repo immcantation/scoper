@@ -650,10 +650,10 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
     if (nrow(data_intra) > 0) {
         p <- p + 
             geom_histogram(data = data_intra,
-                           aes_string(x = "distance", y = "..density..", fill = "label"),
+                           aes(x = distance, y = after_stat(density), fill = label),
                            binwidth = binwidth, color = "white", alpha = 0.85) +
             geom_density(data = data_intra, 
-                         aes_string(x = "distance"),
+                         aes(x = distance),
                          size = size, color = "grey30")
     }
     
@@ -661,10 +661,10 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
     if (nrow(data_inter) > 0) {
         p <- p + 
             geom_histogram(data = data_inter,
-                           aes_string(x = "distance", y = "..density..", fill = "label"),
+                           aes(x = distance, y = after_stat(density), fill = label),
                            binwidth = binwidth, color = "white", alpha = 0.75) +
             geom_density(data = data_inter, 
-                         aes_string(x = "distance"),
+                         aes(x = distance),
                          size = size, color = "grey60")
     } else {
         warning("No inter clonal distance is detected. Each group of sequences with same V-gene, J-gene, and junction length may contain only one clone.")
