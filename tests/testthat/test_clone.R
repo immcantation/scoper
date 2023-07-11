@@ -1,7 +1,6 @@
 # Load test database
 e1 <- new.env()
-#load(file.path("tests", "data-tests", "ExampleDb.rda"), envir=e1)
-#load(file.path("tests", "data-tests", "Example10x.rda"), envir=e1)
+
 load(file.path("..", "data-tests", "ExampleDb.rda"), envir=e1)
 load(file.path("..", "data-tests", "Example10x.rda"), envir=e1)
 db <- get("ExampleDb", envir=e1)
@@ -332,4 +331,36 @@ test_that("Test hierarchicalClones light chain split works", {
     ## TODO: multiple light chains?
     
     ## TODO: summaries etc are using clone ids created before the light chain split?
+})
+
+## Add test for clones by light chain
+
+test_that("Test hierarchicalClones light chain split works on db with light chain ambiguity", {
+    # Load test db with light chain ambiguity
+    df_test <- read.table(file.path("..", "data-tests", "db_test.tsv"), sep="\t", header = T)
+
+    # Run hierarchicalClones without splitting light chain
+    db_h <- hierarchicalClones(
+        df_test,
+        threshold=0.1,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=TRUE,
+        split_light=FALSE,
+        first=F, # default is first=F
+        nproc=1)
+    expect_equal(db_h@db[["clone_id"]], as.character(db_h@db[["expected_clone_id_split_light_F"]]), info=print(db_h@db))
+
+    # Run hierarchicalClones with splitting light chain
+    # db_l <- hierarchicalClones(
+    #     df_test,
+    #     threshold=0.1,
+    #     cell_id='cell_id',
+    #     locus='locus',
+    #     only_heavy=TRUE,
+    #     split_light=TRUE,
+    #     first=F,
+    #     nproc=1)
+    
+    # expect_equal(db_l@db[["clone_id"]], as.character(db_l@db[["expected_clone_id_split_light_T"]]), info=print(db_l@db))
 })
