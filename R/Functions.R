@@ -1554,6 +1554,7 @@ defineClonesScoper <- function(db,
             if (split_light) {
                 clones <- unique(db_cloned[[clone]])
                 clones <- clones[!is.na(clones)]
+                #TODO: parallelize this for loop
                 for (cloneid in clones) {
                     db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
                     if (length(unique(db_c[[cell_id]])) == 1) next()
@@ -1576,7 +1577,7 @@ defineClonesScoper <- function(db,
                                        only_heavy = FALSE,
                                        first = FALSE)
                     if (length(unique(db_c$vj_group)) == 1) next()
-                    db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_")
+                    db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_") # TODO: IDs get connected with underscore, figure out when the underscore is removed
                     for (cellid in unique(db_c[[cell_id]])) {
                         db_cloned[[clone]][db_cloned[[clone]] == cloneid & db_cloned[[cell_id]] == cellid] <- 
                             db_c[[clone]][db_c[[cell_id]] == cellid]
@@ -1594,7 +1595,7 @@ defineClonesScoper <- function(db,
                 dplyr::group_by(!!rlang::sym(clone)) %>%
                 dplyr::group_indices()
             db_cloned[[clone]] <- db_cloned$clone_temp
-            db_cloned <- db_cloned[order(db_cloned[[clone]]), ]
+            db_cloned <- db_cloned[order(db_cloned[[clone]]), ] # Sorts them by clone_vj_group
             db_cloned[[clone]] <- as.character(db_cloned[[clone]])
             db_cloned$clone_temp <- NULL
             if (na.count > 0) {
