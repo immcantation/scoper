@@ -352,15 +352,18 @@ test_that("Test hierarchicalClones light chain split works on db with light chai
     expect_equal(db_h@db[["clone_id"]], as.character(db_h@db[["expected_clone_id_split_light_F"]]), info=print(db_h@db))
 
     # Run hierarchicalClones with splitting light chain
-    # db_l <- hierarchicalClones(
-    #     df_test,
-    #     threshold=0.1,
-    #     cell_id='cell_id',
-    #     locus='locus',
-    #     only_heavy=TRUE,
-    #     split_light=TRUE,
-    #     first=F,
-    #     nproc=1)
+    db_l <- hierarchicalClones(
+        df_test,
+        threshold=0.1,
+        cell_id='cell_id',
+        locus='locus',
+        only_heavy=TRUE,
+        split_light=TRUE,
+        first=F,
+        nproc=1)
+
+    #TODO: so far the test with split light chains is not passing because (1) the heavy chains with cell_id NA are eliminated, 
+    #and (2) cells that only contain heavy chain are assigned to a separate clone.
     
     # expect_equal(db_l@db[["clone_id"]], as.character(db_l@db[["expected_clone_id_split_light_T"]]), info=print(db_l@db))
 })
