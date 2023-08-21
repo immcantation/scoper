@@ -1307,6 +1307,7 @@ defineClonesScoper <- function(db,
     n_rmv_N <- results_prep$n_rmv_N
     junction_l <- results_prep$junction_l
     cdr3_col <-  results_prep$cdr3_col
+    rm(results_prep)
     
     ### for single-cell mode: separates heavy and light chain data frames
     ### performs cloning only on heavy chains
