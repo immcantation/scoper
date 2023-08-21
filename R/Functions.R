@@ -1313,8 +1313,8 @@ defineClonesScoper <- function(db,
     ### performs cloning only on heavy chains
     if (single_cell) {
         message("Running defineClonesScoper in single cell mode")
-        db_l <- db[db[[locus]] %in% c("IGK", "IGL", "TRA", "TRG"), ]
-        db <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), ]
+        db_l <- db[db[[locus]] %in% c("IGK", "IGL", "TRA", "TRG"), , drop=F]
+        db <- db[db[[locus]] %in% c("IGH", "TRB", "TRD"), , drop=F]
     } else {
         
         ####################################################
