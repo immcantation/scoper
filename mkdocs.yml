@@ -7,6 +7,9 @@ theme:
   name: readthedocs
   navigation_depth: 2
   collapse_navigation: False
+  sticky_navigation: False
+  locale: en
+  logo: null  
   titles_only: False
 markdown_extensions:
   - def_list
@@ -24,6 +27,7 @@ nav:
     - 'Download & Installation': install.md
     - 'Package Overview': topics/scoper.md
     - 'Release Notes': news.md
+    - 'Related Projects': projects.md
   - 'Vignettes':
     - 'Clonal Partitioning': vignettes/Scoper-Vignette.md
   - 'Help Topics':
