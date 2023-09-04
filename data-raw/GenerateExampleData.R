@@ -21,9 +21,10 @@ ExampleDb <- ExampleDb[c("sequence_id",
                          "sample_id",
                          "c_call",
                          "duplicate_count")]
+ExampleDb$locus <- getLocus(ExampleDb$v_call)
 
 # Save
-use_this::use_data(ExampleDb, overwrite=TRUE)
+usethis::use_data(ExampleDb, overwrite=TRUE)
 
 #### Generate example clones ####
 # ClonedExampleDb <- defineClonesScoper(db,
