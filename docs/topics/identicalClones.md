@@ -172,7 +172,7 @@ results <- identicalClones(ExampleDb)
 
 ```
 
-*Running defineClonesScoper in bulk mode and only keep heavy chains**... identifying heavy chains with getLocus(v_call).*
+*Running defineClonesScoper in bulk mode and only keep heavy chains*
 ```R
 
 # Retrieve modified input data with clonal clustering identifiers
@@ -182,7 +182,7 @@ df <- as.data.frame(results)
 plot(results, binwidth=0.02)
 ```
 
-![5](identicalClones-5.png)
+![4](identicalClones-4.png)
 
 
 See also

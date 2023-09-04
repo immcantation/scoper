@@ -80,14 +80,14 @@ results <- hierarchicalClones(ExampleDb, threshold=0.15)
 
 ```
 
-*Running defineClonesScoper in bulk mode and only keep heavy chains**... identifying heavy chains with getLocus(v_call).*
+*Running defineClonesScoper in bulk mode and only keep heavy chains*
 ```R
 
 # Plot clonal summaries
 plot(results, binwidth=0.02)
 ```
 
-![5](plotCloneSummary-5.png)
+![4](plotCloneSummary-4.png)
 
 
 See also

@@ -232,18 +232,22 @@ results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask
 
 ```
 
-*Running defineClonesScoper in bulk mode and only keep heavy chains**... identifying heavy chains with getLocus(v_call).*
+**Error in defineClonesScoper(db = db, method = match.arg(method), model = "spectral", **: The column junction contains no data
 ```R
 
 # Retrieve modified input data with clonal clustering identifiers
 df <- as.data.frame(results)
 
+```
+
+**Error in h(simpleError(msg, call))**: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': object 'results' not found
+```R
+
 # Plot clonal summaries
 plot(results, binwidth=0.02)
 ```
 
-![5](spectralClones-5.png)
-
+**Error in h(simpleError(msg, call))**: error in evaluating the argument 'x' in selecting a method for function 'plot': object 'results' not found
 
 See also
 -------------------

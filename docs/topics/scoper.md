@@ -1,4 +1,4 @@
-**scoper** - *The SCOPer package*
+# The SCOPer package
 
 Description
 --------------------
@@ -44,7 +44,6 @@ from high-throughput B cell repertoire sequencing data. Bioinformatics, 34(13):i
 of B cell clonal families from next-generation sequencing data. bioRxiv, 10.1101/788620.
 1.  Gupta NT, et al. (2017). Hierarchical clustering can identify B cell clones with high 
 confidence in Ig repertoire sequencing data. The Journal of Immunology, 198(6):2489-2499.
-
 
 
 
