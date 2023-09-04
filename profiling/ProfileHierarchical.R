@@ -5,6 +5,7 @@ library(profvis)
 #### Load example data ####
 # setwd("profiling")
 data <- readr::read_tsv("1000.tsv", col_types = readr::cols())
+data$LOCUS <- alakazam::getLocus(data$V_CALL)
 
 #### Calculate expected mutations ####
 profvis({
