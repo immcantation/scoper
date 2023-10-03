@@ -1,4 +1,5 @@
 #' @keywords internal
+#' @aliases scoper-package
 "_PACKAGE"
 
 # Project documentation and imports
