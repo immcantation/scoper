@@ -2,6 +2,7 @@
 
 # Imports
 library(alakazam)
+library(dplyr)
 
 #### Generate example database ####
 
@@ -22,6 +23,12 @@ ExampleDb <- ExampleDb[c("sequence_id",
                          "c_call",
                          "duplicate_count")]
 ExampleDb$locus <- getLocus(ExampleDb$v_call)
+
+c_trans <- c(IGHM="IgM", IGHD="IgD", IGHA="IgA", IGHG="IgG")
+ExampleDb <- ExampleDb %>%
+    mutate(c_call=translateStrings(c_call, c_trans),
+           germline_alignment=germline_alignment_d_mask)
+
 
 # Save
 usethis::use_data(ExampleDb, overwrite=TRUE)
