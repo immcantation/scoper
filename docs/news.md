@@ -1,11 +1,13 @@
 # Release Notes
 
-Version 1.2.1.999: February 13, 2023
+Version 1.3.0: October 5, 2023
 -------------------------------------------------------------------------------
 
 General:
 
-+ Updated dependencies to ggplot2 >= 3.4.0.
++ Updated dependencies alakazam >= 1.3.0, shazam >= 1.2.0, ggplot2 >= 3.4.0.
++ Added a `locus` column to the package's example data, to satisfy 
+  alakazam >= 1.3.0 requirements.
 
 Version 1.2.1: September 21, 2022
 -------------------------------------------------------------------------------
