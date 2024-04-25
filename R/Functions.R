@@ -1167,6 +1167,10 @@ defineClonesScoper <- function(db,
         stop("'db' must be a data frame")
     }
     
+    if (is(db, "data.table")) {
+        db <- as.data.frame(db)
+    }
+    
     ### check model and method
     if (model == "identical") {
         if (!(method %in% c("nt", "aa"))) {
