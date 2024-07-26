@@ -11,6 +11,8 @@ theme:
   locale: en
   logo: null  
   titles_only: False
+  analytics:
+    gtag: G-ZVL2WV4EKR
 markdown_extensions:
   - def_list
   - sane_lists
