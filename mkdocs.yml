@@ -11,6 +11,8 @@ theme:
   locale: en
   logo: null  
   titles_only: False
+  analytics:
+    gtag: G-ZVL2WV4EKR
 markdown_extensions:
   - def_list
   - sane_lists
@@ -19,7 +21,7 @@ markdown_extensions:
       baselevel: 1
       toc_depth: 1-4
       permalink: True
-docs_dir: 'docs'
+docs_dir: docs
 nav:
   - 'Immcantation Portal': https://immcantation.readthedocs.io/
   - 'About':
