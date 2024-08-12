@@ -482,12 +482,15 @@ prepare_db <- function(db,
                        first = FALSE, cdr3 = FALSE, fields = NULL,
                        cell_id = NULL, locus = NULL, only_heavy = TRUE,
                        mod3 = FALSE, max_n = 0) {
+    #TODO: remove only_heavy parameter when it becomes deprecated.
+
     # add junction length column
     db$junction_l <- stringi::stri_length(db[[junction]])
     junction_l <- "junction_l"
     
     ### check for mod3
     # filter mod 3 junction lengths
+    # TODO: is this check needed here? Are we doing this before?
     if (mod3) {
         n_rmv_mod3 <- sum(db[[junction_l]]%%3 != 0)
         db <- db %>% 
@@ -498,6 +501,7 @@ prepare_db <- function(db,
     
     ### check for cdr3
     # filter junctions with length > 6
+    #TODO: why are we doing this check here? Inside GroupGenes
     if (cdr3) {
         n_rmv_cdr3 <- sum(db[[junction_l]] <= 6)
         db <- db %>% 
@@ -512,6 +516,7 @@ prepare_db <- function(db,
     
     ### check for degenerate characters (non-ATCG's)
     # Count the number of non-ATCG's in junction
+    # TODO: remove this from here as groupGenes already checks for ambiguous positions
     if (!is.null(max_n)) {
         n_rmv_N <- sum(stri_count(db[[junction]], regex = "[^ATCG]") > max_n)
         db <- db %>% 
@@ -528,31 +533,33 @@ prepare_db <- function(db,
             do(groupGenes(., 
                           v_call = v_call,
                           j_call = j_call,
-                          junc_len = NULL,
+                          junc_len = NULL, #TODO: junc_len could be not NULL, why not passing it?
                           cell_id = cell_id,
                           locus = locus,
-                          only_heavy = only_heavy,
+                          only_heavy = T, #TODO: we only allow True for now, when deprecated remove.
                           first = first))        
     } else {
         db <- groupGenes(db,
                          v_call = v_call,
                          j_call = j_call,
-                         junc_len = NULL,
+                         junc_len = NULL, #TODO: junc_len could be not NULL, why not passing it?
                          cell_id = cell_id,
                          locus = locus,
-                         only_heavy = only_heavy,
+                         only_heavy = T, #TODO: we only allow True for now, when deprecated remove.
                          first = first)        
     }
     
     ### groups to use
+    ### vj_group comes from groupGenes
     groupBy <- c("vj_group", junction_l, fields)
     
     ### assign group ids to db
+    ### TODO: why does it split here by junction and not within groupGenes
     db$vjl_group <- db %>%
         dplyr::group_by(!!!rlang::syms(groupBy)) %>%
         dplyr::group_indices()
     
-    ### retrun results
+    ### return results
     return_list <- list("db" = db, 
                         "n_rmv_mod3" = n_rmv_mod3, 
                         "n_rmv_cdr3" = n_rmv_cdr3,
@@ -1170,6 +1177,11 @@ defineClonesScoper <- function(db,
     if (is(db, "data.table")) {
         db <- as.data.frame(db)
     }
+
+    #TODO: add any other info here?
+    if (!only_heavy){
+        stop("Only heavy parameter will be deprecated in future releases, only only_heavy=T is allowed.")
+    }
     
     ### check model and method
     if (model == "identical") {
@@ -1295,15 +1307,12 @@ defineClonesScoper <- function(db,
     }
     
     ### prepare db
-    ### Creates the initial vjl groups to identify clonally related sequences
+    ### Creates the initial VJ groups to identify clonally related sequences
     ### using the heavy chain.
-    ### The vj group is created with groupGenes, using heavy chaing v and j calls only
-    ### (only_heavy=T) or also considering the vj light chain call (only_heavy=F). 
-    ### Then an additional l group is added, based on the junction length, not
-    ### using thegroupGenes. As only the heavy chain data is used for cloning, 
-    ### only the heavy chain sequences' junction length matters. At this point,
+    ### At this point,
     ### single cell data has one heavy chain sequence per cell, and one cell can
     ### only belong to a v+j+heavy-chain-junction-length group.
+    # TODO: modify function prepare_db to not accept only_heavy parameter any more
     results_prep <- prepare_db(db = db, 
                                junction = junction, v_call = v_call, j_call = j_call,
                                first = first, cdr3 = cdr3, fields = fields,
@@ -1559,11 +1568,15 @@ defineClonesScoper <- function(db,
           # bind heavy and light chain data.frames
             stopifnot(all(names(db_cloned) == names(db_l)))
             db_cloned <- bind_rows(db_cloned, db_l)
+
+
             # split clones by light chains
             if (split_light) {
                 clones <- unique(db_cloned[[clone]])
                 clones <- clones[!is.na(clones)]
                 #TODO: parallelize this for loop
+                #TODO: instead of calling groupGenes again here we want to split by light chain with the Dowser function
+                #TODO: decide whether clones split by light chain should get a new clone_id or a new column specifying "subclones?"
                 for (cloneid in clones) {
                     db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
                     if (length(unique(db_c[[cell_id]])) == 1) next()
