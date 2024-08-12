@@ -261,7 +261,7 @@ pairwiseMutions <- function(germ_imgt,
     }
     ##### count informative positions
     if (norm_fact) {
-        informative_pos <- sapply(1:n, function(x){ sum(stri_count(seq_imgt[x], fixed = c("A","C","G","T"))) })   
+        informative_pos <- sapply(1:n, function(x){ sum(stringi::stri_count(seq_imgt[x], fixed = c("A","C","G","T"))) })   
     } else {
         informative_pos <- rep(1, n)
     }
@@ -513,9 +513,9 @@ prepare_db <- function(db,
     ### check for degenerate characters (non-ATCG's)
     # Count the number of non-ATCG's in junction
     if (!is.null(max_n)) {
-        n_rmv_N <- sum(stri_count(db[[junction]], regex = "[^ATCG]") > max_n)
+        n_rmv_N <- sum(stringi::stri_count(db[[junction]], regex = "[^ATCG]") > max_n)
         db <- db %>% 
-            dplyr::filter(stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
+            dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
     } else {
         n_rmv_N <- 0
     }
@@ -525,7 +525,7 @@ prepare_db <- function(db,
         . <- NULL
         db <- db %>%
             dplyr::group_by(!!!rlang::syms(fields)) %>%
-            do(groupGenes(., 
+            do(alakazam::groupGenes(., 
                           v_call = v_call,
                           j_call = j_call,
                           junc_len = NULL,
@@ -534,7 +534,7 @@ prepare_db <- function(db,
                           only_heavy = only_heavy,
                           first = first))        
     } else {
-        db <- groupGenes(db,
+        db <- alakazam::groupGenes(db,
                          v_call = v_call,
                          j_call = j_call,
                          junc_len = NULL,
@@ -552,7 +552,7 @@ prepare_db <- function(db,
         dplyr::group_by(!!!rlang::syms(groupBy)) %>%
         dplyr::group_indices()
     
-    ### retrun results
+    ### return results
     return_list <- list("db" = db, 
                         "n_rmv_mod3" = n_rmv_mod3, 
                         "n_rmv_cdr3" = n_rmv_cdr3,
@@ -1226,7 +1226,7 @@ defineClonesScoper <- function(db,
     
     ### check general required columns
     columns <- c(junction, v_call, j_call, fields) 
-    check <- checkColumns(db, columns)
+    check <- alakazam::checkColumns(db, columns)
     if (is.character(check)) { 
         stop(check)
     }
@@ -1245,7 +1245,7 @@ defineClonesScoper <- function(db,
     if (!is.null(cell_id) & !is.null(locus)) {
         # Check required columns for single-cell mode
         columns <- c(cell_id, locus) #, fields
-        check <- checkColumns(db, columns)
+        check <- alakazam::checkColumns(db, columns)
         if (check != TRUE) { stop(check) }
         
         # make a temp cell_id column to keep cell_ids specific to each fields 
@@ -1300,10 +1300,13 @@ defineClonesScoper <- function(db,
     ### The vj group is created with groupGenes, using heavy chaing v and j calls only
     ### (only_heavy=T) or also considering the vj light chain call (only_heavy=F). 
     ### Then an additional l group is added, based on the junction length, not
-    ### using thegroupGenes. As only the heavy chain data is used for cloning, 
+    ### using the groupGenes. As only the heavy chain data is used for cloning, 
     ### only the heavy chain sequences' junction length matters. At this point,
     ### single cell data has one heavy chain sequence per cell, and one cell can
     ### only belong to a v+j+heavy-chain-junction-length group.
+    
+    # TODO this drops the the sequences with no cell_id -- both heavy and light chains
+    # the problem is in alakazam::groupGenes
     results_prep <- prepare_db(db = db, 
                                junction = junction, v_call = v_call, j_call = j_call,
                                first = first, cdr3 = cdr3, fields = fields,
