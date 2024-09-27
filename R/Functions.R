@@ -1836,6 +1836,8 @@ defineClonesScoper <- function(db,
         #     }
         # }
         db_cloned <- paired
+        }
+      }
     }
     if (!is.null(fields) & single_cell) { db_cloned[[cell_id]] <- NULL}
     
