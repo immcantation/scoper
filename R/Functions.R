@@ -261,7 +261,7 @@ pairwiseMutions <- function(germ_imgt,
     }
     ##### count informative positions
     if (norm_fact) {
-        informative_pos <- sapply(1:n, function(x){ sum(stri_count(seq_imgt[x], fixed = c("A","C","G","T"))) })   
+        informative_pos <- sapply(1:n, function(x){ sum(stringi::stri_count(seq_imgt[x], fixed = c("A","C","G","T"))) })   
     } else {
         informative_pos <- rep(1, n)
     }
@@ -372,7 +372,7 @@ calculateInterVsIntra <- function(db,
                       .errorhandling='stop') %dopar% {
                           
                           # *********************************************************************************
-                          clones <- stri_split_fixed(vjl_gps$clone_id[k], ",")[[1]]
+                          clones <- stringi::stri_split_fixed(vjl_gps$clone_id[k], ",")[[1]]
                           l <- vjl_gps$junction_length[k]
                           n_clones <- length(clones)
                           in_clones <- db[[clone]] %in% clones
@@ -425,7 +425,7 @@ calculateInterVsIntra <- function(db,
                          row.names=NULL)
     db_dff$label <- "intra"
     db_dff$label[grepl("inter", db_dff$keyName)] <- "inter"
-    clones_xy <- data.frame(matrix(unlist(stri_split_fixed(db_dff$keyName, "_", n=3)),
+    clones_xy <- data.frame(matrix(unlist(stringi::stri_split_fixed(db_dff$keyName, "_", n=3)),
                                    nrow=nrow(db_dff),
                                    byrow=T),
                             stringsAsFactors=FALSE)
@@ -481,8 +481,10 @@ prepare_db <- function(db,
                        junction = "junction", v_call = "v_call", j_call = "j_call",
                        first = FALSE, cdr3 = FALSE, fields = NULL,
                        cell_id = NULL, locus = NULL, only_heavy = TRUE,
-                       mod3 = FALSE, max_n = 0) {
+                       mod3 = FALSE, max_n = 0, ninformative = 250) {
     #TODO: remove only_heavy parameter when it becomes deprecated.
+    #TODO: double check that the 'junction_l' check are still needed when only_heavy
+    # is fully removed 
 
     # add junction length column
     db$junction_l <- stringi::stri_length(db[[junction]])
@@ -490,7 +492,6 @@ prepare_db <- function(db,
     
     ### check for mod3
     # filter mod 3 junction lengths
-    # TODO: is this check needed here? Are we doing this before?
     if (mod3) {
         n_rmv_mod3 <- sum(db[[junction_l]]%%3 != 0)
         db <- db %>% 
@@ -501,7 +502,6 @@ prepare_db <- function(db,
     
     ### check for cdr3
     # filter junctions with length > 6
-    #TODO: why are we doing this check here? Inside GroupGenes
     if (cdr3) {
         n_rmv_cdr3 <- sum(db[[junction_l]] <= 6)
         db <- db %>% 
@@ -518,9 +518,9 @@ prepare_db <- function(db,
     # Count the number of non-ATCG's in junction
     # TODO: remove this from here as groupGenes already checks for ambiguous positions
     if (!is.null(max_n)) {
-        n_rmv_N <- sum(stri_count(db[[junction]], regex = "[^ATCG]") > max_n)
+        n_rmv_N <- sum(stringi::stri_count(db[[junction]], regex = "[^ATCG]") > max_n)
         db <- db %>% 
-            dplyr::filter(stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
+            dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
     } else {
         n_rmv_N <- 0
     }
@@ -530,23 +530,25 @@ prepare_db <- function(db,
         . <- NULL
         db <- db %>%
             dplyr::group_by(!!!rlang::syms(fields)) %>%
-            do(groupGenes(., 
+            do(alakazam::groupGenes(., 
                           v_call = v_call,
                           j_call = j_call,
                           junc_len = NULL, #TODO: junc_len could be not NULL, why not passing it?
                           cell_id = cell_id,
                           locus = locus,
                           only_heavy = T, #TODO: we only allow True for now, when deprecated remove.
-                          first = first))        
+                          first = first, 
+                          ninformative = ninformative))        
     } else {
-        db <- groupGenes(db,
+        db <- alakazam::groupGenes(db,
                          v_call = v_call,
                          j_call = j_call,
                          junc_len = NULL, #TODO: junc_len could be not NULL, why not passing it?
                          cell_id = cell_id,
                          locus = locus,
                          only_heavy = T, #TODO: we only allow True for now, when deprecated remove.
-                         first = first)        
+                         first = first, 
+                         ninformative = ninformative)        
     }
     
     ### groups to use
@@ -773,7 +775,10 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}. 
-#'
+#' @param    ninformative       The number of informative sites in a given alignment 
+#'                              required proper grouping.
+#' @param   seq_id              The column containing sequence ids
+#' 
 #' @return
 #' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
 #' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
@@ -821,7 +826,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
                             cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=TRUE,
                             first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                             verbose=FALSE, log=NULL, 
-                            summarize_clones=TRUE) {
+                            summarize_clones=TRUE, ninformative=250, seq_id = "sequence_id") {
     
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
@@ -829,7 +834,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,        
                                   verbose = verbose, log = log, 
-                                  summarize_clones = summarize_clones)
+                                  summarize_clones = summarize_clones, ninformative = ninformative, seq_id = seq_id)
     
     ### return results
     if (summarize_clones) {
@@ -908,6 +913,9 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}.
+#' @param   ninformative        The number of informative sites in a given alignment 
+#'                              required proper grouping.
+#' @param   seq_id              The column containing sequence ids
 #'
 #' @return
 #' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
@@ -958,7 +966,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
                                cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=TRUE,
                                first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                                verbose=FALSE, log=NULL,
-                               summarize_clones=TRUE) {
+                               summarize_clones=TRUE, ninformative=250, seq_id = "sequence_id") {
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
                                   method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
@@ -966,7 +974,8 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
                                   verbose = verbose, log = log, 
-                                  summarize_clones = summarize_clones)
+                                  summarize_clones = summarize_clones, 
+                                  ninformative = ninformative, seq_id = seq_id)
     
     # return results
     if (summarize_clones) {
@@ -1049,7 +1058,9 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}.
-#'
+#' @param     ninformative      The number of informative sites in a given alignment 
+#'                              required proper grouping.
+#' @param   seq_id              The column containing sequence ids
 #' @return
 #' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
 #' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
@@ -1121,7 +1132,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
                            targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, 
                            threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
                            verbose=FALSE, log=NULL,
-                           summarize_clones=TRUE) {
+                           summarize_clones=TRUE, ninformative = 250, seq_id="sequence_id") {
     
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
                                   germline = germline, sequence = sequence,
@@ -1132,7 +1143,8 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
                                   threshold = threshold, base_sim = base_sim,
                                   iter_max = iter_max, nstart = nstart, nproc = nproc,
                                   verbose = verbose, log = log,
-                                  summarize_clones = summarize_clones)
+                                  summarize_clones = summarize_clones, 
+                                  ninformative = ninformative, seq_id = seq_id)
     
     # return results
     if (summarize_clones) {
@@ -1162,7 +1174,14 @@ defineClonesScoper <- function(db,
                                threshold = NULL, base_sim = 0.95,
                                iter_max = 1000, nstart = 1000, nproc = 1,
                                verbose = FALSE, log = NULL,
-                               summarize_clones = TRUE) {
+                               summarize_clones = TRUE, ninformative = 250, 
+                               seq_id = "sequence_id") {
+  
+    # CGJ 9/26/24
+    # TODO: we need to decide what to call the subgroup/subclone variable 
+    subgroup <- "subclone"
+    db[[subgroup]] <- subgroup
+    
     ### get model
     model <- match.arg(model)
     
@@ -1238,7 +1257,7 @@ defineClonesScoper <- function(db,
     
     ### check general required columns
     columns <- c(junction, v_call, j_call, fields) 
-    check <- checkColumns(db, columns)
+    check <- alakazam::checkColumns(db, columns)
     if (is.character(check)) { 
         stop(check)
     }
@@ -1257,7 +1276,7 @@ defineClonesScoper <- function(db,
     if (!is.null(cell_id) & !is.null(locus)) {
         # Check required columns for single-cell mode
         columns <- c(cell_id, locus) #, fields
-        check <- checkColumns(db, columns)
+        check <- alakazam::checkColumns(db, columns)
         if (check != TRUE) { stop(check) }
         
         # make a temp cell_id column to keep cell_ids specific to each fields 
@@ -1265,7 +1284,7 @@ defineClonesScoper <- function(db,
             db$cell_id_temp <- db %>%
                 dplyr::group_by(!!!rlang::syms(fields)) %>% 
                 dplyr::group_indices() 
-            db$cell_id_temp <- stri_join(db[[cell_id]], db$cell_id_temp, sep="_")     
+            db$cell_id_temp <- stringi::stri_join(db[[cell_id]], db$cell_id_temp, sep="_")     
             cell_id <- "cell_id_temp"
         }
         
@@ -1317,7 +1336,7 @@ defineClonesScoper <- function(db,
                                junction = junction, v_call = v_call, j_call = j_call,
                                first = first, cdr3 = cdr3, fields = fields,
                                cell_id = cell_id, locus = locus, only_heavy = only_heavy,
-                               mod3 = mod3, max_n = max_n)
+                               mod3 = mod3, max_n = max_n, ninformative = ninformative)
     db <- results_prep$db
     n_rmv_mod3 <- results_prep$n_rmv_mod3
     n_rmv_cdr3 <- results_prep$n_rmv_cdr3
@@ -1445,7 +1464,7 @@ defineClonesScoper <- function(db,
                              # return result from each proc
                              return(db_gp)
                              # *********************************************************************************
-                         }
+    }
     
     ### stop the cluster
     if (nproc > 1) { parallel::stopCluster(cluster) }
@@ -1500,9 +1519,9 @@ defineClonesScoper <- function(db,
                              clone_count = length(unique(!!rlang::sym(clone))),
                              clone_id = paste(unique(!!rlang::sym(clone)), collapse = ","))
         vjl_gps$v_call <- sapply(1:nrow(vjl_gps),
-                                 function(i){ stri_join(unique(stri_split_fixed(vjl_gps$v_call[i], ",")[[1]]), collapse=",") })
+                                 function(i){ stringi::stri_join(unique(stringi::stri_split_fixed(vjl_gps$v_call[i], ",")[[1]]), collapse=",") })
         vjl_gps$j_call <- sapply(1:nrow(vjl_gps),
-                                 function(i){ stri_join(unique(stri_split_fixed(vjl_gps$j_call[i], ",")[[1]]), collapse=",") })
+                                 function(i){ stringi::stri_join(unique(stringi::stri_split_fixed(vjl_gps$j_call[i], ",")[[1]]), collapse=",") })
         
         ### calculate inter and intra distances
         df_inter_intra <- calculateInterVsIntra(db = db_cloned,
@@ -1565,7 +1584,7 @@ defineClonesScoper <- function(db,
                     db_l[[clone]][db_l[[cell_id]] == cellid] <- unique(db_cloned[[clone]][db_cloned[[cell_id]] == cellid])
                 } 
             }
-          # bind heavy and light chain data.frames
+            # bind heavy and light chain data.frames
             stopifnot(all(names(db_cloned) == names(db_l)))
             db_cloned <- bind_rows(db_cloned, db_l)
 
@@ -1577,54 +1596,246 @@ defineClonesScoper <- function(db,
                 #TODO: parallelize this for loop
                 #TODO: instead of calling groupGenes again here we want to split by light chain with the Dowser function
                 #TODO: decide whether clones split by light chain should get a new clone_id or a new column specifying "subclones?"
-                for (cloneid in clones) {
-                    db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
-                    if (length(unique(db_c[[cell_id]])) == 1) next()
-                    db_c[['junction_l']] <- stringi::stri_length(db_c[[junction]])
-                    # Create temporary fake v_call and j_call, to avoid grouping 
-                    # again using heavy chain gene calls. This matters if first=FALSE
-                    # and "linker" ambiguous calls were left out of the same cluster id
-                    # because of the distance threshold. The goal now is to divide the 
-                    # heavy chain clones using light chain info only.
-                    # TODO: this is probably inefficient. Test is groupGenes could handle
-                    # v_call=NULL and j_call=NULL. Or maybe add an option only_light.
-                    db_c[[v_call]][db_c[['locus']] %in% c("IGH", "TRB", "TRD")] <- "IGHV0"
-                    db_c[[j_call]][db_c[['locus']] %in% c("IGH", "TRB", "TRD")] <- "IGHJ0"
-                    db_c <- alakazam::groupGenes(data = db_c,
-                                       v_call = v_call,
-                                       j_call = j_call,
-                                       junc_len = 'junction_l', 
-                                       cell_id = cell_id,
-                                       locus = locus,
-                                       only_heavy = FALSE,
-                                       first = FALSE)
-                    if (length(unique(db_c$vj_group)) == 1) next()
-                    db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_") # TODO: IDs get connected with underscore, figure out when the underscore is removed
-                    for (cellid in unique(db_c[[cell_id]])) {
-                        db_cloned[[clone]][db_cloned[[clone]] == cloneid & db_cloned[[cell_id]] == cellid] <- 
-                            db_c[[clone]][db_c[[cell_id]] == cellid]
+                
+                # CGJ 9/26/24 
+                # dowser logic 
+                paired <- parallel::mclapply(unique(clones),function(cloneid){
+                  # Get heavy chains within a clone, and corresponding light chains
+                  # separate heavy chains with (sc) and without (bulk) paired light chains
+                  hd <- dplyr::filter(db_cloned,!!rlang::sym(clone) == cloneid & !!rlang::sym(locus) %in% c("IGH", "TRB", "TRD"))
+                  ld <- dplyr::filter(db_l,!!rlang::sym(cell_id) %in% hd[[!!cell_id]])
+                  ld <- dplyr::filter(ld, !is.na(!!rlang::sym(cell_id)))
+                  hd_sc <- hd[hd[[cell_id]] %in% ld[[cell_id]] & !is.na(hd[[cell_id]]),] # added is.na(cell) catch
+                  hd_bulk <- hd[!hd[[cell_id]] %in% ld[[cell_id]] | is.na(hd[[cell_id]]),]
+                  if(nrow(ld) == 0){
+                    hd$clone_subgroup_id <- paste0(hd[[clone]],"_",hd[[subgroup]])
+                    # TODO: I'm not sure if we want/need this 
+                    # ask about removing 
+                    hd$vj_cell <- sapply(1:nrow(hd), function(x){
+                      if(!is.na(hd$vj_alt_cell[x])){
+                        paste(hd$vj_gene[x],hd$vj_alt_cell[x],sep=",")        
+                      }else{
+                        hd$vj_gene[x]
+                      }
+                    })
+                    return(hd)
+                  }
+                  ltemp <- dplyr::filter(ld, !is.na(!!rlang::sym(cell_id)))
+                  ltemp$temp_v <- ltemp[[v_call]]
+                  ltemp$temp_j <- ltemp[[j_call]]
+                  ltemp[[v_call]] <- alakazam::getGene(ltemp[[v_call]])
+                  ltemp[[j_call]] <- alakazam::getGene(ltemp[[j_call]])
+                  ltemp[[clone]] <- -1
+                  ld <- dplyr::tibble()
+                  lclone <- 1
+                  while(nrow(ltemp) > 0){
+                    #expand ambiguous V/J calls
+                    lvs <- strsplit(ltemp[[v_call]],split=",")
+                    ljs <- strsplit(ltemp[[j_call]],split=",")
+                    jlens <- ltemp[[junction]]
+                    # get all combinations of V/J calls for each light chain
+                    combos <-
+                      lapply(1:length(lvs),function(w)
+                        unlist(lapply(lvs[[w]],function(x)
+                          unlist(lapply(ljs[[w]],function(y)
+                            lapply(jlens[[w]], function(z)paste0(x,":",y,";",z)))))))
+                    
+                    # get unique combinations per cell
+                    cells <- unique(ltemp[[cell_id]])
+                    cellcombos <- lapply(cells,function(x)
+                      unique(unlist(combos[ltemp[[cell_id]] == x])))
+                    #lcounts <- table(unlist(lapply(cellcombos,function(x)x)))
+                    lcounts <- table(unlist(cellcombos,function(x)x))
+                    max <- names(lcounts)[which.max(lcounts)]
+                    cvs <- unlist(lapply(combos,function(x)max %in% x))
+                    ltemp[cvs,][[subgroup]] <- as.character(lclone)
+                    ltemp[cvs,]$vj_gene <- max
+                    
+                    # if a cell has the same combo for two rearrangements, only pick one
+                    # with the most ACTG characters
+                    rmseqs <- c()
+                    cell_counts <- table(ltemp[cvs,][[cell_id]])
+                    mcells <- names(cell_counts)[cell_counts > 1]
+                    for(cellname in mcells){
+                      ttemp <- dplyr::filter(ltemp,cvs & !!rlang::sym(cell_id) == cellname)
+                      ttemp$str_counts <-
+                        stringr::str_count(ttemp[[seq]],"[A|C|G|T]")
+                      # keep version with most non-N characters
+                      keepseq <- ttemp[[id]][which.max(ttemp$str_counts)]
+                      rmtemp <- ttemp[!ttemp[[id]] == keepseq,]
+                      rmseqs <- c(rmseqs,rmtemp[[id]])
                     }
-                }
-            }  
-            
-            # sort clone ids
-            na.count <- sum(is.na(db_cloned[[clone]]))
-            if (na.count > 0) {
-                db_na <- db_cloned[is.na(db_cloned[[clone]]), ]
-                db_cloned <- db_cloned[!is.na(db_cloned[[clone]]), ]        
-            }
-            db_cloned$clone_temp <- db_cloned %>%
-                dplyr::group_by(!!rlang::sym(clone)) %>%
-                dplyr::group_indices()
-            db_cloned[[clone]] <- db_cloned$clone_temp
-            db_cloned <- db_cloned[order(db_cloned[[clone]]), ] # Sorts them by clone_vj_group
-            db_cloned[[clone]] <- as.character(db_cloned[[clone]])
-            db_cloned$clone_temp <- NULL
-            if (na.count > 0) {
-                db_cloned <- bind_rows(db_cloned, db_na)
-            }
-        }
-        
+                    include <- dplyr::filter(ltemp, cvs & !(!!rlang::sym(seq_id) %in% rmseqs))
+                    leave <- dplyr::filter(ltemp,!cvs | (!!rlang::sym(seq_id) %in% rmseqs))
+                    
+                    # find other cells still in ltemp and add as vj_alt_cell
+                    mcells <- unique(include[[cell_id]])
+                    for(cellname in mcells){
+                      if(cellname %in% leave[[cell_id]]){
+                        include[include[[cell_id]] == cellname,]$vj_alt_cell <-
+                          paste(paste0(leave[leave[[cell_id]] == cellname,][[v_call]],":",
+                                       leave[leave[[cell_id]] == cellname,][[j_call]]),
+                                collapse=",")
+                      }
+                    }
+                    # CGJ 9/17/24
+                    # update the include df to have proper v and j call and remove their temp cols
+                    include[[v_call]] <- include$temp_v
+                    include[[j_call]] <- include$temp_j
+                    rm_indx <- which(colnames(include) %in% c("temp_v", "temp_j"))
+                    include <- include[, -rm_indx]
+                    
+                    ld <- dplyr::bind_rows(ld,include)
+                    ltemp <- dplyr::filter(ltemp,!(!!rlang::sym(cell_id) %in% ltemp[cvs,][[!!cell_id]]))
+                    lclone <- lclone + 1
+                  }
+                  ld[[clone]] <- cloneid
+                  for(cellname in unique(hd_sc[[cell_id]])){
+                    if(cellname %in% ld[[cell_id]]){
+                      lclone <- ld[ld[[cell_id]] == cellname,][[subgroup]]
+                      hd_sc[hd_sc[[cell_id]] == cellname,][[subgroup]] <- lclone
+                      hd_sc[hd_sc[[cell_id]] == cellname,]$vj_gene <- ld[ld[[cell_id]] == cellname,]$vj_gene
+                      hd_sc[hd_sc[[cell_id]] == cellname,]$vj_alt_cell <-
+                        ld[ld[[cell_id]] == cellname,]$vj_alt_cell
+                    }
+                  }
+                  # now get the subgroup_id for the heavy chains lacking paired light chains
+                  comb <- dplyr::bind_rows(hd_sc,ld)
+                  comb[[subgroup]] <- as.integer(comb[[subgroup]])
+                  if(nrow(ld) != 0 & nrow(hd_bulk) != 0){
+                    for(sequence in 1:nrow(hd_bulk)){
+                      # CGJ 8/6/24 -- updated to do the padding on the temp sequences
+                      rating <- unlist(lapply(1:nrow(hd_sc), function(x){
+                        temp <- rbind(hd_sc[x,], hd_bulk[sequence,])
+                        if(nchar(temp[[seq]][1] != nchar(temp[[seq]][2]))){
+                          temp <- alakazam::padSeqEnds(temp[[seq]])
+                        }
+                        value <- alakazam::seqDist(temp[1], temp[2])
+                        return(value)
+                      }))
+                      rating <- as.numeric(rating)
+                      # row number of heavy chain only df with lowest seq dist
+                      proper_index <- which(rating == min(rating))
+                      if(length(proper_index) > 1){
+                        # find the subgroups that belong to the lowest seq dists
+                        subgroups <- hd_sc[[subgroup]][proper_index]
+                        if(length(unique(subgroups)) > 1){
+                          # if there is more than one subgroup find the subgroup sizes of the 
+                          # subgroups being considered
+                          subgroup_size <- data.frame(clone_subgroup = unique(subgroups))
+                          subgroup_size$sizes <- unlist(lapply(1:nrow(subgroup_size), function(x){
+                            nrow(hd_sc[hd_sc[[subgroup]] == subgroup_size$clone_subgroup[x],])
+                          }))
+                          # if there is one subgroup that is the largest use it
+                          if(length(which(subgroup_size$sizes == max(subgroup_size$sizes))) == 1){
+                            proper_index_value <- subgroup_size$clone_subgroup[
+                              which(subgroup_size$sizes == max(subgroup_size$sizes))]
+                          } else { 
+                            # if there are more than one subgroup with the same size use the lower number
+                            potential_subgroups <- subgroup_size$clone_subgroup[
+                              which(subgroup_size$sizes == max(subgroup_size$sizes))]
+                            proper_index_value <- min(potential_subgroups)
+                          }
+                        } else{
+                          proper_index_value <- hd_sc[[subgroup]][proper_index[1]]
+                        }
+                      } else{
+                        proper_index_value <- hd_sc[[subgroup]][proper_index]
+                      }
+                      hd_bulk[[subgroup]][sequence] <- proper_index_value
+                    }
+                  } 
+                  if(nrow(hd_bulk) != 0){
+                    comb <- dplyr::bind_rows(comb, hd_bulk)
+                  }
+                  # CGJ 9/27/24
+                  # TODO: Update the name of 'clone_subgroup_id' to whatever is it we are calling it
+                  # could just be an updated version of 'subclone' 
+                  # could also update the offical clone id to be clone_id_sublcone
+                  comb$clone_subgroup_id <- paste0(comb[[clone]],"_",comb[[subgroup]])
+                  # TODO: I'm not sure if we want/need this 
+                  # ask about removing 
+                  comb$vj_cell <- sapply(1:nrow(comb), function(x){
+                    if(!is.na(comb$vj_alt_cell[x])){
+                      paste(comb$vj_gene[x],comb$vj_alt_cell[x],sep=",")        
+                    }else{
+                      comb$vj_gene[x]
+                    }
+                  })
+                  
+                  size <- c()
+                  for(subgroups in sort(unique(comb[[subgroup]]))){
+                    size <- append(size, nrow(comb[comb[[subgroup]] == subgroups,]))
+                  }
+                  if(!all(diff(size) <= 0)){
+                    order_check <- data.frame(table(comb[[subgroup]]))
+                    colnames(order_check) <- c(subgroup, "size")
+                    order_check <- order_check[order(-order_check$size),]
+                    order_check$proper_subgroup <- 1:nrow(order_check)
+                    comb$new_subgroup <- NA
+                    for(i in unique(comb[[subgroup]])){
+                      comb$new_subgroup[comb[[subgroup]] == i] <- order_check$proper_subgroup[order_check[[subgroup]] == i]
+                    }
+                    comb <- comb[, -which(names(comb) == subgroup)]
+                    names(comb)[names(comb) == "new_subgroup"] <- subgroup
+                  }
+                  comb
+                },mc.cores=nproc)
+                paired <- dplyr::bind_rows(paired)
+                # remove the junction length from the vj_gene
+                # paired$vj_gene <- gsub("\\;.*", "", paired$vj_gene)
+                
+                
+                
+                # existing logic 
+        #         for (cloneid in clones) {
+        #             db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
+        #             if (length(unique(db_c[[cell_id]])) == 1) next()
+        #             db_c[['junction_l']] <- stringi::stri_length(db_c[[junction]])
+        #             # Create temporary fake v_call and j_call, to avoid grouping 
+        #             # again using heavy chain gene calls. This matters if first=FALSE
+        #             # and "linker" ambiguous calls were left out of the same cluster id
+        #             # because of the distance threshold. The goal now is to divide the 
+        #             # heavy chain clones using light chain info only.
+        #             # TODO: this is probably inefficient. Test is groupGenes could handle
+        #             # v_call=NULL and j_call=NULL. Or maybe add an option only_light.
+        #             db_c[[v_call]][db_c[['locus']] %in% c("IGH", "TRB", "TRD")] <- "IGHV0"
+        #             db_c[[j_call]][db_c[['locus']] %in% c("IGH", "TRB", "TRD")] <- "IGHJ0"
+        #             db_c <- alakazam::groupGenes(data = db_c,
+        #                                v_call = v_call,
+        #                                j_call = j_call,
+        #                                junc_len = 'junction_l', 
+        #                                cell_id = cell_id,
+        #                                locus = locus,
+        #                                only_heavy = FALSE,
+        #                                first = FALSE)
+        #             if (length(unique(db_c$vj_group)) == 1) next()
+        #             db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_") # TODO: IDs get connected with underscore, figure out when the underscore is removed
+        #             for (cellid in unique(db_c[[cell_id]])) {
+        #                 db_cloned[[clone]][db_cloned[[clone]] == cloneid & db_cloned[[cell_id]] == cellid] <- 
+        #                     db_c[[clone]][db_c[[cell_id]] == cellid]
+        #             }
+        #         }
+        #     }  
+        #     
+        #     # sort clone ids
+        #     na.count <- sum(is.na(db_cloned[[clone]]))
+        #     if (na.count > 0) {
+        #         db_na <- db_cloned[is.na(db_cloned[[clone]]), ]
+        #         db_cloned <- db_cloned[!is.na(db_cloned[[clone]]), ]        
+        #     }
+        #     db_cloned$clone_temp <- db_cloned %>%
+        #         dplyr::group_by(!!rlang::sym(clone)) %>%
+        #         dplyr::group_indices()
+        #     db_cloned[[clone]] <- db_cloned$clone_temp
+        #     db_cloned <- db_cloned[order(db_cloned[[clone]]), ] # Sorts them by clone_vj_group
+        #     db_cloned[[clone]] <- as.character(db_cloned[[clone]])
+        #     db_cloned$clone_temp <- NULL
+        #     if (na.count > 0) {
+        #         db_cloned <- bind_rows(db_cloned, db_na)
+        #     }
+        # }
+        db_cloned <- paired
     }
     if (!is.null(fields) & single_cell) { db_cloned[[cell_id]] <- NULL}
     
