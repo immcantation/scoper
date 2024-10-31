@@ -1,9 +1,19 @@
 # [![](http://cranlogs.r-pkg.org/badges/grand-total/scoper)](https://www.r-pkg.org/pkg/scoper) [![](https://cranlogs.r-pkg.org/badges/scoper)](https://www.r-pkg.org/pkg/scoper) [![](https://img.shields.io/static/v1?label=AIRR-C%20sw-tools%20v1&message=compliant&color=008AFF&labelColor=000000&style=plastic)](https://docs.airr-community.org/en/stable/swtools/airr_swtools_standard.html)
 
+!!! important
+    *Are you an Immcantation user and/or interested in adaptive immune receptor repertoire analysis?*
+    
+    Register now for the upcoming Immcantation Users Group Meeting!
+    
+    It will be held virtually on **January 30th, 2025**, from 10 to 1:30pm (ET).
+    All talks will be from user-submitted abstracts (due on **November 1st, 2024**).
+
+    Full information here: [https://immcantation.github.io/users-meeting/](https://immcantation.github.io/users-meeting/)
+
 SCOPer
 -------------------------------------------------------------------------------
 
-SCOPer provides a computational framework for the identification of B cell 
+SCOPer (Spectral Clustering for clOne Partitioning) provides a computational framework for the identification of B cell 
 clonal relationships from Adaptive Immune Receptor Repertoire sequencing 
 (AIRR-Seq) data. It includes methods for assigning clonal identifiers using
 sequence identity, hierarchical clustering, and spectral clustering.
@@ -36,27 +46,20 @@ For help and questions please contact the
 
 ## Citing
 
-To cite the scoper package or spectral clustering-based model in
-publications, please use:
+To cite the scoper package or spectral clustering-based model in publications, please use:
 
-  Nouri N, Kleinstein S (2018). “A spectral clustering-based method for
-  identifying clones from high-throughput B cell repertoire sequencing
-  data.” _Bioinformatics_, i341-i349. doi:10.1093/bioinformatics/bty235
+  Nouri N, Kleinstein S (2018). “A spectral clustering-based method for identifying clones from high-throughput B cell repertoire
+  sequencing data.” _Bioinformatics_, i341-i349. doi:10.1093/bioinformatics/bty235
   <https://doi.org/10.1093/bioinformatics/bty235>.
 
-Nouri N, Kleinstein S (2020). “Somatic hypermutation analysis for
-improved identification of B cell clonal families from next-generation
-sequencing data.” _PLOS Computational Biology_, *16*(6), e1007977.
-doi:10.1371/journal.pcbi.1007977
+Nouri N, Kleinstein S (2020). “Somatic hypermutation analysis for improved identification of B cell clonal families from
+next-generation sequencing data.” _PLOS Computational Biology_, *16*(6), e1007977. doi:10.1371/journal.pcbi.1007977
 <https://doi.org/10.1371/journal.pcbi.1007977>.
 
-To cite the hierarchical clustering-based model in publications, please
-use:
+To cite the hierarchical clustering-based model in publications, please use:
 
-  Gupta N, Adams K, Briggs A, Timberlake S, Vigneault F, Kleinstein S
-  (2017). “Hierarchical clustering can identify B cell clones with high
-  confidence in Ig repertoire sequencing data.” _The Journal of
-  Immunology_, 2489-2499. doi:10.4049/jimmunol.1601850
+  Gupta N, Adams K, Briggs A, Timberlake S, Vigneault F, Kleinstein S (2017). “Hierarchical clustering can identify B cell clones
+  with high confidence in Ig repertoire sequencing data.” _The Journal of Immunology_, 2489-2499. doi:10.4049/jimmunol.1601850
   <https://doi.org/10.4049/jimmunol.1601850>.
 
 

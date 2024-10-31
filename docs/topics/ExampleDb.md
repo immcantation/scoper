@@ -31,12 +31,6 @@ D regions masked.
 + `j_call`:                     J region allele assignments.
 + `junction`:                   Junction region sequence.
 + `junction_length`:            Length of the junction region in nucleotides.
-+ `np1_length`:                 Number of nucleotides between V and D segments
-+ `np2_length`:                 Number of nucleotides between D and J segments
-+ `sample_id`:                  Sample identifier
-+ `c_call`:                     C region assignment.
-+ `duplicate_count`:            Copy number of the sequence
-+ `locus`:                      Locus of the receptor
 
 
 
