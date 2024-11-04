@@ -36,7 +36,7 @@ When calling clones from single cell data, if any cell in the data contains mult
 A simple solution is just removing cells with multiple heavy chains from the single cell data:
 
 
-```r
+``` r
 heavy_count <- table(dplyr::filter(ExampleDb, locus=="IGH")$cell_id)
 multi_heavy_cells <- names(heavy_count)[heavy_count > 1]
 ExampleDb <- dplyr::filter(ExampleDb, !cell_id %in% multi_heavy_cells)
@@ -50,7 +50,7 @@ segments join). This can be done using the `identicalClones` function at either 
 (`method="nt"`) or the amino acid level (`method="aa"`):
 
 
-```r
+``` r
 # Imports
 library(scoper)
 library(dplyr)
@@ -64,7 +64,7 @@ A modified input data.frame with clonal identifiers in the `clone_id` column is 
 calling `as.data.frame` on the result object.
 
 
-```r
+``` r
 # Get results data.frame
 results_db <- as.data.frame(results)
 glimpse(results_db)
@@ -97,14 +97,14 @@ This will show the minimum inter (between) clonal distances. A detailed summary 
 relationships as a `data.frame` is also available through a call to `summary` on the results object.
 
 
-```r
+``` r
 # Plot a histogram of inter clonal distances
 plot(results, binwidth=0.02)
 ```
 
 ![plot of chunk Scoper-Vignette-4](figure/Scoper-Vignette-4-1.png)
 
-```r
+``` r
 # Get summary data.frame
 glimpse(summary(results))
 ```
@@ -154,7 +154,7 @@ Identifying clonal groups using `hierachicalClones` is largely the same as the a
 `identicalClones` function, with the additional requirement of a distance threshold:
 
 
-```r
+``` r
 # Clonal assignment using hierarchical clustering
 results <- hierarchicalClones(ExampleDb, threshold=0.15)
 ```
@@ -166,7 +166,7 @@ the inter and intra clonal distances. The effective threshold may differ from cl
 provided as input to `hierarchicalClones`.
 
 
-```r
+``` r
 # Get results data.frame
 results_db <- as.data.frame(results)
 glimpse(results_db)
@@ -194,14 +194,14 @@ glimpse(results_db)
 ## $ clone_id                  <chr> "1", "2", "3", "3", "4", "5", "6", "7", "8", "8", "8", "9", "10", "11", "11", "11", "11", "11", "11", "12", "…
 ```
 
-```r
+``` r
 # Plot a histogram of inter and intra clonal distances
 plot(results, binwidth=0.02)
 ```
 
 ![plot of chunk Scoper-Vignette-6](figure/Scoper-Vignette-6-1.png)
 
-```r
+``` r
 # Get summary data.frame
 glimpse(summary(results))
 ```
@@ -255,7 +255,7 @@ The results data.frame, summary plots, and summary table are accessed in the
 same manner as shown above using the hierarchical approach.
 
 
-```r
+``` r
 # Clonal assignment using the spectral clustering method novj
 results <- spectralClones(ExampleDb, method="novj")
 # Plot a histogram of inter and intra clonal distances
@@ -265,7 +265,7 @@ plot(results, binwidth=0.02)
 ![plot of chunk Scoper-Vignette-7](figure/Scoper-Vignette-7-1.png)
 
 
-```r
+``` r
 # Clonal assignment using the spectral clustering method novj with threshold
 results <- spectralClones(ExampleDb, method="novj",
                           threshold=0.15)
@@ -276,7 +276,7 @@ plot(results, binwidth=0.02)
 ![plot of chunk Scoper-Vignette-8](figure/Scoper-Vignette-8-1.png)
 
 
-```r
+``` r
 # Clonal assignment using the spectral clustering method vj with threshold
 results <- spectralClones(ExampleDb, method="vj",
                           threshold=0.15,
@@ -284,7 +284,7 @@ results <- spectralClones(ExampleDb, method="vj",
 ```
 
 
-```r
+``` r
 # Get results data.frame
 results_db <- as.data.frame(results)
 glimpse(results_db)
@@ -312,14 +312,14 @@ glimpse(results_db)
 ## $ clone_id                  <chr> "1", "2", "3", "3", "4", "5", "6", "7", "8", "8", "8", "9", "10", "11", "11", "12", "12", "12", "12", "13", "…
 ```
 
-```r
+``` r
 # Plot a histogram of inter and intra clonal distances
 plot(results, binwidth=0.02)
 ```
 
 ![plot of chunk Scoper-Vignette-10](figure/Scoper-Vignette-10-1.png)
 
-```r
+``` r
 # Get summary data.frame
 glimpse(summary(results))
 ```
