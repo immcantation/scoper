@@ -1585,6 +1585,7 @@ defineClonesScoper <- function(db,
 
 
             # split clones by light chains
+            # TODO see if commenting out the groupgenes call fixes case 3?????
             if (split_light) {
                 clones <- unique(db_cloned[[clone]])
                 clones <- clones[!is.na(clones)]

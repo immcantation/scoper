@@ -173,12 +173,14 @@ test_that("Test hierarchicalClones light chain split works", {
     expect_true(all(db_only_heavy_T_locus$vj_group =="G1"))
     
     # scoper:::prepare_db
+    # these are all G1?
     db_only_heavy_F_locus_first_T <- scoper:::prepare_db(db,only_heavy = F, 
                                            cell_id="cell_id",
                                            locus="locus",
                                            first=T)$db
     expect_equal(db_only_heavy_F_locus_first_T$vj_group, c("G1","G1","G1","G1","G2","G2","G3","G3"))
     
+    # these are also all G1.....
     db_only_heavy_F_locus_first_F <- scoper:::prepare_db(db,only_heavy = F, 
                                                        cell_id="cell_id",
                                                        locus="locus",
@@ -222,6 +224,7 @@ test_that("Test hierarchicalClones light chain split works", {
     expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))
     
     # Case 3
+    # this is all 1.....
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -234,6 +237,7 @@ test_that("Test hierarchicalClones light chain split works", {
     expect_equal(clones@db[['clone_id']], c("1","1","2","2","2","2","3","3"))
     
     # Case 4
+    # broken
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -246,6 +250,7 @@ test_that("Test hierarchicalClones light chain split works", {
     expect_equal(clones@db[['clone_id']], c("1","1","2","2","3","3","4","4"))
     
     # Case 5
+    # all 1s
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -258,6 +263,7 @@ test_that("Test hierarchicalClones light chain split works", {
     expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))    
     
     # Case 6
+    # all 1s
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -270,6 +276,7 @@ test_that("Test hierarchicalClones light chain split works", {
     expect_equal(clones@db[['clone_id']],c("1","1","1","1","2","2","3","3"))    
     
     # Case 7
+    # all 1s
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -282,6 +289,7 @@ test_that("Test hierarchicalClones light chain split works", {
     expect_equal(clones@db[['clone_id']],c("1","1","2","2","2","2","3","3"))    
     
     # Case 8
+    # all 1s
     clones <- hierarchicalClones(
         db,
         threshold=0,
@@ -293,7 +301,7 @@ test_that("Test hierarchicalClones light chain split works", {
         nproc=1)
     expect_equal(clones@db[['clone_id']],c("1","1","2","2","3","3","4","4"))      
     
-    ## Wwhat happens with the second groupGenes (inside the light chain split) when
+    ## What happens with the second groupGenes (inside the light chain split) when
     # first=false, but the "linker" ambiguous call was left out of the same cluster id
     # because of the distance threshold? This groupGenes could be splitting again by vj calls...
     # seq2 is the linker, and the juction is one nt different. Everything else is the same.
@@ -315,7 +323,7 @@ test_that("Test hierarchicalClones light chain split works", {
         split_light=FALSE,
         first=F, # default is first=F
         nproc=1)
-    
+    # broken
     clones_split_T <- hierarchicalClones(
         db,
         threshold=0,
