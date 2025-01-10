@@ -1589,9 +1589,8 @@ defineClonesScoper <- function(db,
             if (split_light) {
                 clones <- unique(db_cloned[[clone]])
                 clones <- clones[!is.na(clones)]
-                #TODO: parallelize this for loop
-                #TODO: instead of calling groupGenes again here we want to split by light chain with the Dowser function
-                #TODO: decide whether clones split by light chain should get a new clone_id or a new column specifying "subclones?"
+                #TODO: test if substituting this for loop for the resolveLightChains function works
+                #TODO: option2: update groupGenes, add new param that allows for light chain gene grouping instead of heavy chain.
                 for (cloneid in clones) {
                     db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
                     if (length(unique(db_c[[cell_id]])) == 1) next()
