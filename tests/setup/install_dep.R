@@ -61,12 +61,12 @@ installDep <- function(pkg, devel_mode, immcantation=immcantation_packages,
                          # available from CRAN
                          cat(e, "\n")
                          message("Installing ",pkg," from GitHub\n ")
-                         install_github(paste0("immcantation/", pkg_name, "@",pkg_version), auth_token = NULL)
+                         install_github(paste0("immcantation/", pkg_name, "@",pkg_version))
                      })
         }
     } else {
         message(paste0(pkg,": installing most recent version from GitHub @master.")) 
-        install_github(paste0("immcantation/", pkg_name, "@master"), upgrade = "never", auth_token = NULL)
+        install_github(paste0("immcantation/", pkg_name, "@master"), upgrade = "never")
     }
 }
 
