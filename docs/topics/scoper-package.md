@@ -30,22 +30,17 @@ Useful links:
 Author
 -------------------
 
-**Maintainer**: Susanna Marquez [susanna.marquez@yale.edu](susanna.marquez@yale.edu) [contributor]
+**Maintainer**: Susanna Marquez [susanna.marquez@yale.edu](mailto:susanna.marquez@yale.edu) [contributor]
 
 Authors:
 
-+  Nima Nouri [nima.nouri@yale.edu](nima.nouri@yale.edu)
-+  Jason Vander Heiden [jason.vanderheiden@gmail.com](jason.vanderheiden@gmail.com)
-+  Steven Kleinstein [steven.kleinstein@yale.edu](steven.kleinstein@yale.edu) [copyright holder]
++  Nima Nouri [nima.nouri@yale.edu](mailto:nima.nouri@yale.edu)
++  Jason Vander Heiden [jason.vanderheiden@gmail.com](mailto:jason.vanderheiden@gmail.com)
++  Steven Kleinstein [steven.kleinstein@yale.edu](mailto:steven.kleinstein@yale.edu) [copyright holder]
 
 
 Other contributors:
 
-+  Edel Aron [edel.aron@yale.edu](edel.aron@yale.edu) [contributor]
-+  Gisela Gabernet [gisela.gabernet@yale.edu](gisela.gabernet@yale.edu) [contributor]
-
-
-
-
-
++  Edel Aron [edel.aron@yale.edu](mailto:edel.aron@yale.edu) [contributor]
++  Gisela Gabernet [gisela.gabernet@yale.edu](mailto:gisela.gabernet@yale.edu) [contributor]
 

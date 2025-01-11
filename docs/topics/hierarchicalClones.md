@@ -46,7 +46,7 @@ db
 :   data.frame containing sequence data.
 
 threshold
-:   numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
+:   a numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
 
 method
 :   one of the `"nt"` for nucleotide based clustering or 
@@ -64,18 +64,16 @@ junction
 Also used to determine sequence length for grouping.
 
 v_call
-:   name of the column containing the V-segment allele calls.
+:   character name of the column containing the V-segment allele calls.
 
 j_call
-:   name of the column containing the J-segment allele calls.
+:   character name of the column containing the J-segment allele calls.
 
 clone
-:   output column name containing the clonal cluster identifiers.
+:   the output column name containing the clonal cluster identifiers.
 
 fields
-:   character vector of additional columns to use for grouping. 
-Sequences with disjoint values in the specified fields will be classified 
-as separate clones.
+:   additional fields to use for grouping.
 
 cell_id
 :   name of the column containing cell identifiers or barcodes. 
@@ -194,6 +192,7 @@ df <- as.data.frame(results)
 
 # Plot clonal summaries
 plot(results, binwidth=0.02)
+
 ```
 
 ![4](hierarchicalClones-4.png)
@@ -202,7 +201,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupGenes) for 
+See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](https://alakazam.readthedocs.io/en/stable/topics/groupGenes/) for 
 more details about grouping requirements.
 
 

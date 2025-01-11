@@ -85,6 +85,7 @@ results <- hierarchicalClones(ExampleDb, threshold=0.15)
 
 # Plot clonal summaries
 plot(results, binwidth=0.02)
+
 ```
 
 ![4](plotCloneSummary-4.png)
