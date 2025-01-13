@@ -1,7 +1,7 @@
 site_name: scoper
 site_url: https://scoper.readthedocs.io
 site_favicon: img/favicon.ico
-repo_url: https://bitbucket.org/kleinstein/scoper
+repo_url: https://github.com/immcantation/scoper
 edit_uri: src/master/docs/
 theme:
   name: readthedocs

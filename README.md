@@ -10,6 +10,17 @@
     All talks will be from user-submitted abstracts.
 
     Full information here: [https://immcantation.github.io/users-meeting/](https://immcantation.github.io/users-meeting/)
+    
+**IMPORTANT!** 
+SCOPer has moved to https://github.com/immcantation/scoper
+
+To update Git configuration settings use:
+
+```
+   git config user.email "your-gh-user@email.com"
+   git config user.name "your-gh-user-name"
+   git remote set-url origin git@github.com:immcantation/scoper.git
+```    
 
 SCOPer
 -------------------------------------------------------------------------------

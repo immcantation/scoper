@@ -21,7 +21,7 @@ See also
 Useful links:
 
 +  [https://scoper.readthedocs.io](https://scoper.readthedocs.io)
-+  Report bugs at [https://bitbucket.org/kleinstein/scoper/issues](https://bitbucket.org/kleinstein/scoper/issues)
++  Report bugs at [https://github.com/immcantation/scoper/issues](https://github.com/immcantation/scoper/issues)
 
 
 

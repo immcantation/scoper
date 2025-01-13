@@ -49,6 +49,35 @@ confidence in Ig repertoire sequencing data. The Journal of Immunology, 198(6):2
 
 
 
+See also
+-------------------
+
+Useful links:
+
++  [https://scoper.readthedocs.io](https://scoper.readthedocs.io)
++  Report bugs at [https://github.com/immcantation/scoper/issues](https://github.com/immcantation/scoper/issues)
+
+
+
+
+
+Author
+-------------------
+
+**Maintainer**: Susanna Marquez [susanna.marquez@yale.edu](susanna.marquez@yale.edu) [contributor]
+
+Authors:
+
++  Nima Nouri [nima.nouri@yale.edu](nima.nouri@yale.edu)
++  Jason Vander Heiden [jason.vanderheiden@gmail.com](jason.vanderheiden@gmail.com)
++  Steven Kleinstein [steven.kleinstein@yale.edu](steven.kleinstein@yale.edu) [copyright holder]
+
+
+Other contributors:
+
++  Edel Aron [edel.aron@yale.edu](edel.aron@yale.edu) [contributor]
++  Gisela Gabernet [gisela.gabernet@yale.edu](gisela.gabernet@yale.edu) [contributor]
+
 
 
 

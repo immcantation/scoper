@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-# Install dependencies from CRAN or Bitbucket as needed.
+# Install dependencies from CRAN or GitHub as needed.
 
 ####
 # Add here Biocondutor dependencies that 
