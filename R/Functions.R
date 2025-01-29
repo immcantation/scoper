@@ -780,7 +780,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}. 
 #' @param    ninformative       The number of informative sites in a given alignment 
-#'                              required proper grouping.
+#'                              required for proper grouping.
 #' @param   seq_id              The column containing sequence ids
 #' 
 #' @return
@@ -829,16 +829,16 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
                             v_call="v_call", j_call="j_call", clone="clone_id", fields=NULL,
                             cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=FALSE,
                             first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
-                            verbose=FALSE, log=NULL, 
-                            summarize_clones=TRUE, ninformative=250, seq_id = "sequence_id") {
+                            verbose=FALSE, log=NULL, summarize_clones=TRUE,
+                            ninformative=250, seq_id = "sequence_id") {
 
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,        
-                                  verbose = verbose, log = log, 
-                                  summarize_clones = summarize_clones, ninformative = ninformative, seq_id = seq_id)
+                                  verbose = verbose, log = log, summarize_clones = summarize_clones,
+                                  ninformative = ninformative, seq_id = seq_id)
     
     ### return results
     if (summarize_clones) {
@@ -918,7 +918,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}.
 #' @param   ninformative        The number of informative sites in a given alignment 
-#'                              required proper grouping.
+#'                              required for proper grouping.
 #' @param   seq_id              The column containing sequence ids
 #'
 #' @return
@@ -1063,7 +1063,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}.
 #' @param     ninformative      The number of informative sites in a given alignment 
-#'                              required proper grouping.
+#'                              required for proper grouping.
 #' @param   seq_id              The column containing sequence ids
 #' @return
 #' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
