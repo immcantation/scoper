@@ -1196,17 +1196,16 @@ defineClonesScoper <- function(db,
         db <- as.data.frame(db)
     }
     
-    # CGJ 1/28/25
-    if(split_light){
-      warning(paste('split_light is no longer supported during clonal identification.',
-                    'To seperate clones by light chains see dowser::resolveLightChains'))
-    }
-
-    #TODO: add any other info here?
-    if (!only_heavy){
-        stop("Only heavy parameter will be deprecated in future releases, only only_heavy=T is allowed.")
+    if (!only_heavy) {
+      warning('only_heavy = FALSE is deprecated. Running as if only_heavy = TRUE')
+      only_heavy <- TRUE
     }
     
+    if (split_light) {
+      warning(paste('split_light = TRUE is deprecated. Please use split_light = FALSE.',
+                    'After clonal identification, light chain groups can be found with dowser::resolveLightChains'))
+      split_light <- FALSE
+    }
     ### check model and method
     if (model == "identical") {
         if (!(method %in% c("nt", "aa"))) {
