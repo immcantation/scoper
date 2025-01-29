@@ -147,7 +147,7 @@ test_that("Test assigning clones works for heavy-only sc data", {
 
 #### Single cell 
 
-test_that("Test hierarchicalClones light chain split works", {
+test_that("Test hierarchicalClones only_heavy and first", {
     
     db <- data.frame(
         sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6","seq7","seq8"),
@@ -167,36 +167,29 @@ test_that("Test hierarchicalClones light chain split works", {
     # It adds the junction length groups outside groupGenes
     # requires both cell_id and locus
     # scoper:::prepare_db
-    db_only_heavy_T_locus <- scoper:::prepare_db(db,only_heavy = T, 
+    db_only_heavy_T_locus <- scoper:::prepare_db(db,
+                                                only_heavy = T, 
                                                       cell_id="cell_id",
                                                       locus="locus", first=F)$db
     expect_true(all(db_only_heavy_T_locus$vj_group =="G1"))
     
     # scoper:::prepare_db
-    db_only_heavy_F_locus_first_T <- scoper:::prepare_db(db,only_heavy = F, 
+    db_only_heavy_T_locus_first_T <- scoper:::prepare_db(db,
+                                            only_heavy = T, 
                                            cell_id="cell_id",
                                            locus="locus",
                                            first=T)$db
-    expect_equal(db_only_heavy_F_locus_first_T$vj_group, c("G1","G1","G1","G1","G2","G2","G3","G3"))
-    
-    db_only_heavy_F_locus_first_F <- scoper:::prepare_db(db,only_heavy = F, 
-                                                       cell_id="cell_id",
-                                                       locus="locus",
-                                                       first=F)$db
-    expect_equal(db_only_heavy_F_locus_first_F$vj_group, c("G1","G1","G1","G1","G2","G2","G1","G1"))
-    
+    expect_equal(db_only_heavy_T_locus_first_T$vj_group, c("G1","G1","G1","G1","G1","G1","G2","G2"))
     
     ## Test hierachicalClones
-    ## case only_heavy   split_light first
-    ## 1    T            F           F
-    ## 2    T            F           T
-    ## 3    T            T           F
-    ## 4    T            T           T
-    ## 5    F            F           F
-    ## 6    F            F           T
-    ## 7    F            T           F
-    ## 8    F            T           T
-    
+    # CGJ 1/29/25 updated case to remove split_light testing
+    # split_light = FALSE is set to avoid the warning message
+    ## case only_heavy   first
+    ## 1    T            F    
+    ## 2    T            T    
+    ## 3    F            F   
+    ## 4    F            T    
+
     # Case 1
     clones <- hierarchicalClones(
         db,
@@ -222,78 +215,33 @@ test_that("Test hierarchicalClones light chain split works", {
     expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))
     
     # Case 3
-    clones <- hierarchicalClones(
+    expect_warning(clones <- hierarchicalClones(
         db,
         threshold=0,
         cell_id='cell_id',
         locus='locus',
-        only_heavy=TRUE,
+        only_heavy=FALSE,
         split_light=TRUE,
         first=F, # default is first=F
-        nproc=1)
-    expect_equal(clones@db[['clone_id']], c("1","1","2","2","2","2","3","3"))
+        nproc=1))
+    expect_true(all(clones@db[['clone_id']] == "1"))
     
     # Case 4
-    clones <- hierarchicalClones(
-        db,
-        threshold=0,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=TRUE,
-        split_light=TRUE,
-        first=T, # default is first=F
-        nproc=1)
-    expect_equal(clones@db[['clone_id']], c("1","1","2","2","3","3","4","4"))
+    expect_warning(clones <- hierarchicalClones(
+      db,
+      threshold=0,
+      cell_id='cell_id',
+      locus='locus',
+      only_heavy=FALSE,
+      split_light=TRUE,
+      first=T, # default is first=F
+      nproc=1))
+    expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))
     
-    # Case 5
-    clones <- hierarchicalClones(
-        db,
-        threshold=0,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=FALSE,
-        split_light=FALSE,
-        first=F, # default is first=F
-        nproc=1)
-    expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))    
-    
-    # Case 6
-    clones <- hierarchicalClones(
-        db,
-        threshold=0,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=FALSE,
-        split_light=FALSE,
-        first=T, # default is first=F
-        nproc=1)
-    expect_equal(clones@db[['clone_id']],c("1","1","1","1","2","2","3","3"))    
-    
-    # Case 7
-    clones <- hierarchicalClones(
-        db,
-        threshold=0,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=FALSE,
-        split_light=TRUE,
-        first=F, # default is first=F
-        nproc=1)
-    expect_equal(clones@db[['clone_id']],c("1","1","2","2","2","2","3","3"))    
-    
-    # Case 8
-    clones <- hierarchicalClones(
-        db,
-        threshold=0,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=FALSE,
-        split_light=TRUE,
-        first=T, # default is first=F
-        nproc=1)
-    expect_equal(clones@db[['clone_id']],c("1","1","2","2","3","3","4","4"))      
-    
-    ## Wwhat happens with the second groupGenes (inside the light chain split) when
+
+    #TODO: consider merging the dataset here with the one from the test above to avoid duplication.
+    #TODO: check if comment is addressed.
+    ## What happens with the second groupGenes (inside the light chain split) when
     # first=false, but the "linker" ambiguous call was left out of the same cluster id
     # because of the distance threshold? This groupGenes could be splitting again by vj calls...
     # seq2 is the linker, and the juction is one nt different. Everything else is the same.
@@ -315,8 +263,7 @@ test_that("Test hierarchicalClones light chain split works", {
         split_light=FALSE,
         first=F, # default is first=F
         nproc=1)
-    
-    clones_split_T <- hierarchicalClones(
+    expect_warning(clones_split_T <- hierarchicalClones(
         db,
         threshold=0,
         cell_id='cell_id',
@@ -324,7 +271,7 @@ test_that("Test hierarchicalClones light chain split works", {
         only_heavy=TRUE,
         split_light=TRUE,
         first=F, # default is first=F
-        nproc=1)
+        nproc=1))
     # expecting same results because the light chains are the same.
     expect_equal(clones_split_F@db[['clone_id']], clones_split_T@db[['clone_id']])
     
@@ -334,36 +281,64 @@ test_that("Test hierarchicalClones light chain split works", {
 })
 
 ## Add test for clones by light chain
-
-test_that("Test hierarchicalClones light chain split works on db with light chain ambiguity", {
-    # Load test db with light chain ambiguity
-    df_test <- read.table(file.path("..", "data-tests", "db_test.tsv"), sep="\t", header = T)
-
-    # Run hierarchicalClones without splitting light chain
-    db_h <- hierarchicalClones(
-        df_test,
-        threshold=0.1,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=TRUE,
-        split_light=FALSE,
-        first=F, # default is first=F
-        nproc=1)
-    expect_equal(db_h@db[["clone_id"]], as.character(db_h@db[["expected_clone_id_split_light_F"]]), info=print(db_h@db))
-
-    # Run hierarchicalClones with splitting light chain
-    db_l <- hierarchicalClones(
-        df_test,
-        threshold=0.1,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=TRUE,
-        split_light=TRUE,
-        first=F,
-        nproc=1)
-
-    #TODO: so far the test with split light chains is not passing because (1) the heavy chains with cell_id NA are eliminated, 
-    #and (2) cells that only contain heavy chain are assigned to a separate clone.
-    
-    # expect_equal(db_l@db[["clone_id"]], as.character(db_l@db[["expected_clone_id_split_light_T"]]), info=print(db_l@db))
+# CGJ 1/29/25 This is no longer needed as we do not split by light chains so I 
+# changed the test to best for a warning when split_lights = TRUE
+test_that("Testing split_light warnings for all cloning mehtods", {
+  # Load test db with light chain ambiguity
+  db <- data.frame(
+    sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6","seq7","seq8"),
+    cell_id=c("cell1","cell1","cell2","cell2","cell3","cell3","cell4","cell4"),
+    v_call=c("IGHV1*01","IGLV1*01","IGHV1*01","IGLV1*01","IGHV1*01","IGLV2*01", "IGHV3*01,IGHV1*01","IGLV1*01"),
+    d_call=c("IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA),
+    j_call=c("IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01*01","IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01"),
+    junction=c("TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTTTTC","TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTC")
+  )
+  db$chain <- "light"
+  db$chain[grepl("IGH",db[['v_call']])] <- "heavy"
+  db$locus <- alakazam::getLocus(db$v_call)
+  db$junction_len <- stringi::stri_length(db[['junction']])  
+  # Run hierarchicalClones without and with splitting light chain
+   db_nsplit <- hierarchicalClones(
+      db,
+      threshold=0.1,
+      cell_id='cell_id',
+      locus='locus',
+      only_heavy=TRUE,
+      split_light=FALSE,
+      first=F, # default is first=F
+      nproc=1)
+   expect_warning(db_split <- hierarchicalClones(
+     db,
+     threshold=0.1,
+     cell_id='cell_id',
+     locus='locus',
+     only_heavy=TRUE,
+     split_light=TRUE,
+     first=F, # default is first=F
+     nproc=1))
+   # make sure they are the same 
+   expect_equal(db_nsplit@db[['clone_id']], db_split@db[['clone_id']])
+   
+   # Run spectralClones with and without splitting light chain
+   set.seed(12345)
+   db_nsplit <- spectralClones(db, method = "novj", 
+                        junction = "junction", v_call = "v_call", 
+                        j_call = "j_call", threshold=0.20, cell_id = "cell_id",
+                        summarize_clones = FALSE, split_light = FALSE)
+   expect_warning(db_split <- spectralClones(db, method = "novj", 
+                               junction = "junction", v_call = "v_call", 
+                               j_call = "j_call", threshold=0.20, cell_id = "cell_id",
+                               summarize_clones = FALSE, split_light = TRUE))
+   expect_equal(db_nsplit[['clone_id']], db_split[['clone_id']])
+   
+   # Run identicalClones with and withouth splitting light chain 
+   db_nsplit <- identicalClones(db, method ="nt", 
+                         junction = "junction", v_call = "v_call", 
+                         j_call = "j_call", summarize_clones = FALSE, 
+                         cell_id = "cell_id", split_light = FALSE)
+   expect_warning(db_split <- identicalClones(db, method ="nt", 
+                                junction = "junction", v_call = "v_call", 
+                                j_call = "j_call", summarize_clones = FALSE, 
+                                cell_id = "cell_id", split_light = TRUE))
+   expect_equal(db_nsplit[['clone_id']], db_split[['clone_id']])
 })
