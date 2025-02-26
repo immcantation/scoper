@@ -21,9 +21,11 @@ jobs:
         run: |
           sed -i '/test/ d' .Rbuildignore
           Rscript tests/setup/install_dep.R
+          
           Rscript -e "devtools::install_github('immcantation/alakazam@groupGenes')"
       - name: Document
         run: |
+          install.packages('lifecycle')
           devtools::document()
         shell: Rscript {0}
       - name: Check
