@@ -27,7 +27,7 @@ fields = NULL,
 cell_id = NULL,
 locus = "locus",
 only_heavy = TRUE,
-split_light = TRUE,
+split_light = FALSE,
 first = FALSE,
 cdr3 = FALSE,
 mod3 = FALSE,
@@ -35,7 +35,9 @@ max_n = 0,
 nproc = 1,
 verbose = FALSE,
 log = NULL,
-summarize_clones = TRUE
+summarize_clones = TRUE,
+ninformative = 250,
+seq_id = "sequence_id"
 )
 ```
 
@@ -46,7 +48,7 @@ db
 :   data.frame containing sequence data.
 
 threshold
-:   a numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
+:   numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
 
 method
 :   one of the `"nt"` for nucleotide based clustering or 
@@ -64,16 +66,18 @@ junction
 Also used to determine sequence length for grouping.
 
 v_call
-:   character name of the column containing the V-segment allele calls.
+:   name of the column containing the V-segment allele calls.
 
 j_call
-:   character name of the column containing the J-segment allele calls.
+:   name of the column containing the J-segment allele calls.
 
 clone
-:   the output column name containing the clonal cluster identifiers.
+:   output column name containing the clonal cluster identifiers.
 
 fields
-:   additional fields to use for grouping.
+:   character vector of additional columns to use for grouping. 
+Sequences with disjoint values in the specified fields will be classified 
+as separate clones.
 
 cell_id
 :   name of the column containing cell identifiers or barcodes. 
@@ -135,6 +139,13 @@ summarize_clones
 and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` then
 a modified input `db` is returned. When grouping by `fields`, 
 `summarize_clones` should be `FALSE`.
+
+ninformative
+:   The number of informative sites in a given alignment 
+required for proper grouping.
+
+seq_id
+:   The column containing sequence ids
 
 
 
@@ -201,7 +212,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](https://alakazam.readthedocs.io/en/stable/topics/groupGenes/) for 
+See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupGenes) for 
 more details about grouping requirements.
 
 
