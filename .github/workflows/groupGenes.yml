@@ -21,7 +21,6 @@ jobs:
         run: |
           sed -i '/test/ d' .Rbuildignore
           Rscript tests/setup/install_dep.R
-          
           Rscript -e "devtools::install_github('immcantation/alakazam@groupGenes')"
       - name: Document
         run: |
@@ -33,5 +32,5 @@ jobs:
           _R_CHECK_CRAN_INCOMING_: false
         run: |
           options(crayon.enabled=TRUE)
-          rcmdcheck::rcmdcheck(args = c("--as-cran", "--run-donttest", "--timings"), error_on="warning", check_dir="check")
+          rcmdcheck::rcmdcheck(args = c("--as-cran", "--run-donttest", "--timings"), error_on="error", check_dir="check")
         shell: Rscript {0}
