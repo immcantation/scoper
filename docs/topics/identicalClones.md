@@ -34,7 +34,6 @@ nproc = 1,
 verbose = FALSE,
 log = NULL,
 summarize_clones = TRUE,
-ninformative = 250,
 seq_id = "sequence_id"
 )
 ```
@@ -125,10 +124,6 @@ summarize_clones
 and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` then
 a modified input `db` is returned. When grouping by `fields`, 
 `summarize_clones` should be `FALSE`.
-
-ninformative
-:   The number of informative sites in a given alignment 
-required for proper grouping.
 
 seq_id
 :   The column containing sequence ids
