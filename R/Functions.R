@@ -751,10 +751,12 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' @param    locus              name of the column containing locus information. 
 #'                              Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    only_heavy         use only the IGH (BCR) or TRB/TRD (TCR) sequences 
+#' @param    only_heavy         This is deprecated. Only heavy chains will be used in clustering.
+#'                              Use only the IGH (BCR) or TRB/TRD (TCR) sequences 
 #'                              for grouping. Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    split_light        split clones by light chains. Ignored if \code{cell_id=NULL}.
+#' @param    split_light        This is deprecated. If you desire to split clones by light chains 
+#'                              use dowser::resolveLightChains.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
@@ -885,10 +887,12 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' @param    locus              name of the column containing locus information. 
 #'                              Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    only_heavy         use only the IGH (BCR) or TRB/TRD (TCR) sequences 
+#' @param    only_heavy         This is deprecated. Only heavy chains will be used in clustering.
+#'                              Use only the IGH (BCR) or TRB/TRD (TCR) sequences 
 #'                              for grouping. Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    split_light        split clones by light chains. Ignored if \code{cell_id=NULL}.
+#' @param    split_light        This is deprecated. If you desire to split clones by light chains 
+#'                              use dowser::resolveLightChains.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
@@ -1018,10 +1022,12 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' @param    locus              name of the column containing locus information. 
 #'                              Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    only_heavy         use only the IGH (BCR) or TRB/TRD (TCR) sequences 
+#' @param    only_heavy         This is deprecated. Only heavy chains will be used in clustering.
+#'                              Use only the IGH (BCR) or TRB/TRD (TCR) sequences 
 #'                              for grouping. Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    split_light        split clones by light chains. Ignored if \code{cell_id=NULL}.
+#' @param    split_light        This is deprecated. If you desire to split clones by light chains 
+#'                              use dowser::resolveLightChains.
 #' @param    targeting_model    \link[shazam]{TargetingModel} object. Only applicable if 
 #'                              \code{method="vj"}. See Details for description.
 #' @param    len_limit          \link[shazam]{IMGT_V} object defining the regions and boundaries of the Ig 
