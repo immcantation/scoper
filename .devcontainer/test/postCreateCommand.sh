@@ -17,4 +17,7 @@ if [ -f "tests/setup/install_dep.R" ]; then
     Rscript tests/setup/install_dep.R
 fi
 
-echo "If you want to install your R package, run the following command in R: devtools::install.package('.')"
+echo -e "\n\033[1;32m============================================================"
+echo -e " IMPORTANT: To install this R package, run in R console:"
+echo -e "   devtools::install('.')"
+echo -e "============================================================\033[0m\n"
