@@ -1191,8 +1191,9 @@ defineClonesScoper <- function(db,
     }
 
     #TODO: add any other info here?
+    #TODO: update docs
     if (!only_heavy){
-        stop("Only heavy parameter will be deprecated in future releases, only only_heavy=T is allowed.")
+        stop("Only heavy parameter is deprecatd and will be removed in future releases. Only only_heavy=T is allowed.")
     }
     
     ### check model and method
