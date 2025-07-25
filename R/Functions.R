@@ -510,6 +510,9 @@ prepare_db <- function(db,
         n_rmv_cdr3 <- sum(db[[junction_l]] <= 6)
         db <- db %>% 
             dplyr::filter(!!rlang::sym(junction_l) > 6)
+        if ( n_rmv_cdr3 > 0) {
+            warning(paste("Removed", n_rmv_cdr3, "sequences with junction length <=6."))
+        }            
         # add cdr3 column
         db$cdr3_col <- substr(db[[junction]], 4, db[[junction_l]]-3)
         cdr3_col <- "cdr3_col"
