@@ -523,11 +523,15 @@ prepare_db <- function(db,
     
     ### check for degenerate characters (non-ATCG's)
     # Count the number of non-ATCG's in junction
-    # TODO: remove this from here as groupGenes already checks for ambiguous positions
     if (!is.null(max_n)) {
         n_rmv_N <- sum(stringi::stri_count(db[[junction]], regex = "[^ATCG]") > max_n)
+        n_before <- nrow(db)
         db <- db %>% 
             dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
+        n_after <- nrow(db)
+        if ( n_before > n_after) {
+            warning(paste("Removed", n_before - n_after, "sequences with non ATCG charachters."))
+        }
     } else {
         n_rmv_N <- 0
     }
