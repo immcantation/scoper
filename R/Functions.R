@@ -840,8 +840,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
                             v_call="v_call", j_call="j_call", clone="clone_id", fields=NULL,
                             cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=FALSE,
                             first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
-                            verbose=FALSE, log=NULL, summarize_clones=TRUE,
-                            seq_id = "sequence_id") {
+                            verbose=FALSE, log=NULL, summarize_clones=TRUE) {
 
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
@@ -1141,7 +1140,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
                            cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=FALSE,
                            targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, 
                            threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
-                           verbose=FALSE, log=NULL, summarize_clones=TRUE, seq_id="sequence_id") {
+                           verbose=FALSE, log=NULL, summarize_clones=TRUE) {
 
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
                                   germline = germline, sequence = sequence,
