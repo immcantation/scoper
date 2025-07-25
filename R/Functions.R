@@ -498,9 +498,13 @@ prepare_db <- function(db,
     ### check for mod3
     # filter mod 3 junction lengths
     if (mod3) {
-        n_rmv_mod3 <- sum(db[[junction_l]]%%3 != 0)
+        n_before <- nrow(db)
         db <- db %>% 
             dplyr::filter(!!rlang::sym(junction_l)%%3 == 0)
+        n_after <- nrow(db)
+        if ( n_before > n_after) {
+            warning(paste("Removed", n_before - n_after, "sequences with junction length not divisible by 3."))
+        }
     } else {
         n_rmv_mod3 <- 0
     }
@@ -511,6 +515,9 @@ prepare_db <- function(db,
         n_rmv_cdr3 <- sum(db[[junction_l]] <= 6)
         db <- db %>% 
             dplyr::filter(!!rlang::sym(junction_l) > 6)
+        if ( n_rmv_cdr3 > 0) {
+            warning(paste("Removed", n_rmv_cdr3, "sequences with junction length <=6."))
+        }            
         # add cdr3 column
         db$cdr3_col <- substr(db[[junction]], 4, db[[junction_l]]-3)
         cdr3_col <- "cdr3_col"
@@ -524,13 +531,19 @@ prepare_db <- function(db,
     # TODO: remove this from here as groupGenes already checks for ambiguous positions
     if (!is.null(max_n)) {
         n_rmv_N <- sum(stringi::stri_count(db[[junction]], regex = "[^ATCG]") > max_n)
+        n_before <- nrow(db)
         db <- db %>% 
             dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
+        n_after <- nrow(db)
+        if ( n_before > n_after) {
+            warning(paste("Removed", n_before - n_after, "sequences with non ATCG charachters."))
+        }
     } else {
         n_rmv_N <- 0
     }
     
-    ### Parse V and J columns to get gene
+    ### Parse V and J columns to get gene groups (vj_group)
+    ### Within "fields" group, group sequences by V and J calls.
     if (!is.null(fields)) {
         . <- NULL
         db <- db %>%
@@ -554,7 +567,7 @@ prepare_db <- function(db,
                          first = first)        
     }
     
-    ### groups to use
+    
     ### vj_group comes from groupGenes
     groupBy <- c("vj_group", junction_l, fields)
     
@@ -779,8 +792,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
-#'                              \code{summarize_clones} should be \code{FALSE}. 
-#' @param   seq_id              The column containing sequence ids
+#'                              \code{summarize_clones} should be \code{FALSE}.
 #' 
 #' @return
 #' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
@@ -1061,7 +1073,6 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}.
-#' @param   seq_id              The column containing sequence ids
 #' @return
 #' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
 #' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
@@ -1173,7 +1184,7 @@ defineClonesScoper <- function(db,
                                threshold = NULL, base_sim = 0.95,
                                iter_max = 1000, nstart = 1000, nproc = 1,
                                verbose = FALSE, log = NULL,
-                               summarize_clones = TRUE, seq_id = "sequence_id") {
+                               summarize_clones = TRUE) {
   
     ### get model
     model <- match.arg(model)
@@ -1189,7 +1200,9 @@ defineClonesScoper <- function(db,
     if (is(db, "data.table")) {
         db <- as.data.frame(db)
     }
-    
+
+    #TODO: add any other info here?
+    #TODO: update docs    
     if (!only_heavy) {
       warning('only_heavy = FALSE is deprecated. Running as if only_heavy = TRUE')
       only_heavy <- TRUE
@@ -1200,6 +1213,7 @@ defineClonesScoper <- function(db,
                     'After clonal identification, light chain groups can be found with dowser::resolveLightChains'))
       split_light <- FALSE
     }
+
     ### check model and method
     if (model == "identical") {
         if (!(method %in% c("nt", "aa"))) {
@@ -1326,9 +1340,13 @@ defineClonesScoper <- function(db,
     ### prepare db
     ### Creates the initial VJ groups to identify clonally related sequences
     ### using the heavy chain.
-    ### At this point,
-    ### single cell data has one heavy chain sequence per cell, and one cell can
-    ### only belong to a v+j+heavy-chain-junction-length group.
+    ### The vj group is created with groupGenes, using heavy chaing v and j calls only
+    ### (only_heavy=T). Then an additional l group is added, based on the junction length, not
+    ### using the groupGenes function. As only the heavy chain data is used for cloning, 
+    ### only the heavy chain sequences' junction length matters. 
+    ### At this point, single cell data has one heavy chain sequence per cell, and 
+    ### one cell can only belong to a v+j+heavy-chain-junction-length group.
+    
     # TODO: modify function prepare_db to not accept only_heavy parameter any more
     results_prep <- prepare_db(db = db, 
                                junction = junction, v_call = v_call, j_call = j_call,
