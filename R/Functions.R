@@ -493,9 +493,13 @@ prepare_db <- function(db,
     ### check for mod3
     # filter mod 3 junction lengths
     if (mod3) {
-        n_rmv_mod3 <- sum(db[[junction_l]]%%3 != 0)
+        n_before <- nrow(db)
         db <- db %>% 
             dplyr::filter(!!rlang::sym(junction_l)%%3 == 0)
+        n_after <- nrow(db)
+        if ( n_before > n_after) {
+            warning(paste("Removed", n_before - n_after, "sequences with junction length not divisible by 3."))
+        }
     } else {
         n_rmv_mod3 <- 0
     }
