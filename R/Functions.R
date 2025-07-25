@@ -848,8 +848,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,        
-                                  verbose = verbose, log = log, summarize_clones = summarize_clones,
-                                  seq_id = seq_id)
+                                  verbose = verbose, log = log, summarize_clones = summarize_clones)
     
     ### return results
     if (summarize_clones) {
@@ -987,8 +986,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
                                   junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
-                                  verbose = verbose, log = log, summarize_clones = summarize_clones, 
-                                  seq_id = seq_id)
+                                  verbose = verbose, log = log, summarize_clones = summarize_clones)
     
     # return results
     if (summarize_clones) {
@@ -1153,8 +1151,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n,
                                   threshold = threshold, base_sim = base_sim,
                                   iter_max = iter_max, nstart = nstart, nproc = nproc,
-                                  verbose = verbose, log = log, summarize_clones = summarize_clones,
-                                  seq_id = seq_id)
+                                  verbose = verbose, log = log, summarize_clones = summarize_clones)
     
     # return results
     if (summarize_clones) {
