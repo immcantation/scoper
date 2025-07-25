@@ -481,7 +481,7 @@ prepare_db <- function(db,
                        junction = "junction", v_call = "v_call", j_call = "j_call",
                        first = FALSE, cdr3 = FALSE, fields = NULL,
                        cell_id = NULL, locus = NULL, only_heavy = TRUE,
-                       mod3 = FALSE, max_n = 0, ninformative = 250) {
+                       mod3 = FALSE, max_n = 0) {
     #TODO: remove only_heavy parameter when it becomes deprecated.
     #TODO: double check that the 'junction_l' check are still needed when only_heavy
     # is fully removed 
@@ -525,7 +525,8 @@ prepare_db <- function(db,
         n_rmv_N <- 0
     }
     
-    ### Parse V and J columns to get gene
+    ### Parse V and J columns to get gene groups (vj_group)
+    ### Within "fields" group, group sequences by V and J calls.
     if (!is.null(fields)) {
         . <- NULL
         db <- db %>%
@@ -537,8 +538,7 @@ prepare_db <- function(db,
                           cell_id = cell_id,
                           locus = locus,
                           only_heavy = T, #TODO: we only allow True for now, when deprecated remove.
-                          first = first, 
-                          ninformative = ninformative))        
+                          first = first))        
     } else {
         db <- alakazam::groupGenes(db,
                          v_call = v_call,
@@ -547,11 +547,10 @@ prepare_db <- function(db,
                          cell_id = cell_id,
                          locus = locus,
                          only_heavy = T, #TODO: we only allow True for now, when deprecated remove.
-                         first = first, 
-                         ninformative = ninformative)        
+                         first = first)        
     }
     
-    ### groups to use
+    
     ### vj_group comes from groupGenes
     groupBy <- c("vj_group", junction_l, fields)
     
@@ -774,10 +773,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
-#'                              \code{summarize_clones} should be \code{FALSE}. 
-#' @param    ninformative       The number of informative sites in a given alignment 
-#'                              required proper grouping.
-#' @param   seq_id              The column containing sequence ids
+#'                              \code{summarize_clones} should be \code{FALSE}.
 #' 
 #' @return
 #' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
@@ -826,7 +822,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
                             cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=TRUE,
                             first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                             verbose=FALSE, log=NULL, 
-                            summarize_clones=TRUE, ninformative=250, seq_id = "sequence_id") {
+                            summarize_clones=TRUE) {
     
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
@@ -834,7 +830,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,        
                                   verbose = verbose, log = log, 
-                                  summarize_clones = summarize_clones, ninformative = ninformative, seq_id = seq_id)
+                                  summarize_clones = summarize_clones)
     
     ### return results
     if (summarize_clones) {
@@ -913,9 +909,6 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}.
-#' @param   ninformative        The number of informative sites in a given alignment 
-#'                              required proper grouping.
-#' @param   seq_id              The column containing sequence ids
 #'
 #' @return
 #' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
@@ -966,7 +959,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
                                cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=TRUE,
                                first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                                verbose=FALSE, log=NULL,
-                               summarize_clones=TRUE, ninformative=250, seq_id = "sequence_id") {
+                               summarize_clones=TRUE) {
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
                                   method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
@@ -974,8 +967,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
                                   verbose = verbose, log = log, 
-                                  summarize_clones = summarize_clones, 
-                                  ninformative = ninformative, seq_id = seq_id)
+                                  summarize_clones = summarize_clones)
     
     # return results
     if (summarize_clones) {
@@ -1058,9 +1050,6 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}.
-#' @param     ninformative      The number of informative sites in a given alignment 
-#'                              required proper grouping.
-#' @param   seq_id              The column containing sequence ids
 #' @return
 #' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
 #' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
@@ -1132,7 +1121,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
                            targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, 
                            threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
                            verbose=FALSE, log=NULL,
-                           summarize_clones=TRUE, ninformative = 250, seq_id="sequence_id") {
+                           summarize_clones=TRUE) {
     
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
                                   germline = germline, sequence = sequence,
@@ -1143,8 +1132,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
                                   threshold = threshold, base_sim = base_sim,
                                   iter_max = iter_max, nstart = nstart, nproc = nproc,
                                   verbose = verbose, log = log,
-                                  summarize_clones = summarize_clones, 
-                                  ninformative = ninformative, seq_id = seq_id)
+                                  summarize_clones = summarize_clones)
     
     # return results
     if (summarize_clones) {
@@ -1174,8 +1162,7 @@ defineClonesScoper <- function(db,
                                threshold = NULL, base_sim = 0.95,
                                iter_max = 1000, nstart = 1000, nproc = 1,
                                verbose = FALSE, log = NULL,
-                               summarize_clones = TRUE, ninformative = 250, 
-                               seq_id = "sequence_id") {
+                               summarize_clones = TRUE) {
   
     ### get model
     model <- match.arg(model)
@@ -1321,17 +1308,23 @@ defineClonesScoper <- function(db,
     }
     
     ### prepare db
-    ### Creates the initial VJ groups to identify clonally related sequences
+    ### Creates the initial VJL groups to identify clonally related sequences
     ### using the heavy chain.
+    ### The vj group is created with groupGenes, using heavy chaing v and j calls only
+    ### (only_heavy=T) or also considering the vj light chain call (only_heavy=F).
+    ### Then an additional l group is added, based on the junction length, not
+    ### using groupGenes. As only the heavy chain data is used for cloning,
+    ### only the heavy chain sequences' junction length matters.
     ### At this point,
     ### single cell data has one heavy chain sequence per cell, and one cell can
     ### only belong to a v+j+heavy-chain-junction-length group.
+    
     # TODO: modify function prepare_db to not accept only_heavy parameter any more
     results_prep <- prepare_db(db = db, 
                                junction = junction, v_call = v_call, j_call = j_call,
                                first = first, cdr3 = cdr3, fields = fields,
                                cell_id = cell_id, locus = locus, only_heavy = only_heavy,
-                               mod3 = mod3, max_n = max_n, ninformative = ninformative)
+                               mod3 = mod3, max_n = max_n)
     db <- results_prep$db
     n_rmv_mod3 <- results_prep$n_rmv_mod3
     n_rmv_cdr3 <- results_prep$n_rmv_cdr3
