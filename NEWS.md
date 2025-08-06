@@ -1,12 +1,18 @@
+Version 1.4.0dev
+-------------------------------------------------------------------------------
+
++ Clonal identification methods now have deprecated `only_heavy` and `split_light`
++ All clonal identification methods now cluster by heavy chain only
++ If there is a desire to split a clone by unique light chain groups use dowser::resolveLightChains
++ Scoper now uses the fastclust library instead of the hclust library for improved speed when performing hierarchical clustering
+
+
 Version 1.3.1: August 1, 2024
 -------------------------------------------------------------------------------
 
 Documentation:
 
 + This is a documentation-only update to address changes in Read the Docs.
-+ Clonal identification methods now have deprecated `only_heavy` and `split_light`
-+ All clonal identification methods now cluster by heavy chain only
-+ If there is a desire to split a clone by unique light chain groups use dowser::resolveLightChains
 
 Version 1.3.0: October 5, 2023
 -------------------------------------------------------------------------------

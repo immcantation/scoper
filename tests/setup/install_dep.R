@@ -72,7 +72,7 @@ installDep <- function(pkg, devel_mode, immcantation = immcantation_packages,
                 error = function(e) {
                     # This is needed if there is an Immcantation release package that is not
                     # available from CRAN
-                    cat(e, "\n")
+                    cat(as.character(e), "\n")
                     message("Installing ", pkg, " from GitHub...\n ")
                     install_github(paste0("immcantation/", pkg_name, "@", pkg_version), build = TRUE)
                 }

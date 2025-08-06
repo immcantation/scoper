@@ -24,6 +24,7 @@ jobs:
       - name: Document
         run: |
           install.packages('lifecycle')
+          install.packates('fastcluster')
           devtools::document()
         shell: Rscript {0}
       - name: Check
