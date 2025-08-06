@@ -25,7 +25,6 @@
 #' }
 #' 
 #' @name        scoper
-#' @docType     package
 #' @references
 #' \enumerate{
 #'   \item  Nouri N and Kleinstein SH (2018). A spectral clustering-based method for identifying clones

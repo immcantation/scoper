@@ -92,12 +92,14 @@ Only applicable to single-cell data.
 Ignored if `cell_id=NULL`.
 
 only_heavy
-:   use only the IGH (BCR) or TRB/TRD (TCR) sequences 
+:   This is deprecated. Only heavy chains will be used in clustering.
+Use only the IGH (BCR) or TRB/TRD (TCR) sequences 
 for grouping. Only applicable to single-cell data.
 Ignored if `cell_id=NULL`.
 
 split_light
-:   split clones by light chains. Ignored if `cell_id=NULL`.
+:   This is deprecated. If you desire to split clones by light chains 
+use dowser::resolveLightChains.
 
 targeting_model
 :   [TargetingModel](http://www.rdocumentation.org/packages/shazam/topics/TargetingModel-class) object. Only applicable if 
