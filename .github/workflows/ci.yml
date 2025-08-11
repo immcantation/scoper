@@ -23,8 +23,6 @@ jobs:
           Rscript tests/setup/install_dep.R
       - name: Document
         run: |
-          install.packages('lifecycle')
-          install.packages('fastcluster')
           devtools::document()
         shell: Rscript {0}
       - name: Check
