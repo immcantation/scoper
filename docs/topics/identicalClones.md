@@ -123,7 +123,7 @@ The default is `NULL` for no action.
 
 summarize_clones
 :   if `TRUE` performs a series of analysis to assess the clonal landscape
-and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` then
+and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` (default) then
 a modified input `db` is returned. When grouping by `fields`, 
 `summarize_clones` should be `FALSE`.
 
@@ -136,11 +136,8 @@ seq_id
 Value
 -------------------
 
-If `summarize_clones=TRUE` (default) a [ScoperClones](ScoperClones-class.md) object is returned that includes the 
-clonal assignment summary information and a modified input `db` in the `db` slot that 
-contains clonal identifiers in the specified `clone` column.
-If `summarize_clones=FALSE` modified `data.frame` is returned with clone identifiers in the 
-specified `clone` column.
+If `summarize_clones=FALSE` (default) a modified input `db` is returned with clone identifiers in the specified `clone` column.
+If `summarize_clones=TRUE` a [ScoperClones](ScoperClones-class.md) object is returned that includes the clonal assignment summary information and a modified input `db` in the `db` slot that contains clonal identifiers in the specified `clone` column.
 
 
 Single-cell data
