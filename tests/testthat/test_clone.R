@@ -217,6 +217,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
         locus='locus',
         only_heavy=TRUE,
         split_light=FALSE,
+        summarize_clones=TRUE,
         first=F, # default is first=F
         nproc=1)
     expect_true(all(clones@db[['clone_id']] == "1"))
@@ -229,6 +230,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
         locus='locus',
         only_heavy=TRUE,
         split_light=FALSE,
+        summarize_clones=TRUE,
         first=T, # default is first=F
         nproc=1)
     expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))
@@ -241,6 +243,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
         locus='locus',
         only_heavy=FALSE,
         split_light=TRUE,
+        summarize_clones=TRUE,
         first=F, # default is first=F
         nproc=1))
     expect_true(all(clones@db[['clone_id']] == "1"))
@@ -253,6 +256,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
       locus='locus',
       only_heavy=FALSE,
       split_light=TRUE,
+      summarize_clones=TRUE,
       first=T, # default is first=F
       nproc=1))
     expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))
