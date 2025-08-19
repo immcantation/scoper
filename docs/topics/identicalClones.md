@@ -170,7 +170,7 @@ Examples
 
 ```R
 # Find clonal groups
-results <- identicalClones(ExampleDb)
+results <- identicalClones(ExampleDb, summarize_clones=TRUE)
 
 ```
 

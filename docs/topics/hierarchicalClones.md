@@ -184,7 +184,7 @@ Examples
 
 ```R
 # Find clonal groups
-results <- hierarchicalClones(ExampleDb, threshold=0.15)
+results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 
 ```
 
