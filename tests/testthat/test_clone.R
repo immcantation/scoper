@@ -284,6 +284,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
         locus='locus',
         only_heavy=TRUE,
         split_light=FALSE,
+        summarize_clones=TRUE,
         first=F, # default is first=F
         nproc=1)
     expect_warning(clones_split_T <- hierarchicalClones(
@@ -293,6 +294,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
         locus='locus',
         only_heavy=TRUE,
         split_light=TRUE,
+        summarize_clones=TRUE,
         first=F, # default is first=F
         nproc=1))
     # expecting same results because the light chains are the same.
@@ -328,6 +330,7 @@ test_that("Testing split_light warnings for all cloning mehtods", {
       locus='locus',
       only_heavy=TRUE,
       split_light=FALSE,
+      summarize_clones=TRUE,
       first=F, # default is first=F
       nproc=1)
    expect_warning(db_split <- hierarchicalClones(
@@ -337,6 +340,7 @@ test_that("Testing split_light warnings for all cloning mehtods", {
      locus='locus',
      only_heavy=TRUE,
      split_light=TRUE,
+     summarize_clones=TRUE,
      first=F, # default is first=F
      nproc=1))
    # make sure they are the same 
