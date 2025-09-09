@@ -1877,9 +1877,21 @@ hierarchicalClones_helper <- function(db_gp,
     if (normalize == "len") {
         # calculate normalization factor
         junc_length <- unique(stringi::stri_length(seqs_unq))
-        hc <- hclust(as.dist(dist_mtx/junc_length), method = linkage)    
+        if(n_unq<65536){
+            hc <- stats::hclust(as.dist(dist_mtx/junc_length), method = linkage) 
+        }
+        else{
+            print(paste("VJL group size: ", n_unq, ". Function hclust from fastcluster will be used for large vjl group."))
+            hc <- fastcluster::hclust(as.dist(dist_mtx/junc_length), method = linkage)
+        }
     } else if (normalize == "none") {
-        hc <- stats::hclust(as.dist(dist_mtx), method = linkage)    
+        if(n_unq<65536){
+            hc <- stats::hclust(as.dist(dist_mtx), method = linkage) 
+        }
+        else{
+            print(paste("VJL group size: ", n_unq, ". Function hclust from fastcluster will be used for large vjl group."))
+            hc <- fastcluster::hclust(as.dist(dist_mtx), method = linkage)
+        }    
     }
     
     # cut the tree
