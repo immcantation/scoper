@@ -1881,7 +1881,7 @@ hierarchicalClones_helper <- function(db_gp,
             hc <- stats::hclust(as.dist(dist_mtx/junc_length), method = linkage) 
         }
         else{
-            print(paste0()("VJL group size: ", n_unq, ". Function hclust from fastcluster will be used for large vjl group."))
+            print(paste0("VJL group size: ", n_unq, ". Function hclust from fastcluster will be used for large vjl group."))
             hc <- fastcluster::hclust(as.dist(dist_mtx/junc_length), method = linkage)
         }
     } else if (normalize == "none") {
