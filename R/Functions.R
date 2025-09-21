@@ -790,16 +790,16 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              The input file directory is used if path is not specified.
 #'                              The default is \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
-#'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
+#'                              and returns a \link{ScoperClones} object. If \code{FALSE} (default) then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}.
 #' 
 #' @return
-#' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
+#' If \code{summarize_clones=FALSE} (default) a modified \code{data.frame} is returned with clone identifiers in the 
+#' specified \code{clone} column.
+#' If \code{summarize_clones=TRUE} a \link{ScoperClones} object is returned that includes the 
 #' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
 #' contains clonal identifiers in the specified \code{clone} column.
-#' If \code{summarize_clones=FALSE} modified \code{data.frame} is returned with clone identifiers in the 
-#' specified \code{clone} column.
 #' 
 #' @section Single-cell data:
 #' To invoke single-cell mode the \code{cell_id} argument must be specified and the \code{locus} 
@@ -840,7 +840,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
                             v_call="v_call", j_call="j_call", clone="clone_id", fields=NULL,
                             cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=FALSE,
                             first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
-                            verbose=FALSE, log=NULL, summarize_clones=TRUE) {
+                            verbose=FALSE, log=NULL, summarize_clones=FALSE) {
 
     results <- defineClonesScoper(db = db,
                                   method = match.arg(method), model = "identical", 
@@ -925,17 +925,17 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              The input file directory is used if path is not specified.
 #'                              The default is \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
-#'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
+#'                              and returns a \link{ScoperClones} object. If \code{FALSE} (default) then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
-#'                              \code{summarize_clones} should be \code{FALSE}.
+#'                              \code{summarize_clones} should be \code{FALSE}. 
 #' @param   seq_id              The column containing sequence ids
 #'
 #' @return
-#' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
+#' If \code{summarize_clones=FALSE} (default) a modified \code{data.frame} is returned with clone identifiers in the 
+#' specified \code{clone} column.
+#' If \code{summarize_clones=TRUE} a \link{ScoperClones} object is returned that includes the 
 #' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
 #' contains clonal identifiers in the specified \code{clone} column.
-#' If \code{summarize_clones=FALSE} modified \code{data.frame} is returned with clone identifiers in the 
-#' specified \code{clone} column.
 #' 
 #' @section Single-cell data:
 #' To invoke single-cell mode the \code{cell_id} argument must be specified and the \code{locus} 
@@ -978,7 +978,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
                                v_call="v_call", j_call="j_call", clone="clone_id", fields=NULL,
                                cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=FALSE,
                                first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
-                               verbose=FALSE, log=NULL, summarize_clones=TRUE, seq_id = "sequence_id") {
+                               verbose=FALSE, log=NULL, summarize_clones=FALSE, seq_id = "sequence_id") {
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
                                   method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
@@ -1067,15 +1067,15 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              The input file directory is used if path is not specified.
 #'                              The default is \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
-#'                              and returns a \link{ScoperClones} object. If \code{FALSE} then
+#'                              and returns a \link{ScoperClones} object. If \code{FALSE} (default) then
 #'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}.
 #' @return
-#' If \code{summarize_clones=TRUE} (default) a \link{ScoperClones} object is returned that includes the 
+#' If \code{summarize_clones=FALSE} (default) a modified \code{data.frame} is returned with clone identifiers in the 
+#' specified \code{clone} column.
+#' If \code{summarize_clones=TRUE} a \link{ScoperClones} object is returned that includes the 
 #' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
 #' contains clonal identifiers in the specified \code{clone} column.
-#' If \code{summarize_clones=FALSE} modified \code{data.frame} is returned with clone identifiers in the 
-#' specified \code{clone} column.
 #'
 #' @details
 #' If \code{method="novj"}, then clonal relationships are inferred using an adaptive 
@@ -1140,7 +1140,7 @@ spectralClones <- function(db, method=c("novj", "vj"), germline="germline_alignm
                            cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=FALSE,
                            targeting_model=NULL, len_limit=NULL, first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, 
                            threshold=NULL, base_sim=0.95, iter_max=1000,  nstart=1000, nproc=1,
-                           verbose=FALSE, log=NULL, summarize_clones=TRUE) {
+                           verbose=FALSE, log=NULL, summarize_clones=FALSE) {
 
     results <- defineClonesScoper(db = db, method = match.arg(method), model = "spectral", 
                                   germline = germline, sequence = sequence,
@@ -1180,7 +1180,7 @@ defineClonesScoper <- function(db,
                                threshold = NULL, base_sim = 0.95,
                                iter_max = 1000, nstart = 1000, nproc = 1,
                                verbose = FALSE, log = NULL,
-                               summarize_clones = TRUE) {
+                               summarize_clones = FALSE) {
   
     ### get model
     model <- match.arg(model)
