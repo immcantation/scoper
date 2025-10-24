@@ -1197,8 +1197,6 @@ defineClonesScoper <- function(db,
         db <- as.data.frame(db)
     }
 
-    #TODO: add any other info here?
-    #TODO: update docs    
     if (!only_heavy) {
       warning('only_heavy = FALSE is deprecated. Running as if only_heavy = TRUE')
       only_heavy <- TRUE
