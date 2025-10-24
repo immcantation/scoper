@@ -147,8 +147,12 @@ test_that("Test assigning clones works for heavy-only sc data", {
 
 #### Single cell 
 
-test_that("Test hierarchicalClones only_heavy and first", {
+test_that("Test prepare_db", {
     
+    # Note:
+    # seq7 (cell4) has v_call IGHV3*01,IGHV1*01 and will be assigned G2 when first=F. 
+    #     The order is not what we would usually expect, because it is not sorted
+    #     alpahbetically. It is not sorted on purpose just to test the first= T/F parameter.
     db <- data.frame(
         sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6","seq7","seq8"),
         cell_id=c("cell1","cell1","cell2","cell2","cell3","cell3","cell4","cell4"),
@@ -160,46 +164,122 @@ test_that("Test hierarchicalClones only_heavy and first", {
     db$chain <- "light"
     db$chain[grepl("IGH",db[['v_call']])] <- "heavy"
     db$locus <- alakazam::getLocus(db$v_call)
-    db$junction_len <- stringi::stri_length(db[['junction']])  
+    db$junction_len <- stringi::stri_length(db[['junction']])
 
-    # prepare_db uses groupGenes to find vj gene groups, but 
+    # Case: heavy T, first F
+    # prepare_db uses groupGenes to find vj gene groups, but
     # uses junc_len = NULL
     # It adds the junction length groups outside groupGenes
     # requires both cell_id and locus
     # scoper:::prepare_db
-    db_only_heavy_T_locus <- scoper:::prepare_db(db,
-                                                
-                                                only_heavy = T, 
-                                                      cell_id="cell_id",
-                                                      locus="locus", first=F)$db
-    expect_true(all(db_only_heavy_T_locus$vj_group =="G1"))
+    db_only_heavy_T_locus_first_F <- scoper:::prepare_db(
+        db,
+        only_heavy = T,
+        cell_id = "cell_id",
+        locus="locus", 
+        first=F)$db
+    expect_true(all(db_only_heavy_T_locus_first_F$vj_group =="G1"))
     
+    # Case: heavy T, first T
     # scoper:::prepare_db
-    # these are all G1?
-    db_only_heavy_T_locus_first_T <- scoper:::prepare_db(db,
-                                            
-                                            only_heavy = T, #TODO: only_heavy is deprecated and therefore not used.
-                                           cell_id="cell_id",
-                                           locus="locus",
-                                           first=T)$db
-    # Old expectation:
-    # expect_equal(db_only_heavy_F_locus_first_T$vj_group, c("G1","G1","G1","G1","G2","G2","G3","G3"))
-    #TODO: The expectation should be that it throws an error as only_heavy=F is not supported any more.
-    # expect_error() / expect_warning()
-    # Current output:
-    # expect_equal(db_only_heavy_F_locus_first_T$vj_group, c("G1","G1","G1","G1","G1","G1","G2","G2"))
+
+    db_only_heavy_T_locus_first_T <- scoper:::prepare_db(
+        db,
+        only_heavy = T,
+        cell_id = "cell_id",
+        locus = "locus",
+        first = T
+    )$db
+
+    # The warning
+    # "no non-missing arguments to max; returning -Inf"
+    # comes from an igraph function inside groupGenes.
+    # It is not expected, but can be ignored. It could depend on the
+    # version of igraph installed (seen with 2.2.0).
+    # Example:
+    # r$> igraph::graph_from_adjacency_matrix(adjmatrix = mtx_adj,
+    #             mode = "undirected", diag = FALSE )
+    # IGRAPH 7ecf7be UN-- 2 0 --
+    # + attr: name (v/c)
+    # + edges from 7ecf7be (vertex names):
+    # Warning message:
+    # In max(el[, 3]) : no non-missing arguments to max; returning -Inf
+    #
+    # It seems to happen when mtx_adj is and identity matrix (only 1s in the 
+    # diagonal and no edges) and diag=FALSE (no self-links, the diagonal will
+    # be zeroed out and max, used somewhere in the function, returns and error).
+    # r$> mtx_adj
+    # 2 x 2 sparse Matrix of class "dgCMatrix"
+    #             IGHV1@IGHJ1 IGHV3@IGHJ1
+    # IGHV1@IGHJ1           1           .
+    # IGHV3@IGHJ1           .           1
+    #
+    # r$> max()
+    # [1] -Inf
+    # Warning message:
+    # In max() : no non-missing arguments to max; returning -Inf
+
+    expect_equal(db_only_heavy_T_locus_first_T$vj_group, c("G1","G1","G1","G1","G1","G1","G2","G2"))
+
+
+    # Case: heavy F, first T
+    # Expectation: throw an error as only_heavy=F is not supported any more.
+
+    expect_warning(
+        db_only_heavy_F_locus_first_T <- scoper:::prepare_db(
+            db,
+            only_heavy = F,
+            cell_id = "cell_id",
+            locus = "locus",
+            first = T
+        )$db,
+        "The only_heavy = FALSE parameter is deprecated. Will run as if only_heavy = TRUE"
+    )
+
+    expect_equal(db_only_heavy_F_locus_first_T$vj_group, c("G1","G1","G1","G1","G1","G1","G2","G2"))
     
+    # Case: heavy F, first F
     # these are also all G1.....
-    db_only_heavy_F_locus_first_F <- scoper:::prepare_db(db,
-                                                        only_heavy = F, 
+    expect_warning(
+        db_only_heavy_F_locus_first_F <- scoper:::prepare_db(db,
+                                                       only_heavy = F, 
                                                        cell_id="cell_id",
                                                        locus="locus",
-                                                       first=F)$db
-    # Old expectation:
-    # expect_equal(db_only_heavy_F_locus_first_F$vj_group, c("G1","G1","G1","G1","G2","G2","G1","G1"))
-    # TODO: remove test as only_heavy=F is not supported any more.
+                                                       first=F)$db,
+        "The only_heavy = FALSE parameter is deprecated. Will run as if only_heavy = TRUE"
+    )
+
+    expect_equal(db_only_heavy_F_locus_first_F$vj_group, c("G1","G1","G1","G1","G1","G1","G1","G1"))
     
+    # Results heavy T/F with same first setting should be the same, as heavy is ignored
+    expect_equal(db_only_heavy_T_locus_first_T$vj_group, db_only_heavy_F_locus_first_T$vj_group)
+    expect_equal(db_only_heavy_T_locus_first_F$vj_group, db_only_heavy_F_locus_first_F$vj_group)
     
+})
+
+test_that("Test hierarchicalClones only_heavy and first", {
+    # https://testthat.r-lib.org/articles/third-edition.html
+    # https://testthat.r-lib.org/articles/third-edition.html#warnings
+    # https://testthat.r-lib.org/articles/third-edition.html#messages
+    local_edition(3)
+
+    # Note:
+    # seq7 (cell4) has v_call IGHV3*01,IGHV1*01 and will be assigned G2 when first=F. 
+    #     The order is not what we would usually expect, because it is not sorted
+    #     alpahbetically. It is not sorted on purpose just to test the first= T/F parameter.
+    db <- data.frame(
+        sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6","seq7","seq8"),
+        cell_id=c("cell1","cell1","cell2","cell2","cell3","cell3","cell4","cell4"),
+        v_call=c("IGHV1*01","IGLV1*01","IGHV1*01","IGLV1*01","IGHV1*01","IGLV2*01", "IGHV3*01,IGHV1*01","IGLV1*01"),
+        d_call=c("IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA),
+        j_call=c("IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01*01","IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01"),
+        junction=c("TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTTTTC","TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTC")
+    )
+    db$chain <- "light"
+    db$chain[grepl("IGH",db[['v_call']])] <- "heavy"
+    db$locus <- alakazam::getLocus(db$v_call)
+    db$junction_len <- stringi::stri_length(db[['junction']])
+
     ## Test hierachicalClones
     # CGJ 1/29/25 updated case to remove split_light testing
     # split_light = FALSE is set to avoid the warning message
@@ -210,60 +290,91 @@ test_that("Test hierarchicalClones only_heavy and first", {
     ## 4    F            T    
 
     # Case 1
-    clones <- hierarchicalClones(
-        db,
-        threshold=0,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=TRUE,
-        split_light=FALSE,
-        summarize_clones=TRUE,
-        first=F, # default is first=F
-        nproc=1)
+    expect_message(
+        clones <- hierarchicalClones(
+            db,
+            threshold = 0,
+            cell_id = "cell_id",
+            locus = "locus",
+            only_heavy = TRUE,
+            split_light = FALSE,
+            summarize_clones = TRUE,
+            first = F, # default is first=F
+            nproc = 1
+        ),
+        "Running defineClonesScoper in single cell mode",
+        fixed = TRUE
+    )
     expect_true(all(clones@db[['clone_id']] == "1"))
-    
+
     # Case 2
-    clones <- hierarchicalClones(
-        db,
-        threshold=0,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=TRUE,
-        split_light=FALSE,
-        summarize_clones=TRUE,
-        first=T, # default is first=F
-        nproc=1)
-    expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))
-    
+    expect_message(
+        clones <- hierarchicalClones(
+            db,
+            threshold = 0,
+            cell_id = "cell_id",
+            locus = "locus",
+            only_heavy = TRUE,
+            split_light = FALSE,
+            summarize_clones = TRUE,
+            first = T, # default is first=F
+            nproc = 1
+        ),
+        "Running defineClonesScoper in single cell mode",
+        fixed = TRUE
+    )
+    expect_equal(clones@db[["clone_id"]], c("1", "1", "1", "1", "1", "1", "2", "2"))
+
     # Case 3
-    expect_warning(clones <- hierarchicalClones(
-        db,
-        threshold=0,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=FALSE,
-        split_light=TRUE,
-        summarize_clones=TRUE,
-        first=F, # default is first=F
-        nproc=1))
-    expect_true(all(clones@db[['clone_id']] == "1"))
+    expect_message(
+        expect_warning(
+            expect_warning(
+                clones <- hierarchicalClones(
+                    db,
+                    threshold = 0,
+                    cell_id = "cell_id",
+                    locus = "locus",
+                    only_heavy = FALSE,
+                    split_light = TRUE,
+                    summarize_clones = TRUE,
+                    first = F, # default is first=F
+                    nproc = 1
+                ),
+                "split_light = TRUE is deprecated. Please use split_light = FALSE. After clonal identification, light chain groups can be found with dowser::resolveLightChains"
+            ),
+            "only_heavy = FALSE is deprecated. Running as if only_heavy = TRUE"
+        ),
+        "Running defineClonesScoper in single cell mode",
+    )
+
+    expect_true(all(clones@db[["clone_id"]] == "1"))
     
     # Case 4
-    expect_warning(clones <- hierarchicalClones(
-      db,
-      threshold=0,
-      cell_id='cell_id',
-      locus='locus',
-      only_heavy=FALSE,
-      split_light=TRUE,
-      summarize_clones=TRUE,
-      first=T, # default is first=F
-      nproc=1))
+    expect_warning(
+        expect_warning(
+            expect_message(
+                clones <- hierarchicalClones(
+                    db,
+                    threshold = 0,
+                    cell_id = "cell_id",
+                    locus = "locus",
+                    only_heavy = FALSE,
+                    split_light = TRUE,
+                    summarize_clones = TRUE,
+                    first = T, # default is first=F
+                    nproc = 1
+                ),
+                "Running defineClonesScoper in single cell mode",
+                fixed = TRUE
+            ),
+            "only_heavy = FALSE is deprecated. Running as if only_heavy = TRUE"
+        ),
+        "split_light = TRUE is deprecated. Please use split_light = FALSE. After clonal identification, light chain groups can be found with dowser::resolveLightChains"
+    )
+
     expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))
     
-
-    #TODO: consider merging the dataset here with the one from the test above to avoid duplication.
-    #TODO: check if comment is addressed.
+    #TODO: check in dowser if comment is addressed.
     ## What happens with the second groupGenes (inside the light chain split) when
     # first=false, but the "linker" ambiguous call was left out of the same cluster id
     # because of the distance threshold? This groupGenes could be splitting again by vj calls...
@@ -271,38 +382,116 @@ test_that("Test hierarchicalClones only_heavy and first", {
     db <- data.frame(
         sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6"),
         cell_id=c("1","2","3","1","2","3"),
-        v_call=c("IGHV1", "IGHV1,IGHV2","IGHV2","IGLV1","IGLV1","IGLV1"),
+        v_call=c("IGHV1", "IGHV1,IGHV2","IGHV2","IGLV1","IGLV1","IGLV2"),
         j_call=c("IGHJ1","IGHJ1","IGHJ1","IGHJ1","IGHJ1","IGHJ1"),
         junction=c("TCGAAATTC","TCGAACTTC","TCGAAATTC","TCGAAATTC","TCGAAATTC","TCGAAATTC")
     )
     db$locus <- alakazam::getLocus(db$v_call)
     db
-    clones_split_F <- hierarchicalClones(
-        db,
-        threshold=0,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=TRUE,
-        split_light=FALSE,
-        summarize_clones=TRUE,
-        first=F, # default is first=F
-        nproc=1)
-    expect_warning(clones_split_T <- hierarchicalClones(
-        db,
-        threshold=0,
-        cell_id='cell_id',
-        locus='locus',
-        only_heavy=TRUE,
-        split_light=TRUE,
-        summarize_clones=TRUE,
-        first=F, # default is first=F
-        nproc=1))
-    # expecting same results because the light chains are the same.
-    expect_equal(clones_split_F@db[['clone_id']], clones_split_T@db[['clone_id']])
+
+    # If threshold = 0, seq1 (cell 1) and seq3 (cell 3) are in the same clone, seq2 is separate.
+    expect_message(
+        clones_split_F_th0 <- hierarchicalClones(
+            db,
+            threshold = 0,
+            cell_id = "cell_id",
+            locus = "locus",
+            only_heavy = TRUE,
+            split_light = FALSE,
+            summarize_clones = TRUE,
+            first = F, # default is first=F
+            nproc = 1
+        )
+    )
+    
+    # expect sequences from cells 1 and 3 in clone 1, and
+    # sequences from cell 2 in clone 2
+    clones_split_F_th0@db %>%
+        mutate(expected_clone_id = dplyr::case_when(
+            cell_id %in% c(1, 3) ~ "1",
+            cell_id %in% c(2) ~ "2",
+            TRUE ~ NA_character_
+        )) %>%
+        {
+            expect_equal(.$clone_id, .$expected_clone_id)
+        }
+
+    # If threshold = 0.12, all sequences are in the same clone
+    expect_message(
+        clones_split_F_th012 <- hierarchicalClones(
+            db,
+            threshold = 0.12,
+            cell_id = "cell_id",
+            locus = "locus",
+            only_heavy = TRUE,
+            split_light = FALSE,
+            summarize_clones = TRUE,
+            first = F, # default is first=F
+            nproc = 1
+        )
+    )
+    expect_true(all(clones_split_F_th012@db[['clone_id']] == "1"))
+
+    expect_message(
+        expect_warning(
+            clones_split_T_th0 <- hierarchicalClones(
+                db,
+                threshold = 0,
+                cell_id = "cell_id",
+                locus = "locus",
+                only_heavy = TRUE,
+                split_light = TRUE,
+                summarize_clones = TRUE,
+                first = F, # default is first=F
+                nproc = 1
+            ),
+            "split_light = TRUE is deprecated. Please use split_light = FALSE. After clonal identification, light chain groups can be found with dowser::resolveLightChains"
+        ),
+        "Running defineClonesScoper in single cell mode"
+    )
+    # expecting same results because split_ligth not supported anymore.
+    expect_equal(clones_split_F_th0@db[['clone_id']], clones_split_T_th0@db[['clone_id']])
     
     ## TODO: multiple light chains?
+    db2 <- bind_rows(
+        db,
+        data.frame( # adding a second light chain for cell 3
+            sequence_id = c("seq6"),
+            cell_id = c("3"),
+            v_call = c("IGLV1,IGLV2"),
+            j_call = c("IGHJ1"),
+            junction = c("TCGAAATTC"),
+            locus="IGL"
+        )
+    )
+
+   # If threshold = 0, seq1 (cell 1) and seq3 (cell 3) are in the same clone, seq2 is separate.
+    expect_message(
+        clones_split_F_th0_2l <- hierarchicalClones(
+            db2,
+            threshold = 0,
+            cell_id = "cell_id",
+            locus = "locus",
+            only_heavy = TRUE,
+            split_light = FALSE,
+            summarize_clones = TRUE,
+            first = F, # default is first=F
+            nproc = 1
+        )
+    )
     
-    ## TODO: summaries etc are using clone ids created before the light chain split?
+    # expect sequences from cells 1 and 3 in clone 1, and
+    # sequences from cell 2 in clone 2, regardless of
+    # light chains
+    clones_split_F_th0_2l@db %>%
+        mutate(expected_clone_id = dplyr::case_when(
+            cell_id %in% c(1, 3) ~ "1",
+            cell_id %in% c(2) ~ "2",
+            TRUE ~ NA_character_
+        )) %>%
+        {
+            expect_equal(.$clone_id, .$expected_clone_id)
+        }
 })
 
 ## Add test for clones by light chain
