@@ -1414,9 +1414,10 @@ defineClonesScoper <- function(db,
     }
 
     #RDB
+
     ## Workers: also dev version
     parallel::clusterEvalQ(cluster, {
-        .libPaths(c("/path/to/devlib", .libPaths()))
+        .libPaths(c("/gpfs/gibbs/project/support/rdb9/working/Gabernet/251202/modified/devlib", .libPaths()))
         library(scoper)
     })
 
