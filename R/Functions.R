@@ -60,6 +60,12 @@ setMethod("as.data.frame", c(x="ScoperClones"),
 
 #### Internal functions ####
 
+# RDB
+workerlog <- function(msg) {
+   log_file <- paste0("worker_", Sys.getpid(), ".log")
+   cat("In foreach", "PID", Sys.getpid(), format(Sys.time(), "%Y-%m-%d_%H:%M:%S"), msg, "\n", file = log_file, append = TRUE)
+}
+
 # find density gap
 findGapSmooth <- function(vec) {
     # bandwidth <- kedd::h.ucv(vec, 4)$h
@@ -1181,7 +1187,8 @@ defineClonesScoper <- function(db,
                                iter_max = 1000, nstart = 1000, nproc = 1,
                                verbose = FALSE, log = NULL,
                                summarize_clones = FALSE) {
-  
+
+    cat("In modified Functions.R")			       
     ### get model
     model <- match.arg(model)
     
@@ -1405,13 +1412,24 @@ defineClonesScoper <- function(db,
     } else {
         stop('Nproc must be positive.')
     }
-    
+
+    #RDB
+    ## Workers: also dev version
+       parallel::clusterEvalQ(cluster, {
+          library(devtools)
+          devtools::load_all("scoper")   # same source tree path
+	  Rcpp::sourceCpp("fastDistExt2C.cpp")
+    })
+
+    #RDB
+    cat('Loading fastDistExt2C.cpp')
+
     ### export function to clusters
     if (nproc > 1) { 
         export_functions <- list("passToClustering_lev1", "passToClustering_lev2", "passToClustering_lev3", "passToClustering_lev4",
                                  "findGapSmooth", "infer", "krnlMtxGenerator", "makeAffinity", "laplacianMtx", 
                                  "rangeAtoB", "likelihoods", "pairwiseMutions", "pairwiseMutMatrix",
-                                 "printVerbose", "logVerbose","stri_join")
+                                 "printVerbose", "logVerbose","stri_join", "workerlog")
         parallel::clusterExport(cluster, export_functions, envir=environment())
         doParallel::registerDoParallel(cluster, cores=nproc)
     }
@@ -1749,6 +1767,8 @@ passToClustering_lev1 <- function (db_gp,
                                    iter_max = 1000, 
                                    nstart = 1000) {
     ### get model
+    # RDB
+    workerlog('in passToClustering_lev1')
     model <- match.arg(model)
     
     ### begin clustering
@@ -1759,6 +1779,8 @@ passToClustering_lev1 <- function (db_gp,
                                                 cdr3 = cdr3,
                                                 cdr3_col = cdr3_col)
     } else if (model == "hierarchical") {
+        #RDB
+	workerlog('calling hierarchicalClones_helper')
         clone_results <- hierarchicalClones_helper(db_gp,
                                                    method = method,
                                                    linkage = linkage,
@@ -1831,6 +1853,8 @@ hierarchicalClones_helper <- function(db_gp,
                                       cdr3 = FALSE,
                                       cdr3_col = NA,
                                       threshold = NULL) {
+    #RDB
+    workerlog('in hierarchicalClones_helper')
     ### get method
     method <- match.arg(method)
 
@@ -1842,7 +1866,8 @@ hierarchicalClones_helper <- function(db_gp,
     
     ### number of sequences
     n <- nrow(db_gp)
-    
+
+    workerlog(paste('in hierarchicalClones_helper, n, method', n, method))
     # get sequences
     if (method == "nt") {
         seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]   
@@ -1856,16 +1881,23 @@ hierarchicalClones_helper <- function(db_gp,
     n_unq <- nrow(df)
     ind_unq <- df$V1
     seqs_unq <- df$seqs
+
+    workerlog(paste('in hierarchicalClones_helper', n_unq))
     if (n_unq == 1) {
         return(list("idCluster" = rep(1, n), 
                     "n_cluster" = 1, 
                     "eigen_vals" = rep(0, n)))
     }
-    
+
+    # RDB
+    workerlog('just before calculate distance matrix')
     # calculate distance matrix
     if (method == "nt") {
-        dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
-                                 dist_mat = getDNAMatrix(gap = 0))
+        workerlog('calling fastDistExt2_rcpp')
+       	dist_mtx <- fastDistExt2_rcpp(seqs_unq)
+	# RDB
+        #dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
+        #                         dist_mat = getDNAMatrix(gap = 0))
     } else if (method == "aa") {
         dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
                                  dist_mat = getAAMatrix(gap = 0))
