@@ -1415,14 +1415,10 @@ defineClonesScoper <- function(db,
 
     #RDB
     ## Workers: also dev version
-       parallel::clusterEvalQ(cluster, {
-          library(devtools)
-          devtools::load_all("scoper")   # same source tree path
-	  Rcpp::sourceCpp("fastDistExt2C.cpp")
+    parallel::clusterEvalQ(cluster, {
+        .libPaths(c("/path/to/devlib", .libPaths()))
+        library(scoper)
     })
-
-    #RDB
-    cat('Loading fastDistExt2C.cpp')
 
     ### export function to clusters
     if (nproc > 1) { 
@@ -1893,8 +1889,8 @@ hierarchicalClones_helper <- function(db_gp,
     workerlog('just before calculate distance matrix')
     # calculate distance matrix
     if (method == "nt") {
-        workerlog('calling fastDistExt2_rcpp')
-       	dist_mtx <- fastDistExt2_rcpp(seqs_unq)
+        workerlog('calling fastDist_rcpp')
+       	dist_mtx <- fastDist_rcpp(seqs_unq)
 	# RDB
         #dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
         #                         dist_mat = getDNAMatrix(gap = 0))
