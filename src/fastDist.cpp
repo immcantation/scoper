@@ -13,8 +13,6 @@ inline uint8_t code_char(char c){
 IntegerMatrix fastDist_rcpp(CharacterVector seqs) {
   int N = seqs.size();
 
-  // RDB
-  printf("In fastDistExt2_rcpp, %d seqs\n", N);
   if (N == 0) stop("empty input");
 
   std::string s0 = as<std::string>(seqs[0]);
