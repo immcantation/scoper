@@ -5,3 +5,7 @@ pairwiseMutMatrixRcpp <- function(informative_pos, mutMtx, motifMtx) {
     .Call(`_scoper_pairwiseMutMatrixRcpp`, informative_pos, mutMtx, motifMtx)
 }
 
+fastDist_rcpp <- function(seqs) {
+    .Call(`_scoper_fastDist_rcpp`, seqs)
+}
+
