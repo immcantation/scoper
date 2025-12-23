@@ -5,6 +5,10 @@ pairwiseMutMatrixRcpp <- function(informative_pos, mutMtx, motifMtx) {
     .Call(`_scoper_pairwiseMutMatrixRcpp`, informative_pos, mutMtx, motifMtx)
 }
 
+countSeqsWithInvalidBases_rcpp <- function(seqs) {
+    .Call(`_scoper_countSeqsWithInvalidBases_rcpp`, seqs)
+}
+
 fastDist_rcpp <- function(seqs) {
     .Call(`_scoper_fastDist_rcpp`, seqs)
 }
