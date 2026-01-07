@@ -44,7 +44,7 @@ To receive alerts about Immcantation releases, news, events, and tutorials, join
 [Edel Aron](mailto:edel.aron@yale.edu) (ctb)  
 [Gisela Gabernet](mailto:gisela.gabernet@yale.edu) (ctb)  
 [Cole Jensen](mailto:cole.jensen@yale.edu) (ctb)  
-[Huimin Lyu](mailto:huimin.lyu.@yale.edu) (ctb)  
+[Huimin Lyu](mailto:huimin.lyu@yale.edu) (ctb)  
 [Susanna Marquez](mailto:susanna.marquez@yale.edu) (ctb, cre)  
 [Jason Vander Heiden](mailto:jason.vanderheiden@gmail.com) (aut)  
 [Steven Kleinstein](mailto:steven.kleinstein@yale.edu) (aut, cph)
