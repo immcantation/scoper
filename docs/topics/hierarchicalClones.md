@@ -203,7 +203,7 @@ plot(results, binwidth=0.02)
 
 ```
 
-*Warning*:Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.![5](hierarchicalClones-5.png)
+![4](hierarchicalClones-4.png)
 
 
 See also

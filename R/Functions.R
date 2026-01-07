@@ -691,7 +691,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
                            binwidth = binwidth, color = "white", alpha = 0.85) +
             geom_density(data = data_intra, 
                          aes(x = !!rlang::sym("distance")),
-                         size = size, color = "grey30")
+                         linewidth = size, color = "grey30")
     }
     
     # Plot between clonal distances
@@ -704,7 +704,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
                            binwidth = binwidth, color = "white", alpha = 0.75) +
             geom_density(data = data_inter, 
                          aes(x = !!rlang::sym("distance")),
-                         size = size, color = "grey60")
+                         linewidth = size, color = "grey60")
     } else {
         warning("No inter clonal distance is detected. Each group of sequences with same V-gene, J-gene, and junction length may contain only one clone.")
     }
@@ -713,7 +713,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
     if (!is.na(eff_threshold)) {
         p <- p + 
             ggtitle(paste("Effective threshold=", eff_threshold)) +
-            geom_vline(xintercept=eff_threshold, color="grey30", linetype=2, size=size)
+            geom_vline(xintercept=eff_threshold, color="grey30", linetype=2, linewidth=size)
     } else {
         p <- p + 
             ggtitle(paste("Effective threshold not found"))
