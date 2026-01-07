@@ -1,4 +1,15 @@
 # [![](http://cranlogs.r-pkg.org/badges/grand-total/scoper)](https://www.r-pkg.org/pkg/scoper) [![](https://cranlogs.r-pkg.org/badges/scoper)](https://www.r-pkg.org/pkg/scoper) [![](https://img.shields.io/static/v1?label=AIRR-C%20sw-tools%20v1&message=compliant&color=008AFF&labelColor=000000&style=plastic)](https://docs.airr-community.org/en/stable/swtools/airr_swtools_standard.html)
+    
+**IMPORTANT!** 
+SCOPer has moved to https://github.com/immcantation/scoper
+
+To update Git configuration settings use:
+
+```
+   git config user.email "your-gh-user@email.com"
+   git config user.name "your-gh-user-name"
+   git remote set-url origin git@github.com:immcantation/scoper.git
+```    
 
 SCOPer
 -------------------------------------------------------------------------------
@@ -23,7 +34,7 @@ To receive alerts about Immcantation releases, news, events, and tutorials, join
 ## Dependencies
 
 **Depends:** ggplot2  
-**Imports:** alakazam, shazam, data.table, doParallel, dplyr, foreach, methods, Rcpp, rlang, scales, stats, stringi, tidyr  
+**Imports:** alakazam, shazam, data.table, doParallel, dplyr, fastcluster, foreach, methods, Rcpp, rlang, scales, stats, stringi, tidyr  
 **Suggests:** knitr, rmarkdown, testthat
 
 
@@ -31,8 +42,9 @@ To receive alerts about Immcantation releases, news, events, and tutorials, join
 
 [Nima Nouri](mailto:nima.nouri@yale.edu) (aut)  
 [Edel Aron](mailto:edel.aron@yale.edu) (ctb)  
-[Cole Jensen](mailto:cole.jensen@yale.edu) (ctb)  
 [Gisela Gabernet](mailto:gisela.gabernet@yale.edu) (ctb)  
+[Cole Jensen](mailto:cole.jensen@yale.edu) (ctb)  
+[Huimin Lyu](mailto:huimin.lyu.@yale.edu) (ctb)  
 [Susanna Marquez](mailto:susanna.marquez@yale.edu) (ctb, cre)  
 [Jason Vander Heiden](mailto:jason.vanderheiden@gmail.com) (aut)  
 [Steven Kleinstein](mailto:steven.kleinstein@yale.edu) (aut, cph)

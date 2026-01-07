@@ -628,15 +628,25 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'
 #' @examples
 #' # Find clones
-#' results <- hierarchicalClones(ExampleDb, threshold=0.15)
+#' results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 #' 
 #' # Plot clonal summaries
-#' plot(results, binwidth=0.02)
+#' plotCloneSummary(results, binwidth=0.02)
 #' 
 #' @export
 plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL, 
                              binwidth=NULL, title=NULL, size=0.75, silent=FALSE, 
                              ...) {
+    
+    # Check if data is of ScoperClones class
+    if (!inherits(data, "ScoperClones")) {
+        warning("Input data is not of class 'ScoperClones'. ",
+                "Please ensure you are using the output from hierarchicalClones(), ",
+                "identicalClones(), or spectralClones() functions with ",
+                "summarize_clones=TRUE.",
+                call. = FALSE)
+        stop("Invalid input data class")
+    }
     
     eff_threshold <- data@eff_threshold
     xdf <- select(data@inter_intra, c("distance", "label"))
@@ -827,7 +837,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'
 #' @examples
 #' # Find clonal groups
-#' results <- identicalClones(ExampleDb)
+#' results <- identicalClones(ExampleDb, summarize_clones=TRUE)
 #' 
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
@@ -964,7 +974,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'
 #' @examples
 #' # Find clonal groups
-#' results <- hierarchicalClones(ExampleDb, threshold=0.15)
+#' results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 #' 
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
@@ -1126,7 +1136,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' db <- subset(ExampleDb, c_call == "IGHG")
 #' 
 #' # Find clonal groups
-#' results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask")
+#' results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask", summarize_clones=TRUE)
 #' 
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
