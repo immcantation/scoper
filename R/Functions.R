@@ -1136,7 +1136,9 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' db <- subset(ExampleDb, c_call == "IGHG")
 #' 
 #' # Find clonal groups
-#' results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask", summarize_clones=TRUE)
+#' results <- spectralClones(db, method="novj", 
+#'            germline="germline_alignment_d_mask", 
+#'            summarize_clones=TRUE)
 #' 
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)

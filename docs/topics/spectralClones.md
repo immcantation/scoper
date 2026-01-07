@@ -230,7 +230,9 @@ Examples
 db <- subset(ExampleDb, c_call == "IGHG")
 
 # Find clonal groups
-results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask", summarize_clones=TRUE)
+results <- spectralClones(db, method="novj", 
+germline="germline_alignment_d_mask", 
+summarize_clones=TRUE)
 
 ```
 
