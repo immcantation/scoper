@@ -15,7 +15,7 @@ immcantation_packages <- c("alakazam", "shazam", "tigger", "scoper", "dowser", "
 # 
 document <- list(
     "alakazam" = TRUE,
-    "shazam" = TRUE,
+    "shazam" = FALSE,
     "tigger" = FALSE,
     "scoper" = FALSE,
     "dowser" = FALSE,
