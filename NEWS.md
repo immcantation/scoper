@@ -1,5 +1,12 @@
-Version 1.4.0dev
+Version 1.4.0: January 7, 2026
 -------------------------------------------------------------------------------
+
+General:
+
++ Development of `socper` has moved to GitHub: https://github.com/immcantation/scoper.
++ Updated dependencies alakazam >= 1.4.1, shazam >= 1.3.0, fastcluster.
+
+Clonal analysis:
 
 + Clonal identification methods now have deprecated `only_heavy` and `split_light`
 + All clonal identification methods now cluster by heavy chain only
