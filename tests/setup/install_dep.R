@@ -67,21 +67,21 @@ installDep <- function(pkg, devel_mode, immcantation = immcantation_packages,
             # Install from CRAN
             tryCatch(
                 {
-                    devtools::install_version(pkg_name, paste(pkg_logic, pkg_version), repos = "http://lib.stat.cmu.edu/R/CRAN/")
+                    devtools::install_version(pkg_name, paste(pkg_logic, pkg_version), repos = "http://lib.stat.cmu.edu/R/CRAN/", upgrade = "never")
                 },
                 error = function(e) {
                     # This is needed if there is an Immcantation release package that is not
                     # available from CRAN
                     cat(as.character(e), "\n")
                     message("Installing ", pkg, " from GitHub...\n ")
-                    install_github(paste0("immcantation/", pkg_name, "@", pkg_version), build = TRUE)
+                    install_github(paste0("immcantation/", pkg_name, "@", pkg_version), build = TRUE, upgrade = "never")
                 }
             )
         }
     } else {
         if (!document[[pkg_name]]) {
             message(paste0(pkg, ": installing most recent version from GitHub @master."))
-            install_github(paste0("immcantation/", pkg_name, "@master"), upgrade = "never")
+            install_github(paste0("immcantation/", pkg_name, "@master"), upgrade = "never", force = FALSE)
         } else {
             message(paste0(pkg, ": installing and documenting most recent version from GitHub @master."))
             pkg_tmp_dir <- file.path(tempdir(), pkg_name)
@@ -98,10 +98,10 @@ installDep <- function(pkg, devel_mode, immcantation = immcantation_packages,
                     ))
 
                     # Install dependencies, document, build and install
-                    devtools::install_deps(pkg_tmp_dir, dependencies = TRUE, upgrade = "never")
+                    devtools::install_deps(pkg_tmp_dir, dependencies = TRUE, upgrade = "never", force = FALSE)
                     devtools::document(pkg_tmp_dir)
                     devtools::build(pkg_tmp_dir)
-                    devtools::install(pkg_tmp_dir)
+                    devtools::install(pkg_tmp_dir, upgrade = "never", force = FALSE)
                     unlink(pkg_tmp_dir, recursive = TRUE)
                     message(paste0("Successfully installed ", pkg, " from GitHub master"))
                 },
