@@ -631,7 +631,7 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #' results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 #' 
 #' # Plot clonal summaries
-#' plotCloneSummary(results, binwidth=0.02)
+#' plot(results, binwidth=0.02)
 #' 
 #' @export
 plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL, 

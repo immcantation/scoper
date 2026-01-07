@@ -56,7 +56,7 @@ library(scoper)
 library(dplyr)
 
 # Clonal assignment using identical nucleotide sequences
-results <- identicalClones(ExampleDb, method="nt")
+results <- identicalClones(ExampleDb, method="nt", summarize_clones = TRUE)
 ```
 
 A modified input data.frame with clonal identifiers in the `clone_id` column is contained in the
@@ -110,10 +110,15 @@ glimpse(summary(results))
 ```
 
 ```
-##  'table' chr [1:6, 1:17] "Length:2000       " "Class :character  " ...
-##  - attr(*, "dimnames")=List of 2
-##   ..$ : chr [1:6] "" "" "" "" ...
-##   ..$ : chr [1:17] "sequence_id" "sequence_alignment" "germline_alignment_d_mask" "   v_call" ...
+## Rows: 156
+## Columns: 7
+## $ vjl_group       <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,…
+## $ sequence_count  <int> 20, 1, 1, 1, 12, 7, 3, 1, 12, 5, 37, 4, 5, 10, 6, 9, 5…
+## $ v_call          <chr> "Homsap IGHV1-18*01 F", "Homsap IGHV1-46*01 F,Homsap I…
+## $ j_call          <chr> "Homsap IGHJ4*03 F,Homsap IGHJ4*02 F,Homsap IGHJ4*01 F…
+## $ junction_length <int> 81, 81, 60, 102, 69, 66, 84, 96, 66, 75, 75, 84, 93, 6…
+## $ clone_count     <int> 19, 1, 1, 1, 10, 7, 3, 1, 11, 4, 36, 4, 3, 8, 5, 9, 5,…
+## $ clone_id        <chr> "528,529,530,531,532,533,534,535,536,537,538,539,540,5…
 ```
 
 ## Identifying clones by hierarchical clustering
@@ -151,7 +156,7 @@ Identifying clonal groups using `hierachicalClones` is largely the same as the a
 
 ``` r
 # Clonal assignment using hierarchical clustering
-results <- hierarchicalClones(ExampleDb, threshold=0.15)
+results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones = TRUE)
 ```
 
 The results data.frame, summary plots, and summary table are accessed in the same manner as above.
@@ -202,10 +207,15 @@ glimpse(summary(results))
 ```
 
 ```
-##  'table' chr [1:6, 1:17] "Length:2000       " "Class :character  " ...
-##  - attr(*, "dimnames")=List of 2
-##   ..$ : chr [1:6] "" "" "" "" ...
-##   ..$ : chr [1:17] "sequence_id" "sequence_alignment" "germline_alignment_d_mask" "   v_call" ...
+## Rows: 156
+## Columns: 7
+## $ vjl_group       <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,…
+## $ sequence_count  <int> 20, 1, 1, 1, 12, 7, 3, 1, 12, 5, 37, 4, 5, 10, 6, 9, 5…
+## $ v_call          <chr> "Homsap IGHV1-18*01 F", "Homsap IGHV1-46*01 F,Homsap I…
+## $ j_call          <chr> "Homsap IGHJ4*02 F,Homsap IGHJ4*03 F,Homsap IGHJ4*01 F…
+## $ junction_length <int> 81, 81, 60, 102, 69, 66, 84, 96, 66, 75, 75, 84, 93, 6…
+## $ clone_count     <int> 19, 1, 1, 1, 5, 7, 3, 1, 11, 4, 36, 4, 3, 6, 5, 9, 5, …
+## $ clone_id        <chr> "499,500,501,502,503,504,505,506,507,508,509,510,511,5…
 ```
 
 ## Identifying clones by spectral clustering
@@ -247,7 +257,7 @@ same manner as shown above using the hierarchical approach.
 
 ``` r
 # Clonal assignment using the spectral clustering method novj
-results <- spectralClones(ExampleDb, method="novj")
+results <- spectralClones(ExampleDb, method="novj", summarize_clones = TRUE)
 # Plot a histogram of inter and intra clonal distances
 plot(results, binwidth=0.02)
 ```
@@ -258,7 +268,7 @@ plot(results, binwidth=0.02)
 ``` r
 # Clonal assignment using the spectral clustering method novj with threshold
 results <- spectralClones(ExampleDb, method="novj",
-                          threshold=0.15)
+                          threshold=0.15, summarize_clones = TRUE)
 # Plot a histogram of inter and intra clonal distances
 plot(results, binwidth=0.02)
 ```
@@ -270,7 +280,8 @@ plot(results, binwidth=0.02)
 # Clonal assignment using the spectral clustering method vj with threshold
 results <- spectralClones(ExampleDb, method="vj",
                           threshold=0.15,
-                          germline="germline_alignment_d_mask")
+                          germline="germline_alignment_d_mask",
+                          summarize_clones = TRUE)
 ```
 
 
@@ -315,9 +326,14 @@ glimpse(summary(results))
 ```
 
 ```
-##  'table' chr [1:6, 1:17] "Length:2000       " "Class :character  " ...
-##  - attr(*, "dimnames")=List of 2
-##   ..$ : chr [1:6] "" "" "" "" ...
-##   ..$ : chr [1:17] "sequence_id" "sequence_alignment" "germline_alignment_d_mask" "   v_call" ...
+## Rows: 156
+## Columns: 7
+## $ vjl_group       <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,…
+## $ sequence_count  <int> 20, 1, 1, 1, 12, 7, 3, 1, 12, 5, 37, 4, 5, 10, 6, 9, 5…
+## $ v_call          <chr> "Homsap IGHV1-18*01 F", "Homsap IGHV1-46*01 F,Homsap I…
+## $ j_call          <chr> "Homsap IGHJ4*02 F,Homsap IGHJ4*03 F,Homsap IGHJ4*01 F…
+## $ junction_length <int> 81, 81, 60, 102, 69, 66, 84, 96, 66, 75, 75, 84, 93, 6…
+## $ clone_count     <int> 19, 1, 1, 1, 6, 7, 3, 1, 11, 4, 9, 4, 3, 6, 5, 9, 4, 3…
+## $ clone_id        <chr> "447,448,449,450,451,452,453,454,455,456,457,458,459,4…
 ```
 
