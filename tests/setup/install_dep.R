@@ -132,13 +132,13 @@ imports <- imports[unique(c(immcantation, 1:length(imports)))]
 # Skip bioconductor packages
 imports <- imports[!imports %in% bioconductor_deps]
 
+# Install Bioconductor dependencies first
+if (!is.null(bioconductor_deps)) {
+    BiocManager::install(bioconductor_deps, update=FALSE, ask=FALSE, force=FALSE)
+}
 
 # Install
 for (i in 1:length(imports)) {
     this_import <- imports[i]
     installDep(this_import, devel_mode)
-}
-
-if (!is.null(bioconductor_deps)) {
-    BiocManager::install(bioconductor_deps)
 }
