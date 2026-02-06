@@ -76,7 +76,7 @@ Examples
 
 ```R
 # Find clones
-results <- hierarchicalClones(ExampleDb, threshold=0.15)
+results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 
 ```
 

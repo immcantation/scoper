@@ -628,7 +628,7 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'
 #' @examples
 #' # Find clones
-#' results <- hierarchicalClones(ExampleDb, threshold=0.15)
+#' results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 #' 
 #' # Plot clonal summaries
 #' plot(results, binwidth=0.02)
@@ -637,6 +637,16 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL, 
                              binwidth=NULL, title=NULL, size=0.75, silent=FALSE, 
                              ...) {
+    
+    # Check if data is of ScoperClones class
+    if (!inherits(data, "ScoperClones")) {
+        warning("Input data is not of class 'ScoperClones'. ",
+                "Please ensure you are using the output from hierarchicalClones(), ",
+                "identicalClones(), or spectralClones() functions with ",
+                "summarize_clones=TRUE.",
+                call. = FALSE)
+        stop("Invalid input data class")
+    }
     
     eff_threshold <- data@eff_threshold
     xdf <- select(data@inter_intra, c("distance", "label"))
@@ -681,7 +691,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
                            binwidth = binwidth, color = "white", alpha = 0.85) +
             geom_density(data = data_intra, 
                          aes(x = !!rlang::sym("distance")),
-                         size = size, color = "grey30")
+                         linewidth = size, color = "grey30")
     }
     
     # Plot between clonal distances
@@ -694,7 +704,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
                            binwidth = binwidth, color = "white", alpha = 0.75) +
             geom_density(data = data_inter, 
                          aes(x = !!rlang::sym("distance")),
-                         size = size, color = "grey60")
+                         linewidth = size, color = "grey60")
     } else {
         warning("No inter clonal distance is detected. Each group of sequences with same V-gene, J-gene, and junction length may contain only one clone.")
     }
@@ -703,7 +713,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
     if (!is.na(eff_threshold)) {
         p <- p + 
             ggtitle(paste("Effective threshold=", eff_threshold)) +
-            geom_vline(xintercept=eff_threshold, color="grey30", linetype=2, size=size)
+            geom_vline(xintercept=eff_threshold, color="grey30", linetype=2, linewidth=size)
     } else {
         p <- p + 
             ggtitle(paste("Effective threshold not found"))
@@ -827,7 +837,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'
 #' @examples
 #' # Find clonal groups
-#' results <- identicalClones(ExampleDb)
+#' results <- identicalClones(ExampleDb, summarize_clones=TRUE)
 #' 
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
@@ -964,7 +974,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'
 #' @examples
 #' # Find clonal groups
-#' results <- hierarchicalClones(ExampleDb, threshold=0.15)
+#' results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 #' 
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
@@ -1126,7 +1136,9 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' db <- subset(ExampleDb, c_call == "IGHG")
 #' 
 #' # Find clonal groups
-#' results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask")
+#' results <- spectralClones(db, method="novj", 
+#'            germline="germline_alignment_d_mask", 
+#'            summarize_clones=TRUE)
 #' 
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
@@ -1197,8 +1209,6 @@ defineClonesScoper <- function(db,
         db <- as.data.frame(db)
     }
 
-    #TODO: add any other info here?
-    #TODO: update docs    
     if (!only_heavy) {
       warning('only_heavy = FALSE is deprecated. Running as if only_heavy = TRUE')
       only_heavy <- TRUE
@@ -1877,9 +1887,21 @@ hierarchicalClones_helper <- function(db_gp,
     if (normalize == "len") {
         # calculate normalization factor
         junc_length <- unique(stringi::stri_length(seqs_unq))
-        hc <- fastcluster::hclust(as.dist(dist_mtx/junc_length), method = linkage)    
+        if(n_unq<65536){
+            hc <- stats::hclust(as.dist(dist_mtx/junc_length), method = linkage) 
+        }
+        else{
+            print(paste0("VJL group size: ", n_unq, ". Function hclust from fastcluster will be used for large vjl group."))
+            hc <- fastcluster::hclust(as.dist(dist_mtx/junc_length), method = linkage)
+        }
     } else if (normalize == "none") {
-        hc <- fastcluster::hclust(as.dist(dist_mtx), method = linkage)    
+        if(n_unq<65536){
+            hc <- stats::hclust(as.dist(dist_mtx), method = linkage) 
+        }
+        else{
+            print(paste0("VJL group size: ", n_unq, ". Function hclust from fastcluster will be used for large vjl group."))
+            hc <- fastcluster::hclust(as.dist(dist_mtx), method = linkage)
+        }    
     }
     
     # cut the tree

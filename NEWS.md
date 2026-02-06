@@ -1,10 +1,16 @@
-Version 1.4.0dev
+Version 1.4.0: January 7, 2026
 -------------------------------------------------------------------------------
 
-+ Clonal identification methods now have deprecated `only_heavy` and `split_light`
-+ All clonal identification methods now cluster by heavy chain only
-+ If there is a desire to split a clone by unique light chain groups use dowser::resolveLightChains
-+ Scoper now uses hclust from the fastcluster package instead of from the stats package for improved speed when performing hierarchical clustering.
+General:
+
++ Development of `scoper` has moved to GitHub: https://github.com/immcantation/scoper.
++ Updated dependencies alakazam >= 1.4.1, shazam >= 1.3.0, fastcluster.
++ Scoper now uses the `hclust` function from the `fastcluster` package instead of the one from `stats` to perform hierarchical clustering on large vjl groups (greater than 65,536 unique sequences).
+
+Clonal analysis:
+
++ Clonal identification methods now have deprecated `only_heavy` and `split_light`. All clonal identification methods now cluster by heavy chain only. To split clones by light chain groups use `dowser::resolveLightChains`.
++ In `hierarchicalClones`, the default value of `summarize_clones` is now `FALSE` for improved performance. Users can set `summarize_clones=TRUE` when needed.
 
 
 Version 1.3.1: August 1, 2024
