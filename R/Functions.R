@@ -1905,7 +1905,23 @@ hierarchicalClones_helper <- function(db_gp,
     }
     
     # cut the tree
-    idCluster_unq <- stats::cutree(hc, h = threshold)
+    # Try cutree first, and if there's a sorting error due to floating point precision,
+    # round the heights and try again
+    idCluster_unq <- tryCatch({
+        stats::cutree(hc, h = threshold)
+    }, error = function(e) {
+        if (grepl("not sorted", e$message)) {
+            # Round heights to fix floating point precision issues
+            # Use machine-dependent precision based on double.eps
+            digits <- floor(-log10(.Machine$double.eps)) - 1
+            message("Possible floating point precision issue detected. Rounding heights to ", 
+                    digits, " digits and retrying `cutree`.")
+            hc$height <- round(hc$height, digits = digits)
+            stats::cutree(hc, h = threshold)
+        } else {
+            stop(e)
+        }
+    })
     
     # back to reality
     idCluster <- rep(NA, n)
