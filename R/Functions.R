@@ -1915,7 +1915,7 @@ hierarchicalClones_helper <- function(db_gp,
             # Use machine-dependent precision based on double.eps
             digits <- floor(-log10(.Machine$double.eps)) - 1
             message("Possible floating point precision issue detected. Rounding heights to ", 
-                    digits, " digits and retrying `cutree``.")
+                    digits, " digits and retrying `cutree`.")
             hc$height <- round(hc$height, digits = digits)
             stats::cutree(hc, h = threshold)
         } else {
