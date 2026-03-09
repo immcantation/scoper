@@ -881,6 +881,8 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' @param    linkage            available linkage are \code{"single"}, \code{"average"}, and \code{"complete"}.
 #' @param    normalize	        method of normalization. The default is \code{"len"}, which divides the distance by the length 
 #'                              of the sequence group. If \code{"none"} then no normalization if performed.
+#' @param    IUPAC              If \code{TRUE}, use the IUPAC coding system, which includes both standard bases and ambiguity codes. 
+#'                              If \code{FALSE} (default), only standard bases, "N" and "?" are allowed in the sequence. 
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
 #' @param    v_call             name of the column containing the V-segment allele calls.
@@ -974,15 +976,15 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' 
 #' @export
 hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("single", "average", "complete"), 
-                               normalize=c("len", "none"), junction="junction", 
+                               normalize=c("len", "none"), IUPAC=FALSE, junction="junction", 
                                v_call="v_call", j_call="j_call", clone="clone_id", fields=NULL,
                                cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=FALSE,
                                first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                                verbose=FALSE, log=NULL, summarize_clones=FALSE, seq_id = "sequence_id") {
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
-                                  method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
-                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
+                                  method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize), 
+                                  IUPAC = match.arg(IUPAC), junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
                                   verbose = verbose, log = log, summarize_clones = summarize_clones)
@@ -1172,7 +1174,7 @@ defineClonesScoper <- function(db,
                                model = c("identical", "hierarchical", "spectral"),
                                method = c("nt", "aa", "novj", "vj"),
                                linkage = c("single", "average", "complete"), normalize = c("len", "none"),
-                               germline = "germline_alignment", sequence = "sequence_alignment",
+                               germline = "germline_alignment", sequence = "sequence_alignment", IUPAC = FALSE,
                                junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
                                fields = NULL, cell_id = NULL, locus = NULL, only_heavy = TRUE, split_light = FALSE,
                                targeting_model = NULL, len_limit = NULL,
@@ -1238,13 +1240,25 @@ defineClonesScoper <- function(db,
     }
     
     ### Check for invalid characters
-    valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
-    .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
-    valid_seq <- sapply(db[[junction]], .validateSeq)
-    not_valid_seq <- which(!valid_seq)
-    if (length(not_valid_seq) > 0) {
+    if (!IUPAC && model == "hierarchical"){
+        nonIUPAC_valid <- c("A", "T", "C", "G", "N", "?")
+        .validcharacters <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% nonIUPAC_valid) }
+        nonIUPAC_valid_seq <- sapply(head(db[[junction]],1000), .validcharacters)
+        not_nonIUPAC_valid_seq <- which(!nonIUPAC_valid_seq)
+        if (length(not_nonIUPAC_valid_seq) > 0) {
         stop("invalid sequence characters in the ", junction, " column. ",
-             length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'")
+             "\n Valid characters are: '",  nonIUPAC_valid, "'")
+        }   
+    }
+    else{
+        valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
+        .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
+        valid_seq <- sapply(db[[junction]], .validateSeq)
+        not_valid_seq <- which(!valid_seq)
+        if (length(not_valid_seq) > 0) {
+            stop("invalid sequence characters in the ", junction, " column. ",
+                length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'")
+        }
     }
     
     ### temp columns
@@ -1772,6 +1786,7 @@ passToClustering_lev1 <- function (db_gp,
                                                    method = method,
                                                    linkage = linkage,
                                                    normalize = normalize,
+                                                   IUPAC = match.arg(IUPAC), 
                                                    junction = junction,
                                                    cdr3 = cdr3,
                                                    cdr3_col = cdr3_col,
@@ -1836,6 +1851,7 @@ hierarchicalClones_helper <- function(db_gp,
                                       method = c("nt", "aa"),
                                       linkage = c("single", "average", "complete"),
                                       normalize = c("len", "none"),
+                                      IUPAC = FALSE,
                                       junction = "junction",
                                       cdr3 = FALSE,
                                       cdr3_col = NA,
@@ -1874,10 +1890,13 @@ hierarchicalClones_helper <- function(db_gp,
 
     # calculate distance matrix
     if (method == "nt") {
-    	# RDB
-       	dist_mtx <- fastDist_rcpp(seqs_unq)
-        #dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
-        #                         dist_mat = getDNAMatrix(gap = 0))
+    	if (! IUPAC){
+            dist_mtx <- fastDist_rcpp(seqs_unq)
+        }
+       	else{
+            dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
+                                 dist_mat = getDNAMatrix(gap = 0))
+        }
     } else if (method == "aa") {
         dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
                                  dist_mat = getAAMatrix(gap = 0))
