@@ -984,7 +984,7 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
                                   method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize), 
-                                  IUPAC = match.arg(IUPAC), junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
+                                  IUPAC = IUPAC, junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
                                   verbose = verbose, log = log, summarize_clones = summarize_clones)
@@ -1786,7 +1786,7 @@ passToClustering_lev1 <- function (db_gp,
                                                    method = method,
                                                    linkage = linkage,
                                                    normalize = normalize,
-                                                   IUPAC = match.arg(IUPAC), 
+                                                   IUPAC = IUPAC, 
                                                    junction = junction,
                                                    cdr3 = cdr3,
                                                    cdr3_col = cdr3_col,
