@@ -70,6 +70,64 @@ test_that("Test hierarchicalClones", {
     }
 })
 
+#### clone - hierarchicalClones with IUPAC parameter ####
+
+test_that("Test hierarchicalClones with IUPAC parameter", {
+    # Create test data with IUPAC ambiguity codes
+    db_iupac <- data.frame(
+        sequence_id = paste0("seq", 1:10),
+        v_call = rep("IGHV1-1*01", 10),
+        j_call = rep("IGHJ1*01", 10),
+        # Use IUPAC ambiguity codes: R(A/G), Y(C/T), W(A/T), S(C/G), M(A/C), K(G/T)
+        junction = c(
+            "TGTGCRAGCTACTGG",  # R = A or G
+            "TGTGCRAGCTACTGG",  # identical to seq1
+            "TGTGCAAGCTACTGG",  # standard bases only, similar to seq1/2
+            "TGTGCYAGCTACTGG",  # Y = C or T
+            "TGTGCYAGCTACTGG",  # identical to seq4
+            "TGTGCMAGCTACTGG",  # M = A or C
+            "TGTGCWAGCTACTGG",  # W = A or T
+            "TGTGCWAGCTACTGG",  # identical to seq7
+            "TGTGCAAGCTAYTGG",  # Y in different position
+            "TGTGCAAGCTKCTGG"   # K = G or T
+        ),
+        locus = rep("IGH", 10),
+        stringsAsFactors = FALSE
+    )
+    
+    # Test 1: IUPAC=FALSE should fail with IUPAC characters
+    expect_error(
+        hierarchicalClones(db_iupac, threshold = 0.15,
+                          method = "nt", linkage = "single",
+                          junction = "junction",
+                          v_call = "v_call", j_call = "j_call",
+                          IUPAC = FALSE,
+                          summarize_clones = FALSE),
+        "invalid sequence characters"
+    )
+    
+    # Test 2: IUPAC=TRUE should run with IUPAC characters
+    expect_warning(
+        expect_message(
+            db_result <- hierarchicalClones(db_iupac, threshold = 0.15,
+                                        method = "nt", linkage = "single",
+                                        junction = "junction",
+                                        v_call = "v_call", j_call = "j_call",
+                                        IUPAC = TRUE,
+                                        summarize_clones = FALSE),
+            "Running defineClonesScoper in bulk mode and only keep heavy chains"
+        ),
+        "Removed 9 sequences with non ATCG charachters."
+    )
+    
+    # Check that clones were assigned
+    expect_true("clone_id" %in% colnames(db_result))
+    expect_true(all(!is.na(db_result$clone_id)))
+    # Sequences with IUPAC codes should be removed, leaving only seq3 which has standard bases
+    expect_equal(nrow(db_result), 1)
+
+})
+
 #### clone - spectralClones - novj method ####
 
 test_that("Test spectralClones - novj", {
@@ -558,3 +616,5 @@ test_that("Testing split_light warnings for all cloning mehtods", {
                                 cell_id = "cell_id", split_light = TRUE))
    expect_equal(db_nsplit[['clone_id']], db_split[['clone_id']])
 })
+
+

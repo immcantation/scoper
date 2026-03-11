@@ -536,7 +536,7 @@ prepare_db <- function(db,
             dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
         n_after <- nrow(db)
         if ( n_before > n_after) {
-            warning(paste("Removed", n_before - n_after, "sequences with non ATCG charachters."))
+            warning(paste("Removed", n_before - n_after, "sequences with non ATCG characters."))
         }
     } else {
         n_rmv_N <- 0
