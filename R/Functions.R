@@ -881,8 +881,16 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' @param    linkage            available linkage are \code{"single"}, \code{"average"}, and \code{"complete"}.
 #' @param    normalize	        method of normalization. The default is \code{"len"}, which divides the distance by the length 
 #'                              of the sequence group. If \code{"none"} then no normalization if performed.
-#' @param    IUPAC              If \code{TRUE}, use the IUPAC coding system, which includes both standard bases and ambiguity codes. 
-#'                              If \code{FALSE} (default), only standard bases, "N" and "?" are allowed in the sequence. 
+#' @param    IUPAC              If \code{TRUE}, allows sequences with IUPAC codes to pass validation 
+#'                              and be used in clustering with IUPAC-aware distance calculation 
+#'                              (via \code{alakazam::pairwiseDist}). If \code{FALSE} (default), uses fast Hamming distance 
+#'                              (via \code{fastDist_rcpp}) and only allows standard bases (A, T, C, G), N, and ? 
+#'                              in sequences. IUPAC codes will cause validation errors if \code{IUPAC=FALSE}.
+#'                              Note: This parameter is only available for \code{hierarchicalClones} with 
+#'                              \code{method="nt"}. \code{identicalClones} and 
+#'                              \code{spectralClones} always behave as if \code{IUPAC=FALSE}. This parameter controls 
+#'                              the distance calculation method, not sequence filtering. See \code{max_n} for 
+#'                              filtering sequences by character content.
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
 #' @param    v_call             name of the column containing the V-segment allele calls.
@@ -915,11 +923,16 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              The maximum number of degenerate characters to permit in the junction sequence 
-#'                              before excluding the record from clonal assignment. Note, with 
-#'                              \code{linkage="single"} non-informative positions can create artifactual 
-#'                              links between unrelated sequences. Use with caution. 
-#'                              Default is set to be zero. Set it as \code{"NULL"} for no action.
+#' @param    max_n              The maximum number of non-ATCG characters (degenerate positions) to permit 
+#'                              in the junction sequence before excluding the record from clonal assignment. 
+#'                              This filters sequences based on the regex pattern \code{"[^ATCG]"}, which 
+#'                              includes N, ?, and IUPAC ambiguity codes (R, Y, W, S, M, K, etc.) 
+#'                              Note: \code{max_n} operates independently 
+#'                              from \code{IUPAC} - it controls filtering by character count, while 
+#'                              \code{IUPAC} controls validation and distance calculation method. 
+#'                              With \code{linkage="single"}, non-informative positions can create 
+#'                              artifactual links between unrelated sequences. Use with caution. 
+#'                              Default is 0 (ATCG-only). Set to \code{NULL} for no filtering.
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
 #'                              if \code{FALSE} (default) process cloning silently.
@@ -938,6 +951,53 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' If \code{summarize_clones=TRUE} a \link{ScoperClones} object is returned that includes the 
 #' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
 #' contains clonal identifiers in the specified \code{clone} column.
+#' 
+#' @section IUPAC and max_n parameters:
+#' Note: The \code{IUPAC} parameter is only available for \code{hierarchicalClones} with 
+#' \code{method="nt"} (nucleotide mode). It is ignored when \code{method="aa"} (amino acid mode). 
+#' The \code{identicalClones} and \code{spectralClones} functions always operate as if 
+#' \code{IUPAC=FALSE} (standard bases plus N and ? only). The \code{max_n} parameter 
+#' is available for all cloning functions.
+#' 
+#' The \code{IUPAC} and \code{max_n} parameters serve complementary but distinct purposes:
+#' 
+#' \code{IUPAC} controls:
+#' \itemize{
+#'   \item Sequence validation (which characters are allowed)
+#'   \item Distance calculation method (fast Hamming vs IUPAC-aware scoring)
+#' }
+#' 
+#' \code{max_n} controls:
+#' \itemize{
+#'   \item Sequence filtering by counting non-ATCG characters
+#' }
+#' 
+#' Common use cases (for \code{method="nt"}):
+#' \itemize{
+#'   \item \code{IUPAC=FALSE, max_n=0}: Strict ATCG-only mode with fast distance calculation. 
+#'         Rejects any sequences with IUPAC codes, N, or ?. Fastest option for high-quality data.
+#'   \item \code{IUPAC=FALSE, max_n=1+}: Allows sequences with limited N/? characters while 
+#'         rejecting IUPAC ambiguity codes at validation. Uses fast Hamming distance. Note: IUPAC 
+#'         codes are rejected during validation (before max_n filtering), so max_n only affects 
+#'         sequences that passed validation with N or ? characters. Useful for data with low-quality 
+#'         or masked positions but no experimental ambiguity codes.
+#'   \item \code{IUPAC=TRUE, max_n=0}: Uses IUPAC-aware distance but filters out all non-ATCG 
+#'         characters anyway. Only standard bases remain after filtering.
+#'   \item \code{IUPAC=TRUE, max_n=1+}: Allows sequences with limited ambiguity codes and uses 
+#'         proper IUPAC-aware distance calculation. Slower but handles biological ambiguity correctly. 
+#'         Set max_n to the maximum number of ambiguous positions per sequence you want to tolerate 
+#'         (counts all non-ATCG: N, ?, and IUPAC codes).
+#'   \item \code{IUPAC=TRUE, max_n=NULL}: Process all sequences with IUPAC codes regardless of the 
+#'         number of ambiguous positions. Uses IUPAC-aware distance calculation with no filtering. 
+#'         Most permissive option for data with extensive IUPAC ambiguity codes.
+#' }
+#' 
+#' Note: Validation occurs before filtering. When \code{IUPAC=FALSE}, sequences containing IUPAC 
+#' ambiguity codes (R, Y, W, S, M, K, etc.) will fail validation and be rejected before the 
+#' \code{max_n} filtering step. Therefore, with \code{IUPAC=FALSE, max_n > 0}, only sequences 
+#' with N and ? characters (not IUPAC codes) can pass validation and be filtered by \code{max_n}. 
+#' The \code{max_n} parameter always counts using regex \code{"[^ATCG]"}, but \code{IUPAC} determines 
+#' which non-ATCG characters are allowed to reach the filtering step.
 #' 
 #' @section Single-cell data:
 #' To invoke single-cell mode the \code{cell_id} argument must be specified and the \code{locus} 
@@ -1054,9 +1114,12 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              the maximum number of degenerate characters to permit in the junction sequence before excluding the 
-#'                              record from clonal assignment. Default is set to be zero. Set it as \code{"NULL"} 
-#'                              for no action.
+#' @param    max_n              The maximum number of degenerate characters to permit in the junction sequence before excluding the 
+#'                              record from clonal assignment. Counts non-ATCG characters using regex \code{"[^ATCG]"}, which 
+#'                              includes N, ?, and IUPAC ambiguity codes. Note: \code{spectralClones} does not support the 
+#'                              \code{IUPAC} parameter and always validates sequences as if \code{IUPAC=FALSE} (only allows 
+#'                              standard bases A,T,C,G plus N and ?). IUPAC ambiguity codes will cause validation errors. 
+#'                              Default is 0. Set to \code{NULL} for no filtering.
 #' @param    threshold          the supervising cut-off to enforce an upper-limit distance for clonal grouping.
 #'                              A numeric value between (0,1).
 #' @param    base_sim           required similarity cut-off for sequences in equal distances from each other.
