@@ -1193,7 +1193,8 @@ defineClonesScoper <- function(db,
                                iter_max = 1000, nstart = 1000, nproc = 1,
                                verbose = FALSE, log = NULL,
                                summarize_clones = FALSE) {
-  
+
+    cat("In modified Functions.R")			       
     ### get model
     model <- match.arg(model)
     
@@ -1417,7 +1418,14 @@ defineClonesScoper <- function(db,
     } else {
         stop('Nproc must be positive.')
     }
-    
+
+    ## RDB
+    ## This is necessary until the modified code is in the default path
+    #parallel::clusterEvalQ(cluster, {
+    #    .libPaths(c("/gpfs/gibbs/project/support/rdb9/working/Gabernet/251202/modified/devlib", .libPaths()))
+    #    library(scoper)
+    #})
+
     ### export function to clusters
     if (nproc > 1) { 
         export_functions <- list("passToClustering_lev1", "passToClustering_lev2", "passToClustering_lev3", "passToClustering_lev4",
@@ -1433,6 +1441,7 @@ defineClonesScoper <- function(db,
     db_cloned <- foreach::foreach(gp=1:n_groups,
                          .final=dplyr::bind_rows,
                          .inorder=TRUE,
+			 .packages="scoper",
                          .errorhandling='stop') %dopar% { 
                              # *********************************************************************************
                              # filter each group
@@ -1854,7 +1863,7 @@ hierarchicalClones_helper <- function(db_gp,
     
     ### number of sequences
     n <- nrow(db_gp)
-    
+
     # get sequences
     if (method == "nt") {
         seqs <- db_gp[[ifelse(cdr3, cdr3_col, junction)]]   
@@ -1868,16 +1877,19 @@ hierarchicalClones_helper <- function(db_gp,
     n_unq <- nrow(df)
     ind_unq <- df$V1
     seqs_unq <- df$seqs
+
     if (n_unq == 1) {
         return(list("idCluster" = rep(1, n), 
                     "n_cluster" = 1, 
                     "eigen_vals" = rep(0, n)))
     }
-    
+
     # calculate distance matrix
     if (method == "nt") {
-        dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
-                                 dist_mat = getDNAMatrix(gap = 0))
+    	# RDB
+       	dist_mtx <- fastDist_rcpp(seqs_unq)
+        #dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
+        #                         dist_mat = getDNAMatrix(gap = 0))
     } else if (method == "aa") {
         dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
                                  dist_mat = getAAMatrix(gap = 0))
