@@ -885,8 +885,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              and be used in clustering with IUPAC-aware distance calculation 
 #'                              (via \code{alakazam::pairwiseDist}). If \code{FALSE} (default), uses fast Hamming distance 
 #'                              (via \code{fastDist_rcpp}) and only allows standard bases (A, T, C, G), N, and ? 
-#'                              in sequences. IUPAC codes will cause validation errors if \code{IUPAC=FALSE}.
-#'                              Note: This parameter is only available for \code{hierarchicalClones} with 
+#'                              in sequences. Note: This parameter is only available for \code{hierarchicalClones} with 
 #'                              \code{method="nt"}. \code{identicalClones} and 
 #'                              \code{spectralClones} always behave as if \code{IUPAC=FALSE}. This parameter controls 
 #'                              the distance calculation method, not sequence filtering. See \code{max_n} for 
@@ -925,8 +924,6 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              3 in nucleotide space.
 #' @param    max_n              The maximum number of non-ATCG characters (degenerate positions) to permit 
 #'                              in the junction sequence before excluding the record from clonal assignment. 
-#'                              This filters sequences based on the regex pattern \code{"[^ATCG]"}, which 
-#'                              includes N, ?, and IUPAC ambiguity codes (R, Y, W, S, M, K, etc.) 
 #'                              Note: \code{max_n} operates independently 
 #'                              from \code{IUPAC} - it controls filtering by character count, while 
 #'                              \code{IUPAC} controls validation and distance calculation method. 
@@ -976,14 +973,14 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' \itemize{
 #'   \item \code{IUPAC=FALSE, max_n=0}: Strict ATCG-only mode with fast distance calculation. 
 #'         Rejects any sequences with IUPAC codes, N, or ?. Fastest option for high-quality data.
-#'   \item \code{IUPAC=FALSE, max_n=1+}: Allows sequences with limited N/? characters while 
+#'   \item \code{IUPAC=FALSE, max_n>0}: Allows sequences with limited N/? characters while 
 #'         rejecting IUPAC ambiguity codes at validation. Uses fast Hamming distance. Note: IUPAC 
 #'         codes are rejected during validation (before max_n filtering), so max_n only affects 
 #'         sequences that passed validation with N or ? characters. Useful for data with low-quality 
 #'         or masked positions but no experimental ambiguity codes.
 #'   \item \code{IUPAC=TRUE, max_n=0}: Uses IUPAC-aware distance but filters out all non-ATCG 
 #'         characters anyway. Only standard bases remain after filtering.
-#'   \item \code{IUPAC=TRUE, max_n=1+}: Allows sequences with limited ambiguity codes and uses 
+#'   \item \code{IUPAC=TRUE, max_n>0}: Allows sequences with limited ambiguity codes and uses 
 #'         proper IUPAC-aware distance calculation. Slower but handles biological ambiguity correctly. 
 #'         Set max_n to the maximum number of ambiguous positions per sequence you want to tolerate 
 #'         (counts all non-ATCG: N, ?, and IUPAC codes).
