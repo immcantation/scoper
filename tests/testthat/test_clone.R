@@ -337,12 +337,11 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
             "TGTGCRAGCTRYCTGG",  # R at pos 6, R at pos 12, Y at pos 13 (3 non-ATCG)
             "TGTGCRAGCTRYCTGG",  # identical to seq1
             "TGTGCRAGCTWYNMGG",  # R at pos 6, W at pos 12, Y at pos 13, N at pos 14, M at pos 15 (5 non-ATCG)
-            "TGTGCAAGCTACTGG",   # standard bases only (0 non-ATCG)
-            
+            "TGTGCAAGCTACCTGG",  # standard bases only (0 non-ATCG)
             # Clone 2: sequences distant from Clone 1, also with IUPAC codes
             "ACGKTTRGCCNNNYYY",  # K, R, 3 N's, 3 Y's (8 non-ATCG characters!)
             "ACGKTTRGCCNNNYYY",  # identical to seq5
-            "ACGTTTGGCCAAACC",   # standard bases only (0 non-ATCG)
+            "ACGGTTAGCCAAACCC",  # standard bases only (0 non-ATCG)
             "ACGKTTSGCCNNNYYY"   # K, S, 3 N's, 3 Y's (8 non-ATCG)
         ),
         locus = rep("IGH", 8),
@@ -723,7 +722,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
     # expect sequences from cells 1 and 3 in clone 1, and
     # sequences from cell 2 in clone 2
     clones_split_F_th0@db %>%
-        mutate(expected_clone_id = dplyr::case_when(
+        dplyr::mutate(expected_clone_id = dplyr::case_when(
             cell_id %in% c(1, 3) ~ "1",
             cell_id %in% c(2) ~ "2",
             TRUE ~ NA_character_
@@ -800,7 +799,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
     # sequences from cell 2 in clone 2, regardless of
     # light chains
     clones_split_F_th0_2l@db %>%
-        mutate(expected_clone_id = dplyr::case_when(
+        dplyr::mutate(expected_clone_id = dplyr::case_when(
             cell_id %in% c(1, 3) ~ "1",
             cell_id %in% c(2) ~ "2",
             TRUE ~ NA_character_
