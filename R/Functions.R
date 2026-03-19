@@ -885,10 +885,11 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              and be used in clustering with IUPAC-aware distance calculation 
 #'                              (via \code{alakazam::pairwiseDist}). If \code{FALSE} (default), uses fast Hamming distance 
 #'                              (via \code{fastDist_rcpp}) and only allows standard bases (A, T, C, G), N, and ? 
-#'                              in sequences. Note: This parameter is only available for \code{hierarchicalClones} with 
-#'                              \code{method="nt"}. This parameter controls validation and distance
+#'                              in sequences.This parameter controls validation and distance
 #'                              calculation method, not sequence filtering. See \code{max_n} for 
-#'                              filtering sequences by character content.
+#'                              filtering sequences by character content. See the IUPAC and max_n 
+#'                              parameters section for more details and examples. Note: This parameter is only available 
+#'                              for \code{hierarchicalClones} with \code{method="nt"}. 
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
 #' @param    v_call             name of the column containing the V-segment allele calls.
