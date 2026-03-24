@@ -1302,25 +1302,24 @@ defineClonesScoper <- function(db,
     }
     
     ### Check for invalid characters
-    if (!IUPAC && model == "hierarchical"){
-        nonIUPAC_valid <- c("A", "T", "C", "G", "N", "?")
-        .validcharacters <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% nonIUPAC_valid) }
-        nonIUPAC_valid_seq <- sapply(head(db[[junction]],1000), .validcharacters)
-        not_nonIUPAC_valid_seq <- which(!nonIUPAC_valid_seq)
-        if (length(not_nonIUPAC_valid_seq) > 0) {
-        stop("invalid sequence characters in the ", junction, " column. ",
-             "\n Valid characters are: '",  nonIUPAC_valid, "'")
-        }   
-    }
-    else{
-        valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
-        .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
-        valid_seq <- sapply(db[[junction]], .validateSeq)
-        not_valid_seq <- which(!valid_seq)
-        if (length(not_valid_seq) > 0) {
-            stop("invalid sequence characters in the ", junction, " column. ",
-                length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'")
+    # IUPAC mode is only supported for hierarchical clustering and nt method
+    if (!IUPAC && model == "hierarchical" && method == "nt") {
+            valid_chars <- c("A", "T", "C", "G", "N", "?")
+    } else {
+        if (method %in% c("nt", "novj", "vj")) {
+            valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
+        } else if (method == "aa") {
+            valid_chars <- colnames(alakazam::getAAMatrix(gap = 0))
+        } else {
+            stop("invalid method specified.")
         }
+    }
+    .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
+    valid_seq <- sapply(head(db[[junction]],1000), .validateSeq)
+    not_valid_seq <- which(!valid_seq)
+    if (length(not_valid_seq) > 0) {
+        stop("invalid sequence characters in the ", junction, " column. ",
+            length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'")
     }
     
     ### temp columns
@@ -1523,7 +1522,7 @@ defineClonesScoper <- function(db,
                                                               method = method,
                                                               linkage = ifelse(model == "hierarchical", linkage, NA),
                                                               normalize = ifelse(model == "hierarchical", normalize, NA),
-                                                              IUPAC = ifelse(model == "hierarchical", IUPAC, FALSE),
+                                                              IUPAC = ifelse(model == "hierarchical" & method == "nt", IUPAC, FALSE),
                                                               germline = germline,
                                                               sequence = sequence,
                                                               junction = junction,
