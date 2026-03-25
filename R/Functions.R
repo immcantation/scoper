@@ -1302,24 +1302,26 @@ defineClonesScoper <- function(db,
     }
     
     ### Check for invalid characters
-    # IUPAC mode is only supported for hierarchical clustering and nt method
-    if (!IUPAC && model == "hierarchical" && method == "nt") {
-            valid_chars <- c("A", "T", "C", "G", "N", "?")
+    # IUPAC mode is only supported for hierarchical clustering
+    if (!IUPAC && model == "hierarchical") {
+        valid_chars <- c("A", "T", "C", "G", "N", "?")
     } else {
-        if (method %in% c("nt", "novj", "vj")) {
-            valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
-        } else if (method == "aa") {
-            valid_chars <- colnames(alakazam::getAAMatrix(gap = 0))
-        } else {
-            stop("invalid method specified.")
-        }
+        valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
     }
     .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
     valid_seq <- sapply(head(db[[junction]],1000), .validateSeq)
     not_valid_seq <- which(!valid_seq)
     if (length(not_valid_seq) > 0) {
-        stop("invalid sequence characters in the ", junction, " column. ",
-            length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'")
+        error_msg <- paste0("Invalid sequence characters in the ", junction, " column were found when checking the first 1000 sequences. ",
+            length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'",
+            "\n If you have other IUPAC characters in your sequences, set IUPAC=TRUE to allow all IUPAC bases, this will run a slower version of hierarchicalClustering.")
+        if (method == "aa") {
+            method_aa_msg <- paste0("Clustering with method='aa' expects nucleotide sequences, which will be translated by this function.")
+            stop(paste0(error_msg, "\n", method_aa_msg))
+        } else {
+            stop(error_msg)
+        }
+        
     }
     
     ### temp columns
