@@ -628,7 +628,7 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 #'
 #' @examples
 #' # Find clones
-#' results <- hierarchicalClones(ExampleDb, threshold=0.15)
+#' results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 #' 
 #' # Plot clonal summaries
 #' plot(results, binwidth=0.02)
@@ -637,6 +637,16 @@ pairwiseMutMatrix <- function(informative_pos, mutMtx, motifMtx) {
 plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL, 
                              binwidth=NULL, title=NULL, size=0.75, silent=FALSE, 
                              ...) {
+    
+    # Check if data is of ScoperClones class
+    if (!inherits(data, "ScoperClones")) {
+        warning("Input data is not of class 'ScoperClones'. ",
+                "Please ensure you are using the output from hierarchicalClones(), ",
+                "identicalClones(), or spectralClones() functions with ",
+                "summarize_clones=TRUE.",
+                call. = FALSE)
+        stop("Invalid input data class")
+    }
     
     eff_threshold <- data@eff_threshold
     xdf <- select(data@inter_intra, c("distance", "label"))
@@ -681,7 +691,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
                            binwidth = binwidth, color = "white", alpha = 0.85) +
             geom_density(data = data_intra, 
                          aes(x = !!rlang::sym("distance")),
-                         size = size, color = "grey30")
+                         linewidth = size, color = "grey30")
     }
     
     # Plot between clonal distances
@@ -694,7 +704,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
                            binwidth = binwidth, color = "white", alpha = 0.75) +
             geom_density(data = data_inter, 
                          aes(x = !!rlang::sym("distance")),
-                         size = size, color = "grey60")
+                         linewidth = size, color = "grey60")
     } else {
         warning("No inter clonal distance is detected. Each group of sequences with same V-gene, J-gene, and junction length may contain only one clone.")
     }
@@ -703,7 +713,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
     if (!is.na(eff_threshold)) {
         p <- p + 
             ggtitle(paste("Effective threshold=", eff_threshold)) +
-            geom_vline(xintercept=eff_threshold, color="grey30", linetype=2, size=size)
+            geom_vline(xintercept=eff_threshold, color="grey30", linetype=2, linewidth=size)
     } else {
         p <- p + 
             ggtitle(paste("Effective threshold not found"))
@@ -827,7 +837,7 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'
 #' @examples
 #' # Find clonal groups
-#' results <- identicalClones(ExampleDb)
+#' results <- identicalClones(ExampleDb, summarize_clones=TRUE)
 #' 
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
@@ -1025,7 +1035,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'
 #' @examples
 #' # Find clonal groups
-#' results <- hierarchicalClones(ExampleDb, threshold=0.15)
+#' results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 #' 
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
@@ -1190,7 +1200,9 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' db <- subset(ExampleDb, c_call == "IGHG")
 #' 
 #' # Find clonal groups
-#' results <- spectralClones(db, method="novj", germline="germline_alignment_d_mask")
+#' results <- spectralClones(db, method="novj", 
+#'            germline="germline_alignment_d_mask", 
+#'            summarize_clones=TRUE)
 #' 
 #' # Retrieve modified input data with clonal clustering identifiers
 #' df <- as.data.frame(results)
@@ -1989,7 +2001,23 @@ hierarchicalClones_helper <- function(db_gp,
     }
     
     # cut the tree
-    idCluster_unq <- stats::cutree(hc, h = threshold)
+    # Try cutree first, and if there's a sorting error due to floating point precision,
+    # round the heights and try again
+    idCluster_unq <- tryCatch({
+        stats::cutree(hc, h = threshold)
+    }, error = function(e) {
+        if (grepl("not sorted", e$message)) {
+            # Round heights to fix floating point precision issues
+            # Use machine-dependent precision based on double.eps
+            digits <- floor(-log10(.Machine$double.eps)) - 1
+            message("Possible floating point precision issue detected. Rounding heights to ", 
+                    digits, " digits and retrying `cutree`.")
+            hc$height <- round(hc$height, digits = digits)
+            stats::cutree(hc, h = threshold)
+        } else {
+            stop(e)
+        }
+    })
     
     # back to reality
     idCluster <- rep(NA, n)
