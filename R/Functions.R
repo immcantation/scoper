@@ -536,7 +536,7 @@ prepare_db <- function(db,
             dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
         n_after <- nrow(db)
         if ( n_before > n_after) {
-            warning(paste("Removed", n_before - n_after, "sequences with non ATCG charachters."))
+            warning(paste("Removed", n_before - n_after, "sequences with non ATCG characters."))
         }
     } else {
         n_rmv_N <- 0
@@ -881,6 +881,15 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' @param    linkage            available linkage are \code{"single"}, \code{"average"}, and \code{"complete"}.
 #' @param    normalize	        method of normalization. The default is \code{"len"}, which divides the distance by the length 
 #'                              of the sequence group. If \code{"none"} then no normalization if performed.
+#' @param    IUPAC              If \code{TRUE}, allows sequences with IUPAC codes to pass validation 
+#'                              and be used in clustering with IUPAC-aware distance calculation 
+#'                              (via \code{alakazam::pairwiseDist}). If \code{FALSE} (default), uses fast Hamming distance 
+#'                              (via \code{fastDist_rcpp}) and only allows standard bases (A, T, C, G), N, and ? 
+#'                              in sequences.This parameter controls validation and distance
+#'                              calculation method, not sequence filtering. See \code{max_n} for 
+#'                              filtering sequences by character content. See the IUPAC and max_n 
+#'                              parameters section for more details and examples. Note: This parameter is only available 
+#'                              for \code{hierarchicalClones} with \code{method="nt"}. 
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
 #' @param    v_call             name of the column containing the V-segment allele calls.
@@ -913,11 +922,14 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              The maximum number of degenerate characters to permit in the junction sequence 
-#'                              before excluding the record from clonal assignment. Note, with 
-#'                              \code{linkage="single"} non-informative positions can create artifactual 
-#'                              links between unrelated sequences. Use with caution. 
-#'                              Default is set to be zero. Set it as \code{"NULL"} for no action.
+#' @param    max_n              The maximum number of non-ATCG characters (degenerate positions) to permit 
+#'                              in the junction sequence before excluding the record from clonal assignment. 
+#'                              Note: \code{max_n} operates independently 
+#'                              from \code{IUPAC} - it controls filtering by character count, while 
+#'                              \code{IUPAC} controls validation and distance calculation method. 
+#'                              With \code{linkage="single"}, non-informative positions can create 
+#'                              artifactual links between unrelated sequences. Use with caution. 
+#'                              Default is 0 (ATCG-only). Set to \code{NULL} for no filtering.
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
 #'                              if \code{FALSE} (default) process cloning silently.
@@ -936,6 +948,55 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' If \code{summarize_clones=TRUE} a \link{ScoperClones} object is returned that includes the 
 #' clonal assignment summary information and a modified input \code{db} in the \code{db} slot that 
 #' contains clonal identifiers in the specified \code{clone} column.
+#' 
+#' @section IUPAC and max_n parameters:
+#' Note: The \code{IUPAC} parameter is only available for \code{hierarchicalClones} with 
+#' \code{method="nt"} (nucleotide mode). It is ignored when \code{method="aa"} (amino acid mode). 
+#' The \code{identicalClones} and \code{spectralClones} functions always operate as if 
+#' \code{IUPAC=FALSE} (standard bases plus N and ? only). The \code{max_n} parameter 
+#' is available for all cloning functions.
+#' 
+#' The \code{IUPAC} and \code{max_n} parameters serve complementary but distinct purposes:
+#' 
+#' \code{IUPAC} controls:
+#' \itemize{
+#'   \item Sequence validation (which characters are allowed)
+#'   \item Distance calculation method (fast Hamming vs IUPAC-aware scoring)
+#' }
+#' 
+#' \code{max_n} controls:
+#' \itemize{
+#'   \item Sequence filtering by counting non-ATCG characters
+#' }
+#' 
+#' Common use cases (for \code{method="nt"}):
+#' \itemize{
+#'   \item \code{IUPAC=FALSE, max_n=0}: Strict ATCG-only mode with fast distance calculation. 
+#'         Will throw an error and exit if sequences with IUPAC codes not A, T, C, G, N, or ? are detected
+#'         among the first 1000 sequences. Fastest option for high-quality data.
+#'   \item \code{IUPAC=FALSE, max_n>0}: Will throw an error and exit if sequences with IUPAC 
+#'         codes not A, T, C, G, N, or ? are detected among the first 1000 sequences. Allows sequences 
+#'         with limited N/? characters in distance calculation, using fast Hamming distance. 
+#'         Note: IUPAC codes are rejected during validation (before max_n filtering), so max_n only 
+#'         affects sequences that passed validation with N or ? characters. Useful for data with low-quality 
+#'         or masked positions but no experimental ambiguity codes.
+#'   \item \code{IUPAC=TRUE, max_n=0}: Uses IUPAC-aware distance but filters out all non-ATCG 
+#'         characters anyway. Only standard bases remain after filtering.
+#'   \item \code{IUPAC=TRUE, max_n>0}: Allows sequences with limited ambiguity codes and uses 
+#'         proper IUPAC-aware distance calculation. Slower but handles biological ambiguity correctly. 
+#'         Set max_n to the maximum number of ambiguous positions per sequence you want to tolerate 
+#'         (counts all non-ATCG: N, ?, and other IUPAC codes).
+#'   \item \code{IUPAC=TRUE, max_n=NULL}: Process all sequences with IUPAC codes regardless of the 
+#'         number of ambiguous positions. Uses IUPAC-aware distance calculation with no filtering. 
+#'         Most permissive option for data with extensive IUPAC ambiguity codes.
+#' }
+#' 
+#' Note: Validation occurs before filtering. When \code{IUPAC=FALSE}, sequences containing IUPAC 
+#' ambiguity codes (R, Y, W, S, M, K, etc.) will fail validation and be rejected before the 
+#' \code{max_n} filtering step. Therefore, with \code{IUPAC=FALSE, max_n > 0}, only sequences 
+#' with N and ? characters (not IUPAC codes) can pass validation and be filtered by \code{max_n}. 
+#' The \code{max_n} parameter always counts using regex \code{"[^ATCG]"}, but \code{IUPAC} determines 
+#' which non-ATCG characters are allowed to reach the filtering step.
 #' 
 #' @section Single-cell data:
 #' To invoke single-cell mode the \code{cell_id} argument must be specified and the \code{locus} 
@@ -974,15 +1035,15 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' 
 #' @export
 hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("single", "average", "complete"), 
-                               normalize=c("len", "none"), junction="junction", 
+                               normalize=c("len", "none"), IUPAC=FALSE, junction="junction", 
                                v_call="v_call", j_call="j_call", clone="clone_id", fields=NULL,
                                cell_id=NULL, locus="locus", only_heavy=TRUE, split_light=FALSE,
                                first=FALSE, cdr3=FALSE, mod3=FALSE, max_n=0, nproc=1,
                                verbose=FALSE, log=NULL, summarize_clones=FALSE, seq_id = "sequence_id") {
     
     results <- defineClonesScoper(db = db, threshold = threshold, model = "hierarchical", 
-                                  method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
-                                  junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
+                                  method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize), 
+                                  IUPAC = IUPAC, junction = junction, v_call = v_call, j_call = j_call, clone = clone, fields = fields,
                                   cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
                                   first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,   
                                   verbose = verbose, log = log, summarize_clones = summarize_clones)
@@ -1052,9 +1113,12 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              the maximum number of degenerate characters to permit in the junction sequence before excluding the 
-#'                              record from clonal assignment. Default is set to be zero. Set it as \code{"NULL"} 
-#'                              for no action.
+#' @param    max_n              The maximum number of degenerate characters to permit in the junction sequence before excluding the 
+#'                              record from clonal assignment. Counts non-ATCG characters using regex \code{"[^ATCG]"}, which 
+#'                              includes N, ?, and IUPAC ambiguity codes. Note: \code{spectralClones} does not support the 
+#'                              \code{IUPAC} parameter and always validates sequences as if \code{IUPAC=FALSE} (only allows 
+#'                              standard bases A,T,C,G plus N and ?). IUPAC ambiguity codes will cause validation errors. 
+#'                              Default is 0. Set to \code{NULL} for no filtering.
 #' @param    threshold          the supervising cut-off to enforce an upper-limit distance for clonal grouping.
 #'                              A numeric value between (0,1).
 #' @param    base_sim           required similarity cut-off for sequences in equal distances from each other.
@@ -1172,7 +1236,7 @@ defineClonesScoper <- function(db,
                                model = c("identical", "hierarchical", "spectral"),
                                method = c("nt", "aa", "novj", "vj"),
                                linkage = c("single", "average", "complete"), normalize = c("len", "none"),
-                               germline = "germline_alignment", sequence = "sequence_alignment",
+                               germline = "germline_alignment", sequence = "sequence_alignment", IUPAC = FALSE,
                                junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id",
                                fields = NULL, cell_id = NULL, locus = NULL, only_heavy = TRUE, split_light = FALSE,
                                targeting_model = NULL, len_limit = NULL,
@@ -1238,13 +1302,26 @@ defineClonesScoper <- function(db,
     }
     
     ### Check for invalid characters
-    valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
+    # IUPAC mode is only supported for hierarchical clustering
+    if (!IUPAC && model == "hierarchical" && method == "nt") {
+        valid_chars <- c("A", "T", "C", "G", "N", "?")
+    } else {
+        valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
+    }
     .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
-    valid_seq <- sapply(db[[junction]], .validateSeq)
+    valid_seq <- sapply(head(db[[junction]],1000), .validateSeq)
     not_valid_seq <- which(!valid_seq)
     if (length(not_valid_seq) > 0) {
-        stop("invalid sequence characters in the ", junction, " column. ",
-             length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'")
+        error_msg <- paste0("Invalid sequence characters in the ", junction, " column were found when checking the first 1000 sequences. ",
+            length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'",
+            "\n If you have other IUPAC characters in your sequences, set IUPAC=TRUE to allow all IUPAC bases, this will run a slower version of hierarchicalClustering.")
+        if (method == "aa") {
+            method_aa_msg <- paste0("Clustering with method='aa' expects nucleotide sequences, which will be translated by this function.")
+            stop(paste0(error_msg, "\n", method_aa_msg))
+        } else {
+            stop(error_msg)
+        }
+        
     }
     
     ### temp columns
@@ -1447,6 +1524,7 @@ defineClonesScoper <- function(db,
                                                               method = method,
                                                               linkage = ifelse(model == "hierarchical", linkage, NA),
                                                               normalize = ifelse(model == "hierarchical", normalize, NA),
+                                                              IUPAC = ifelse(model == "hierarchical" & method == "nt", IUPAC, FALSE),
                                                               germline = germline,
                                                               sequence = sequence,
                                                               junction = junction,
@@ -1746,6 +1824,7 @@ passToClustering_lev1 <- function (db_gp,
                                    method = c("nt", "aa", "novj", "vj"),
                                    linkage = c("single", "average", "complete"),
                                    normalize = c("len", "none"),
+                                   IUPAC = FALSE,
                                    germline = "germline_alignment",
                                    sequence = "sequence_alignment",
                                    junction = "junction",
@@ -1772,6 +1851,7 @@ passToClustering_lev1 <- function (db_gp,
                                                    method = method,
                                                    linkage = linkage,
                                                    normalize = normalize,
+                                                   IUPAC = IUPAC, 
                                                    junction = junction,
                                                    cdr3 = cdr3,
                                                    cdr3_col = cdr3_col,
@@ -1836,6 +1916,7 @@ hierarchicalClones_helper <- function(db_gp,
                                       method = c("nt", "aa"),
                                       linkage = c("single", "average", "complete"),
                                       normalize = c("len", "none"),
+                                      IUPAC = FALSE,
                                       junction = "junction",
                                       cdr3 = FALSE,
                                       cdr3_col = NA,
@@ -1874,10 +1955,13 @@ hierarchicalClones_helper <- function(db_gp,
 
     # calculate distance matrix
     if (method == "nt") {
-    	# RDB
-       	dist_mtx <- fastDist_rcpp(seqs_unq)
-        #dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
-        #                         dist_mat = getDNAMatrix(gap = 0))
+    	if (! IUPAC){
+            dist_mtx <- fastDist_rcpp(seqs_unq)
+        }
+       	else{
+            dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
+                                 dist_mat = getDNAMatrix(gap = 0))
+        }
     } else if (method == "aa") {
         dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
                                  dist_mat = getAAMatrix(gap = 0))
