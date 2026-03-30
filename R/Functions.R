@@ -877,7 +877,8 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' @param    db                 data.frame containing sequence data.
 #' @param    threshold          numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
 #' @param    method             one of the \code{"nt"} for nucleotide based clustering or 
-#'                              \code{"aa"} for amino acid based clustering.
+#'                              \code{"aa"} for amino acid based clustering. Method `"aa"` still expects nucleotide sequences, 
+#'                              which will be translated to amino acids
 #' @param    linkage            available linkage are \code{"single"}, \code{"average"}, and \code{"complete"}.
 #' @param    normalize	        method of normalization. The default is \code{"len"}, which divides the distance by the length 
 #'                              of the sequence group. If \code{"none"} then no normalization if performed.
@@ -938,7 +939,8 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              The default is \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} (default) then
-#'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
+#'                              a modified input \code{db} is returned with clone identifiers in the specified 
+#'                              `clone` column. When grouping by \code{fields}, 
 #'                              \code{summarize_clones} should be \code{FALSE}. 
 #' @param   seq_id              The column containing sequence ids
 #'
