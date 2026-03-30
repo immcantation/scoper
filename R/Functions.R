@@ -1303,7 +1303,7 @@ defineClonesScoper <- function(db,
     
     ### Check for invalid characters
     # IUPAC mode is only supported for hierarchical clustering
-    if (!IUPAC && model == "hierarchical") {
+    if (!IUPAC && model == "hierarchical" && method == "nt") {
         valid_chars <- c("A", "T", "C", "G", "N", "?")
     } else {
         valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))

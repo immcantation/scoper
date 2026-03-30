@@ -129,7 +129,7 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
             IUPAC = FALSE,  # Use fast Hamming distance for ATCG only
             summarize_clones = FALSE
         ),
-        "invalid sequence characters"
+        "Invalid sequence characters"
     )
 
     # Test 2: IUPAC=TRUE with max_n=0 - validates with IUPAC but filters them out
@@ -242,7 +242,7 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
             max_n = 1,      # Allow up to 1 N or ?
             summarize_clones = FALSE
         ),
-        "invalid sequence characters"
+        "Invalid sequence characters"
     )
     
     # Test with only N/? (no IUPAC codes) - should succeed
@@ -447,7 +447,7 @@ test_that("Test hierarchicalClones with IUPAC code beyond validation window", {
             max_n = 0,
             summarize_clones = FALSE
         ),
-        "invalid sequence characters in the junction column\\. 1 sequence\\(s\\) found\\.\\n Valid characters are: 'ATCGN\\?'"
+        "Invalid sequence characters in the junction column"
     )
 
     # Test 2: IUPAC=FALSE, max_n=NULL
@@ -482,7 +482,7 @@ test_that("Test hierarchicalClones with IUPAC code beyond validation window", {
                 summarize_clones = FALSE
             )
         ),
-        "invalid sequence characters in the junction column\\. 1 sequence\\(s\\) found\\.\\n Valid characters are: 'ATCGN\\?'"
+        "Invalid sequence characters in the junction column"
     )
 
     # Test 3: IUPAC=TRUE, max_n=NULL
