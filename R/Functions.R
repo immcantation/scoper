@@ -367,75 +367,55 @@ calculateInterVsIntra <- function(db,
     
     k <- NULL
     # open dataframes
-    vec_ff <- foreach(k=1:n_groups,
-                      .combine="c",
+    db_dff <- foreach(k=1:n_groups,
+                      .combine="rbind",
                       .errorhandling='stop') %dopar% {
-                          
-                          # *********************************************************************************
                           clones <- stringi::stri_split_fixed(vjl_gps$clone_id[k], ",")[[1]]
-                          l <- vjl_gps$junction_length[k]
-                          n_clones <- length(clones)
+                          junction_length <- vjl_gps$junction_length[k]
                           in_clones <- db[[clone]] %in% clones
+                          
                           seqs <- db[[ifelse(cdr3, cdr3_col, junction)]][in_clones]
                           names(seqs) <- db[[clone]][in_clones]
                           seqs <- uniqueSeq(seqs)
-                          ### calculate distance matrix among all seqs
+                          
                           dist_mtx <- pairwiseDist(seqs, dist_mat=DNAMatrix_gap0)
-                          ### prealoocate a vector = no. of max-dist in each clone (intra) + no. of min-dist between clones (inter)
-                          nrow_f <- n_clones + n_clones*(n_clones-1)/2
-                          vec_f <- rep(NA, nrow_f)
-                          ### calculate minimum and maximum distance in each clone
-                          n <- 0
-                          if (n_clones == 1) {
-                              n <- n + 1
-                              vec_f[n] <- max(dist_mtx)/l
-                              names(vec_f)[n] <- paste(clones[1], "NA", "intra", sep="_")
-                          } else {
-                              for (i in 1:(n_clones-1)) {
-                                  xx <- dist_mtx[rownames(dist_mtx) == clones[i], colnames(dist_mtx) == clones[i]]
-                                  n <- n + 1
-                                  vec_f[n] <- max(xx)/l
-                                  names(vec_f)[n] <- paste(clones[i], "NA", "intra", sep="_")
-                                  for (j in (i+1):n_clones) {
-                                      xy <- dist_mtx[rownames(dist_mtx) == clones[i], colnames(dist_mtx) == clones[j]]
-                                      n <- n + 1
-                                      vec_f[n] <- min(xy)/l
-                                      names(vec_f)[n] <- paste(clones[i], clones[j], "inter", sep="_")
-                                  }
+
+                          clones_in_group <- unique(rownames(dist_mtx)) # Only unique clones present
+                          n_clones <- length(clones_in_group)
+                          n_rows <- n_clones + (n_clones * (n_clones - 1) / 2)
+
+                          res_mtx <- matrix(NA, nrow = n_rows, ncol = 4)
+
+                          curr_row <- 1
+                          for (i in 1:n_clones) {
+                            idx_i <- which(rownames(dist_mtx) == clones_in_group[i])
+                            
+                            # INTRA: Max distance in sub-matrix
+                            res_mtx[curr_row, ] <- c(i, NA, max(dist_mtx[idx_i, idx_i]) / junction_length, 0)
+                            curr_row <- curr_row + 1
+                                
+                            # INTER: Min distance between pairs
+                            if (n_clones > 1 && i < n_clones) {
+                              for (j in (i + 1):n_clones) {
+                                idx_j <- which(rownames(dist_mtx) == clones_in_group[j])
+                                      
+                                res_mtx[curr_row, ] <- c(i, j, min(dist_mtx[idx_i, idx_j]) / junction_length, 1)
+                                curr_row <- curr_row + 1
+                                }
                               }
-                              yy <- dist_mtx[rownames(dist_mtx) == clones[j], colnames(dist_mtx) == clones[j]]
-                              n <- n + 1
-                              vec_f[n] <- max(yy)/l
-                              names(vec_f)[n] <- paste(clones[j], "NA", "intra", sep="_")
-                          }
-                          
-                          # update progress
-                          if (verbose) { pb$tick() }
-                          
-                          return(vec_f)
-                          # *********************************************************************************
+                            }
+
+                            # Convert result to dataframe
+                            res_k <- data.frame(
+                                clone_id_x = clones_in_group[res_mtx[,1]],
+                                clone_id_y = clones_in_group[res_mtx[,2]],
+                                distance   = res_mtx[,3],
+                                label      = ifelse(res_mtx[,4] == 0, "intra", "inter")
+                            )
                       }
     
-    ### stop the cluster
     if (nproc > 1) { parallel::stopCluster(cluster) }
     
-    # convert to a data.frame
-    db_dff <- data.frame(keyName = names(vec_ff), 
-                         distance = vec_ff, 
-                         row.names=NULL)
-    db_dff$label <- "intra"
-    db_dff$label[grepl("inter", db_dff$keyName)] <- "inter"
-    clones_xy <- data.frame(matrix(unlist(stringi::stri_split_fixed(db_dff$keyName, "_", n=3)),
-                                   nrow=nrow(db_dff),
-                                   byrow=T),
-                            stringsAsFactors=FALSE)
-    db_dff <- cbind(clones_xy, db_dff)
-    db_dff$keyName <- NULL
-    colnames(db_dff)[colnames(db_dff) == "X1"] <- "clone_id_x"
-    colnames(db_dff)[colnames(db_dff) == "X2"] <- "clone_id_y"
-    db_dff$X3 <- NULL
-    
-    # return results
     return(db_dff)
 }
 # *****************************************************************************
