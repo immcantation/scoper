@@ -332,90 +332,124 @@ uniqueSeq <- function(seqs) {
 
 # *****************************************************************************
 # inter-clone-distance vs intra-clone-distance
-calculateInterVsIntra <- function(db,
-                                  clone,
-                                  vjl_gps,
-                                  junction = "junction",
-                                  cdr3 = FALSE,
-                                  cdr3_col = NA,
-                                  nproc = 1,
-                                  verbose = FALSE) {
-    ### Create cluster of nproc size and export namespaces
-    if(nproc == 1) {
-        # If needed to run on a single core/cpu then, register DoSEQ
-        # (needed for 'foreach' in non-parallel mode)
+calculateInterVsIntra <- function(
+    db,
+    clone,
+    vjl_gps,
+    junction = "junction",
+    cdr3 = FALSE,
+    cdr3_col = NA,
+    nproc = 1,
+    verbose = FALSE
+) {
+    if (nproc == 1) {
         registerDoSEQ()
-    } else if( nproc > 1 ) {
-        cluster <- parallel::makeCluster(nproc, type="PSOCK")
-        registerDoParallel(cluster,cores=nproc)
+    } else if (nproc > 1) {
+        cluster <- parallel::makeCluster(nproc, type = "PSOCK")
+        registerDoParallel(cluster, cores = nproc)
     } else {
         stop('Nproc must be positive.')
     }
-    
-    ### export function to clusters
+
     DNAMatrix_gap0 <- getDNAMatrix(gap = 0)
-    if (nproc > 1) { 
-        export_functions <- list("pairwiseDist", "DNAMatrix_gap0", "uniqueSeq", "stri_split_fixed")
-        parallel::clusterExport(cluster, export_functions, envir=environment())
+    seq_col <- if (cdr3) cdr3_col else junction
+
+    # this index is later used to quickly get the rows of db corresponding to a clone
+    clone_to_idx <- split(seq_along(db[[clone]]), db[[clone]])
+
+    if (nproc > 1) {
+        parallel::clusterExport(
+            cluster,
+            list(
+                "pairwiseDist",
+                "DNAMatrix_gap0",
+                "stri_split_fixed",
+                "db",
+                "clone",
+                "seq_col",
+                "clone_to_idx"
+            ),
+            envir = environment()
+        )
     }
-    
-    n_groups <- nrow(vjl_gps)  
-    ### check the progress bar
+
+    n_groups <- nrow(vjl_gps)
     if (verbose) {
         pb <- progressBar(n_groups)
     }
-    
+
     k <- NULL
-    # open dataframes
-    db_dff <- foreach(k=1:n_groups,
-                      .combine="rbind",
-                      .errorhandling='stop') %dopar% {
-                          clones <- stringi::stri_split_fixed(vjl_gps$clone_id[k], ",")[[1]]
-                          junction_length <- vjl_gps$junction_length[k]
-                          in_clones <- db[[clone]] %in% clones
-                          
-                          seqs <- db[[ifelse(cdr3, cdr3_col, junction)]][in_clones]
-                          names(seqs) <- db[[clone]][in_clones]
-                          seqs <- uniqueSeq(seqs)
-                          
-                          dist_mtx <- pairwiseDist(seqs, dist_mat=DNAMatrix_gap0)
+    db_dff <- foreach(
+        k = 1:n_groups,
+        .combine = "rbind",
+        .errorhandling = 'stop'
+    ) %dopar%
+        {
+            clones <- stringi::stri_split_fixed(vjl_gps$clone_id[k], ",")[[1]]
+            jlen <- vjl_gps$junction_length[k]
 
-                          clones_in_group <- unique(rownames(dist_mtx)) # Only unique clones present
-                          n_clones <- length(clones_in_group)
-                          n_rows <- n_clones + (n_clones * (n_clones - 1) / 2)
+            # get te sequences and clone ids for all sequences in the group of clones
+            row_idx <- unlist(clone_to_idx[clones], use.names = FALSE)
+            seqs <- db[[seq_col]][row_idx]
+            cids <- db[[clone]][row_idx]
 
-                          res_mtx <- matrix(NA, nrow = n_rows, ncol = 4)
+            # This dedup is faster 
+            # than using a dataframe and calling distinct()
+            key <- paste0(cids, "\t", seqs)
+            keep <- !duplicated(key)
+            seqs <- seqs[keep]
+            names(seqs) <- cids[keep]
 
-                          curr_row <- 1
-                          for (i in 1:n_clones) {
-                            idx_i <- which(rownames(dist_mtx) == clones_in_group[i])
-                            
-                            # INTRA: Max distance in sub-matrix
-                            res_mtx[curr_row, ] <- c(i, NA, max(dist_mtx[idx_i, idx_i]) / junction_length, 0)
-                            curr_row <- curr_row + 1
-                                
-                            # INTER: Min distance between pairs
-                            if (n_clones > 1 && i < n_clones) {
-                              for (j in (i + 1):n_clones) {
-                                idx_j <- which(rownames(dist_mtx) == clones_in_group[j])
-                                      
-                                res_mtx[curr_row, ] <- c(i, j, min(dist_mtx[idx_i, idx_j]) / junction_length, 1)
-                                curr_row <- curr_row + 1
-                                }
-                              }
-                            }
+            dist_mtx <- pairwiseDist(seqs, dist_mat = DNAMatrix_gap0)
 
-                            # Convert result to dataframe
-                            res_k <- data.frame(
-                                clone_id_x = clones_in_group[res_mtx[,1]],
-                                clone_id_y = clones_in_group[res_mtx[,2]],
-                                distance   = res_mtx[,3],
-                                label      = ifelse(res_mtx[,4] == 0, "intra", "inter")
-                            )
-                      }
-    
-    if (nproc > 1) { parallel::stopCluster(cluster) }
-    
+            rn <- rownames(dist_mtx)
+            clone_list <- unique(rn)
+            n_clones <- length(clone_list)
+            clone_idx <- split(seq_along(rn), rn)[clone_list]
+
+            n_rows <- n_clones + n_clones * (n_clones - 1) %/% 2
+            clone_x <- character(n_rows)
+            clone_y <- character(n_rows)
+            dists <- numeric(n_rows)
+            labels <- character(n_rows)
+
+            r <- 0L
+            for (i in seq_along(clone_list)) {
+                ii <- clone_idx[[i]]
+                r <- r + 1L
+                clone_x[r] <- clone_list[i]
+                clone_y[r] <- NA_character_
+                dists[r] <- max(dist_mtx[ii, ii, drop = FALSE]) / jlen
+                labels[r] <- "intra"
+
+                if (i < n_clones) {
+                    for (j in (i + 1L):n_clones) {
+                        jj <- clone_idx[[j]]
+                        r <- r + 1L
+                        clone_x[r] <- clone_list[i]
+                        clone_y[r] <- clone_list[j]
+                        dists[r] <- min(dist_mtx[ii, jj, drop = FALSE]) / jlen
+                        labels[r] <- "inter"
+                    }
+                }
+            }
+
+            if (verbose) {
+                pb$tick()
+            }
+
+            data.frame(
+                clone_id_x = clone_x,
+                clone_id_y = clone_y,
+                distance = dists,
+                label = labels,
+                stringsAsFactors = FALSE
+            )
+        }
+
+    if (nproc > 1) {
+        parallel::stopCluster(cluster)
+    }
     return(db_dff)
 }
 # *****************************************************************************
