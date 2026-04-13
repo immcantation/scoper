@@ -35,7 +35,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // fastDist_rcpp
-IntegerMatrix fastDist_rcpp(CharacterVector seqs);
+IntegerVector fastDist_rcpp(CharacterVector seqs);
 RcppExport SEXP _scoper_fastDist_rcpp(SEXP seqsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

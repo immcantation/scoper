@@ -37,7 +37,7 @@ int countSeqsWithInvalidBases_rcpp(CharacterVector seqs) {
 }
 
 // [[Rcpp::export]]
-IntegerMatrix fastDist_rcpp(CharacterVector seqs) {
+IntegerVector fastDist_rcpp(CharacterVector seqs) {
   int N = seqs.size();
 
   if (N == 0) stop("empty input");
@@ -60,7 +60,16 @@ IntegerMatrix fastDist_rcpp(CharacterVector seqs) {
     }
   }
 
-  IntegerMatrix Mmatch(N, N); // zero-initialized
+  // lower-triangle vector (column-major, matching R's dist storage):
+  // element at row i, col j (i > j, 0-indexed) maps to position:
+  //   j*N - j*(j+1)/2 + (i-j) - 1
+  size_t tri_size = (size_t)N * (N - 1) / 2;
+  IntegerVector tri(tri_size); // zero-initialized
+
+  auto tri_idx = [&](int i, int j) -> size_t {
+    if (i < j) std::swap(i, j);
+    return (size_t)j * N - (size_t)j * (j + 1) / 2 + (i - j) - 1;
+  };
 
   for (int p = 0; p < L; ++p) {
     std::vector<int> A, Cb, G, Tt, Ns, Q;
@@ -78,28 +87,20 @@ IntegerMatrix fastDist_rcpp(CharacterVector seqs) {
       }
     }
 
-    // column-major safe updaters: iterate over j (column) outermost,
-    // then use a pointer to column j and bump rows i.
-    auto bump_within = [&](const std::vector<int>& v){
+    // increment lower-triangle match counts for pairs within the same bucket
+    auto bump_within = [&](const std::vector<int>& v) {
       int m = (int)v.size();
-      for (int jj = 0; jj < m; ++jj) {
-        int j = v[jj];
-        int* colj = &Mmatch(0, j);        // pointer to column j
-        for (int ii = 0; ii < m; ++ii) {
-          colj[v[ii]] += 1;               // increment (i = v[ii], j)
-        }
-      }
+      for (int ii = 1; ii < m; ++ii)
+        for (int jj = 0; jj < ii; ++jj)
+          tri[tri_idx(v[ii], v[jj])] += 1;
     };
 
-    auto bump_pairs = [&](const std::vector<int>& X, const std::vector<int>& Y){
-      int mx = (int)X.size(), my = (int)Y.size();
-      for (int jj = 0; jj < my; ++jj) {
-        int j = Y[jj];
-        int* colj = &Mmatch(0, j);        // pointer to column j
-        for (int ii = 0; ii < mx; ++ii) {
-          colj[X[ii]] += 1;               // increment (i = X[ii], j)
-        }
-      }
+    // increment lower-triangle match counts for all cross-bucket pairs
+    auto bump_pairs = [&](const std::vector<int>& X, const std::vector<int>& Y) {
+      for (int xi : X)
+        for (int yj : Y)
+          if (xi != yj)
+            tri[tri_idx(xi, yj)] += 1;
     };
 
     // same known base
@@ -112,18 +113,14 @@ IntegerMatrix fastDist_rcpp(CharacterVector seqs) {
     K.insert(K.end(), G.begin(),  G.end());
     K.insert(K.end(), Tt.begin(), Tt.end());
     bump_pairs(Ns, K);
-    bump_pairs(K, Ns);
 
     // ? with ?
     bump_within(Q);
   }
 
   // convert matches -> distances
-  for (int i = 0; i < N; ++i) {
-    for (int j = 0; j < N; ++j) {
-      Mmatch(i, j) = L - Mmatch(i, j);
-    }
-    Mmatch(i, i) = 0;
-  }
-  return Mmatch;
+  for (int k = 0; k < tri_size; ++k)
+    tri[k] = L - tri[k];
+
+  return tri;
 }

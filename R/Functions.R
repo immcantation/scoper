@@ -315,6 +315,20 @@ pairwiseMutions <- function(germ_imgt,
 # *****************************************************************************
 
 # *****************************************************************************
+# Wrapper around fastDist_rcpp: returns a proper dist object with Labels
+fastDist <- function(seqs) {
+    n <- length(seqs)
+    v <- fastDist_rcpp(seqs)
+    structure(v,
+              class  = "dist",
+              Size   = n,
+              Labels = names(seqs),
+              Diag   = FALSE,
+              Upper  = FALSE)
+}
+# *****************************************************************************
+
+# *****************************************************************************
 ### make a dataframe of unique seqs in each clone
 uniqueSeq <- function(seqs) {
     # seqs_db <- data.frame(value = seqs, name = names(seqs), stringsAsFactors = FALSE) %>%
@@ -1970,7 +1984,7 @@ hierarchicalClones_helper <- function(db_gp,
     # calculate distance matrix
     if (method == "nt") {
     	if (! IUPAC){
-            dist_mtx <- fastDist_rcpp(seqs_unq)
+            dist_mtx <- fastDist(seqs_unq)
         }
        	else{
             dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
