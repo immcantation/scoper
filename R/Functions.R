@@ -329,6 +329,20 @@ fastDist <- function(seqs) {
 # *****************************************************************************
 
 # *****************************************************************************
+# Wrapper around fastDistAA_rcpp: returns a proper dist object with Labels
+fastDistAA <- function(seqs) {
+    n <- length(seqs)
+    v <- fastDistAA_rcpp(seqs)
+    structure(v,
+              class  = "dist",
+              Size   = n,
+              Labels = names(seqs),
+              Diag   = FALSE,
+              Upper  = FALSE)
+}
+# *****************************************************************************
+
+# *****************************************************************************
 ### make a dataframe of unique seqs in each clone
 uniqueSeq <- function(seqs) {
     # seqs_db <- data.frame(value = seqs, name = names(seqs), stringsAsFactors = FALSE) %>%
