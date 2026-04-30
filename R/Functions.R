@@ -1503,13 +1503,6 @@ defineClonesScoper <- function(db,
         stop('Nproc must be positive.')
     }
 
-    ## RDB
-    ## This is necessary until the modified code is in the default path
-    #parallel::clusterEvalQ(cluster, {
-    #    .libPaths(c("/gpfs/gibbs/project/support/rdb9/working/Gabernet/251202/modified/devlib", .libPaths()))
-    #    library(scoper)
-    #})
-
     ### export function to clusters
     if (nproc > 1) { 
         export_functions <- list("passToClustering_lev1", "passToClustering_lev2", "passToClustering_lev3", "passToClustering_lev4",
