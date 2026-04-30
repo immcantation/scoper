@@ -70,6 +70,462 @@ test_that("Test hierarchicalClones", {
     }
 })
 
+#### clone - hierarchicalClones with IUPAC parameter ####
+
+test_that("Test hierarchicalClones with IUPAC parameter", {
+    # IUPAC and max_n serve different purposes:
+    # - IUPAC: Controls (1) validation (which characters allowed) and 
+    #          (2) distance calculation method (fast Hamming vs IUPAC-aware scoring)
+    # - max_n: Filters sequences by counting non-ATCG characters using regex "[^ATCG]"
+    #          (includes N, ?, and all IUPAC codes - whatever passed validation)
+    #
+    # Processing order: Validation -> Filtering -> Distance calculation
+    #
+    # Key use cases tested:
+    # 1. IUPAC=FALSE, max_n=0: Strict ATCG-only mode with fast distance calculation
+    # 2. IUPAC=TRUE, max_n=0: IUPAC-aware distance (but filters out IUPAC seqs anyway)
+    # 3. IUPAC=TRUE, max_n=1+: Main use case - IUPAC codes with proper scoring
+    # 4. IUPAC=FALSE, max_n=1+: Allow N/? but reject IUPAC codes (validation blocks them)
+    # 5. IUPAC=FALSE/TRUE with standard bases: Backward compatibility (same results)
+    
+    # Create test data with IUPAC ambiguity codes
+    # With threshold=0.15 and length 15, distance > 0.15 requires >=3 mutations (3/15=0.2)
+    db_iupac <- data.frame(
+        sequence_id = paste0("seq", 1:12),
+        v_call = rep("IGHV1-1*01", 12),
+        j_call = rep("IGHJ1*01", 12),
+        # Use IUPAC ambiguity codes: R(A/G), Y(C/T), W(A/T), S(C/G), M(A/C), K(G/T)
+        junction = c(
+            # Clone 1: sequences similar to TGTGCAAGCTACTGG (0-1 mutations apart)
+            "TGTGCRAGCTACTGG", # R = A or G at pos 5
+            "TGTGCRAGCTACTGG", # identical to seq1
+            "TGTGCAAGCTACTGG", # standard bases only
+            "TGTGCYAGCTACTGG", # Y = C or T at pos 5, 1 mutation from seq3
+            "TGTGCYAGCTACTGG", # identical to seq4
+            "TGTGCMAGCTACTGG", # M = A or C at pos 5, 1 mutation from seq3
+            "TGTGCWAGCTACTGG", # W = A or T at pos 5, 1 mutation from seq3
+            
+            # Clone 2: sequences similar to ACGTTTGGCCAAACC (3+ mutations from Clone 1)
+            "ACGTTTGGCCAAACC", # standard bases, distant from Clone 1
+            "ACGTTTGGCCAAACC", # identical to seq8
+            "ACGKTTGGCCAAACC", # K = G or T at pos 4, 1 mutation from seq8
+            "ACGRTTGGCCAAACC", # R = A or G at pos 4, 1 mutation from seq8
+            "ACGTTTSGCCAAACC"  # S = C or G at pos 7, 1 mutation from seq8
+        ),
+        locus = rep("IGH", 12),
+        stringsAsFactors = FALSE
+    )
+
+    # Test 1: IUPAC=FALSE should reject IUPAC characters at validation stage
+    # Validation (IUPAC=FALSE): Only allows A,T,C,G,N,? - REJECTS IUPAC codes (R,Y,W,S,M,K,etc)
+    # Result: Sequences with IUPAC codes fail validation and raise error before any filtering
+    # Use case: Strict ATCG-only mode with fast Hamming distance (fastDist_rcpp)
+    expect_error(
+        hierarchicalClones(db_iupac,
+            threshold = 0.15,
+            method = "nt", linkage = "single",
+            junction = "junction",
+            v_call = "v_call", j_call = "j_call",
+            IUPAC = FALSE,  # Use fast Hamming distance for ATCG only
+            summarize_clones = FALSE
+        ),
+        "Invalid sequence characters"
+    )
+
+    # Test 2: IUPAC=TRUE with max_n=0 - validates with IUPAC but filters them out
+    # 1. Validation (IUPAC=TRUE): Allows standard bases, N, ?, and IUPAC codes - all sequences pass
+    # 2. Filtering (max_n=0): Counts non-ATCG using "[^ATCG]" - removes all sequences with any non-ATCG
+    # Result: Only seq3, seq8 and seq9 (standard bases only) remain after filtering
+    expect_warning(
+        expect_message(
+            db_result2 <- hierarchicalClones(db_iupac,
+                threshold = 0.15,
+                method = "nt", linkage = "single",
+                junction = "junction",
+                v_call = "v_call", j_call = "j_call",
+                IUPAC = TRUE,   # Use IUPAC-aware distance calculation
+                max_n = 0,      # Filter out sequences with ANY non-ATCG chars
+                summarize_clones = FALSE
+            ),
+            "Running defineClonesScoper in bulk mode and only keep heavy chains"
+        ),
+        "Removed 9 sequences with non ATCG characters."
+    )
+
+    # Only 3 sequences with standard bases remain
+    expect_equal(nrow(db_result2), 3)
+    expect_equal(sort(db_result2$sequence_id), c("seq3", "seq8", "seq9"))
+    # They are in different clones (distant sequences)
+    expect_equal(length(unique(db_result2$clone_id)), 2)
+
+    # Test 3a: Create dataset with N characters to distinguish from IUPAC codes
+    db_with_n <- db_iupac
+    db_with_n[13,] <- NA
+    db_with_n$junction[13] <- "TGTGCNAGCTACTGG"  # Add seq13 with N
+    db_with_n$sequence_id <- c(db_with_n$sequence_id[1:12], "seq13")
+    db_with_n$v_call <- c(db_with_n$v_call[1:12], "IGHV1-1*01")
+    db_with_n$j_call <- c(db_with_n$j_call[1:12], "IGHJ1*01")
+    db_with_n$locus <- c(db_with_n$locus[1:12], "IGH")
+    
+    # Test 3b: IUPAC=TRUE with max_n=1 - allows up to 1 non-ATCG character per sequence
+    # This is the main use case: proper IUPAC distance calculation with ambiguity codes
+    # 1. Validation (IUPAC=TRUE): Allows standard bases (A,T,C,G) plus N, ?, and IUPAC codes (R,Y,W,S,M,K,etc)
+    # 2. Filtering (max_n=1): Counts non-ATCG using "[^ATCG]" - keeps sequences with ≤1 such character
+    # 3. Distance: Uses IUPAC-aware scoring (alakazam::pairwiseDist) for proper ambiguity handling
+    expect_message(
+        db_result3 <- hierarchicalClones(db_with_n,
+            threshold = 0.15,
+            method = "nt", linkage = "single",
+            junction = "junction",
+            v_call = "v_call", j_call = "j_call",
+            IUPAC = TRUE,   # Use IUPAC-aware distance calculation
+            max_n = 1,      # Allow up to 1 non-ATCG character (IUPAC or N)
+            summarize_clones = FALSE
+        ),
+        "Running defineClonesScoper in bulk mode and only keep heavy chains"
+    )
+    
+    # All 13 sequences kept (each has ≤1 non-ATCG character)
+    expect_equal(nrow(db_result3), 13)
+    
+    # Verify that we have 2 different clusters (Clone 1 and Clone 2)
+    n_clones <- length(unique(db_result3$clone_id))
+    expect_equal(n_clones, 2)
+    
+    # Identical sequences with IUPAC codes should cluster together
+    # Note: rows may be reordered, so reference by sequence_id
+    get_clone <- function(seq_id) db_result3$clone_id[db_result3$sequence_id == seq_id]
+    
+    expect_equal(get_clone("seq1"), get_clone("seq2"))  # seq1=seq2 (both R)
+    expect_equal(get_clone("seq4"), get_clone("seq5"))  # seq4=seq5 (both Y)
+    expect_equal(get_clone("seq8"), get_clone("seq9"))  # seq8=seq9 (standard)
+    
+    # seq13 (with N) should cluster with Clone 1 (similar to seq3)
+    expect_equal(get_clone("seq3"), get_clone("seq13"))
+    
+    # Verify two distinct clones based on biological distance
+    clone1_id <- get_clone("seq3")  # seq3 in Clone 1
+    clone2_id <- get_clone("seq8")  # seq8 in Clone 2
+    expect_true(clone1_id != clone2_id)
+    expect_true(all(sapply(paste0("seq", 1:7), get_clone) == clone1_id))   # Clone 1: seq1-7
+    expect_true(all(sapply(paste0("seq", 8:12), get_clone) == clone2_id))  # Clone 2: seq8-12
+    expect_true(get_clone("seq13") == clone1_id)                           # seq13 joins Clone 1
+
+    # Test 4: IUPAC=FALSE with max_n=1+ - allows N/? but rejects other IUPAC codes
+    # This demonstrates the two-stage process: validation -> filtering
+    # 1. Validation (IUPAC=FALSE): Allows A,T,C,G,N,? but REJECTS IUPAC codes (R,Y,W,S,M,K,etc)
+    # 2. Filtering (max_n): Counts non-ATCG using "[^ATCG]" regex on sequences that passed validation
+    # Use case: Tolerate low-quality positions (N,?) with fast Hamming distance, but no ambiguity codes
+    db_with_n_only <- data.frame(
+        sequence_id = paste0("seq", 1:5),
+        v_call = rep("IGHV1-1*01", 5),
+        j_call = rep("IGHJ1*01", 5),
+        junction = c(
+            "TGTGCAAGCTACTGG",  # standard bases only
+            "TGTGCNAGCTACTGG",  # 1 N (allowed with max_n=1)
+            "TGTGC?AGCTACTGG",  # 1 ? (allowed with max_n=1)
+            "TGTGCNNGCTACTGG",  # 2 N's (filtered with max_n=1)
+            "TGTGCRAGCTACTGG"   # IUPAC R code (should fail validation)
+        ),
+        locus = rep("IGH", 5),
+        stringsAsFactors = FALSE
+    )
+    
+    # Should reject at validation stage due to IUPAC code (R) in seq5
+    expect_error(
+        hierarchicalClones(db_with_n_only,
+            threshold = 0.15,
+            method = "nt", linkage = "single",
+            junction = "junction",
+            v_call = "v_call", j_call = "j_call",
+            IUPAC = FALSE,  # Reject IUPAC codes
+            max_n = 1,      # Allow up to 1 N or ?
+            summarize_clones = FALSE
+        ),
+        "Invalid sequence characters"
+    )
+    
+    # Test with only N/? (no IUPAC codes) - should succeed
+    db_n_only_valid <- db_with_n_only[1:4, ]  # Remove seq5 with IUPAC code
+    
+    expect_warning(
+        expect_message(
+            db_result5 <- hierarchicalClones(db_n_only_valid,
+                threshold = 0.15,
+                method = "nt", linkage = "single",
+                junction = "junction",
+                v_call = "v_call", j_call = "j_call",
+                IUPAC = FALSE,  # Use fast Hamming distance
+                max_n = 1,      # Allow up to 1 N or ?
+                summarize_clones = FALSE
+            ),
+            "Running defineClonesScoper in bulk mode and only keep heavy chains"
+        ),
+        "Removed 1 sequences with non ATCG characters."  # seq4 with 2 N's filtered
+    )
+    
+    # Should keep seq1, seq2, seq3 (0-1 non-ATCG characters each)
+    expect_equal(nrow(db_result5), 3)
+    expect_equal(sort(db_result5$sequence_id), c("seq1", "seq2", "seq3"))
+    # All are similar sequences, should be in same clone
+    expect_equal(length(unique(db_result5$clone_id)), 1)
+
+    # Test 5: Standard bases work with both IUPAC=TRUE and IUPAC=FALSE
+    # This demonstrates backward compatibility and performance consideration:
+    # - IUPAC=FALSE: Uses fast Hamming distance (fastDist_rcpp) - faster
+    # - IUPAC=TRUE: Uses IUPAC-aware scoring (alakazam::pairwiseDist) - slower but handles ambiguity
+    # For standard bases (ATCG), results should be identical
+    db_standard <- ExampleDb[1:50, ]
+
+    # Verify db_standard contains only standard bases (not IUPAC ambiguity codes)
+    standard_chars <- c("A", "T", "C", "G", "N", "?")
+    .is_standard <- function(x) {
+        all(unique(strsplit(x, "")[[1]]) %in% standard_chars)
+    }
+    all_standard <- sapply(db_standard$junction, .is_standard)
+    expect_true(all(all_standard),
+        info = "ExampleDb contains IUPAC ambiguity codes - update test data or test expectations"
+    )
+
+    expect_message(
+        db_result_false <- hierarchicalClones(db_standard,
+            threshold = 0.15,
+            method = "nt", linkage = "single",
+            junction = "junction",
+            v_call = "v_call", j_call = "j_call",
+            IUPAC = FALSE,  # Fast Hamming distance for ATCG only
+            summarize_clones = FALSE
+        ),
+        "Running defineClonesScoper in bulk mode and only keep heavy chains"
+    )
+
+    expect_message(
+        db_result_true <- hierarchicalClones(db_standard,
+            threshold = 0.15,
+            method = "nt", linkage = "single",
+            junction = "junction",
+            v_call = "v_call", j_call = "j_call",
+            IUPAC = TRUE,   # IUPAC-aware distance (slower but handles ambiguity)
+            summarize_clones = FALSE
+        ),
+        "Running defineClonesScoper in bulk mode and only keep heavy chains"
+    )
+
+    # Results should be identical for standard bases
+    # (IUPAC just changes the distance calculation method, not the result)
+    expect_equal(nrow(db_result_false), nrow(db_result_true))
+    expect_true(all(!is.na(db_result_false$clone_id)))
+    expect_true(all(!is.na(db_result_true$clone_id)))
+    # Clone assignments should be the same (though IDs may differ)
+    expect_equal(length(unique(db_result_false$clone_id)),
+                 length(unique(db_result_true$clone_id)))
+    
+    # Test 6: IUPAC=TRUE with max_n=NULL - no filtering, process all sequences
+    # This is the most permissive option for IUPAC data
+    # 1. Validation (IUPAC=TRUE): Allows standard bases, N, ?, and all IUPAC codes
+    # 2. Filtering (max_n=NULL): No filtering - all sequences kept regardless of character count
+    # 3. Distance: Uses IUPAC-aware scoring for proper ambiguity handling
+    # Use case: Data with extensive IUPAC codes where you want to process everything
+    
+    # Create test data with multiple IUPAC codes per sequence
+    db_iupac_multi <- data.frame(
+        sequence_id = paste0("seq", 1:8),
+        v_call = rep("IGHV1-1*01", 8),
+        j_call = rep("IGHJ1*01", 8),
+        junction = c(
+            # Clone 1: sequences with multiple IUPAC codes, similar to each other
+            "TGTGCRAGCTRYCTGG",  # R at pos 6, R at pos 12, Y at pos 13 (3 non-ATCG)
+            "TGTGCRAGCTRYCTGG",  # identical to seq1
+            "TGTGCRAGCTWYNMGG",  # R at pos 6, W at pos 12, Y at pos 13, N at pos 14, M at pos 15 (5 non-ATCG)
+            "TGTGCAAGCTACCTGG",  # standard bases only (0 non-ATCG)
+            # Clone 2: sequences distant from Clone 1, also with IUPAC codes
+            "ACGKTTRGCCNNNYYY",  # K, R, 3 N's, 3 Y's (8 non-ATCG characters!)
+            "ACGKTTRGCCNNNYYY",  # identical to seq5
+            "ACGGTTAGCCAAACCC",  # standard bases only (0 non-ATCG)
+            "ACGKTTSGCCNNNYYY"   # K, S, 3 N's, 3 Y's (8 non-ATCG)
+        ),
+        locus = rep("IGH", 8),
+        stringsAsFactors = FALSE
+    )
+    
+    # With max_n=NULL, all sequences should be kept regardless of IUPAC code count
+    expect_message(
+        db_result6 <- hierarchicalClones(db_iupac_multi,
+            threshold = 0.15,
+            method = "nt", linkage = "single",
+            junction = "junction",
+            v_call = "v_call", j_call = "j_call",
+            IUPAC = TRUE,     # Use IUPAC-aware distance calculation
+            max_n = NULL,     # No filtering - process all sequences
+            summarize_clones = FALSE
+        ),
+        "Running defineClonesScoper in bulk mode and only keep heavy chains"
+    )
+    
+    # All 8 sequences kept (no filtering applied)
+    expect_equal(nrow(db_result6), 8)
+    expect_equal(sort(db_result6$sequence_id), paste0("seq", 1:8))
+    
+    # Should have 2 clones based on biological distance
+    expect_equal(length(unique(db_result6$clone_id)), 2)
+    
+    # Helper function to get clone ID by sequence ID
+    get_clone6 <- function(seq_id) db_result6$clone_id[db_result6$sequence_id == seq_id]
+    
+    # Verify identical sequences cluster together despite many IUPAC codes
+    expect_equal(get_clone6("seq1"), get_clone6("seq2"))  # both identical with 3 IUPAC
+    expect_equal(get_clone6("seq5"), get_clone6("seq6"))  # both identical with 8 IUPAC
+    
+    # Verify Clone 1 (seq1-4) and Clone 2 (seq5-8) are distinct
+    clone1_id <- get_clone6("seq1")
+    clone2_id <- get_clone6("seq5")
+    expect_true(clone1_id != clone2_id)
+    expect_true(all(sapply(paste0("seq", 1:4), get_clone6) == clone1_id))
+    expect_true(all(sapply(paste0("seq", 5:8), get_clone6) == clone2_id))
+    
+})
+
+#### clone - hierarchicalClones, IUPAC code in sequence 1001 ####
+
+test_that("Test hierarchicalClones with IUPAC code beyond validation window", {
+    # Validation only inspects the first 1000 sequences (head(..., 1000)).
+    # A sequence containing an IUPAC code at position 1001 therefore escapes the check
+    # regardless of IUPAC=TRUE/FALSE.
+    # What happens next depends on max_n and IUPAC:
+    #   - max_n=0:    prepare_db filters out non-ATCG sequences -> warning, no error (both IUPAC=T/F)
+    #   - max_n=NULL, IUPAC=FALSE: no filtering -> fastDist_rcpp encounters R -> error
+    #   - max_n=NULL, IUPAC=TRUE:  no filtering -> pairwiseDist handles R correctly -> succeeds
+
+    # Build 1001-row dataset: rows 1-1000 are standard ATCG, row 1001 has IUPAC code R
+    n_std <- 1000
+    db_iupac_1001 <- data.frame(
+        sequence_id = paste0("seq", seq_len(n_std + 1)),
+        v_call      = rep("IGHV1-1*01", n_std + 1),
+        j_call      = rep("IGHJ1*01",   n_std + 1),
+        junction    = c(rep("TGTGCAAGCTACTGG", n_std),  # rows 1-1000: ATCG only
+                        "TGTGCRAGCTACTGG"),              # row 1001: R is an IUPAC code
+        locus       = rep("IGH", n_std + 1),
+        stringsAsFactors = FALSE
+    )
+
+    # Confirm row 1001 is the one with the IUPAC code (sanity check)
+    expect_equal(db_iupac_1001$junction[1001], "TGTGCRAGCTACTGG")
+
+    # Same data in reverse order to put IUPAC code in row 1
+    db_iupac_1 <- db_iupac_1001[1001:1, ]
+
+    # Test 1: IUPAC=FALSE, max_n=0 (default)
+    # - Validation (first 1000 rows): passes - no IUPAC codes in rows 1-1000
+    # - max_n=0 filtering: removes row 1001 (R is non-ATCG) and issues a warning
+    # - Result: runs successfully; row 1001 removed
+    expect_warning(
+        expect_message(
+            db_result1 <- hierarchicalClones(db_iupac_1001,
+                threshold = 0.15,
+                method = "nt", linkage = "single",
+                junction = "junction",
+                v_call = "v_call", j_call = "j_call",
+                IUPAC = FALSE,
+                max_n = 0,
+                summarize_clones = FALSE
+            ),
+            "Running defineClonesScoper in bulk mode and only keep heavy chains"
+        ),
+        "Removed 1 sequences with non ATCG characters."
+    )
+    expect_equal(nrow(db_result1), n_std)
+    expect_false("seq1001" %in% db_result1$sequence_id)
+
+    # Same data in reverse order now throws an error. Potentially confusing for users?
+    expect_error(
+        db_result1 <- hierarchicalClones(db_iupac_1,
+            threshold = 0.15,
+            method = "nt", linkage = "single",
+            junction = "junction",
+            v_call = "v_call", j_call = "j_call",
+            IUPAC = FALSE,
+            max_n = 0,
+            summarize_clones = FALSE
+        ),
+        "Invalid sequence characters in the junction column"
+    )
+
+    # Test 2: IUPAC=FALSE, max_n=NULL
+    # - Validation (first 1000 rows): passes - no IUPAC codes in rows 1-1000
+    # - max_n=NULL: no filtering -> row 1001 reaches fastDist_rcpp
+    # - fastDist_rcpp stops with an error because R is not A,C,G,T,N,?
+    expect_error(
+        suppressMessages(
+            hierarchicalClones(db_iupac_1001,
+                threshold = 0.15,
+                method = "nt", linkage = "single",
+                junction = "junction",
+                v_call = "v_call", j_call = "j_call",
+                IUPAC = FALSE,
+                max_n = NULL,
+                summarize_clones = FALSE
+            )
+        ),
+        "Only A,C,G,T,N,\\? are allowed"
+    )
+
+    # Same data in reverse also throws an error.
+    expect_error(
+        suppressMessages(
+            hierarchicalClones(db_iupac_1,
+                threshold = 0.15,
+                method = "nt", linkage = "single",
+                junction = "junction",
+                v_call = "v_call", j_call = "j_call",
+                IUPAC = FALSE,
+                max_n = NULL,
+                summarize_clones = FALSE
+            )
+        ),
+        "Invalid sequence characters in the junction column"
+    )
+
+    # Test 3: IUPAC=TRUE, max_n=NULL
+    # - Validation (first 1000 rows): passes
+    # - max_n=NULL: no filtering -> row 1001 is kept
+    # - Distance: alakazam::pairwiseDist handles IUPAC codes correctly -> no error
+    # - Result: all 1001 sequences processed; seq1001 included in output
+    expect_message(
+        db_result3 <- hierarchicalClones(db_iupac_1001,
+            threshold = 0.15,
+            method = "nt", linkage = "single",
+            junction = "junction",
+            v_call = "v_call", j_call = "j_call",
+            IUPAC = TRUE,
+            max_n = NULL,
+            summarize_clones = FALSE
+        ),
+        "Running defineClonesScoper in bulk mode and only keep heavy chains"
+    )
+    expect_equal(nrow(db_result3), n_std + 1)
+    expect_true("seq1001" %in% db_result3$sequence_id)
+    # seq1001 (TGTGCRAGCTACTGG) is within distance 0.15 of the standard sequences
+    # (TGTGCAAGCTACTGG): R matches A under IUPAC scoring -> same clone
+    expect_equal(length(unique(db_result3$clone_id)), 1)
+
+    # Same data in reverse order gives the same result (IUPAC=TRUE allows R, max_n=NULL means no filtering)
+    expect_message(
+        db_result4 <- hierarchicalClones(db_iupac_1,
+            threshold = 0.15,
+            method = "nt", linkage = "single",
+            junction = "junction",
+            v_call = "v_call", j_call = "j_call",
+            IUPAC = TRUE,
+            max_n = NULL,
+            summarize_clones = FALSE
+        ),
+        "Running defineClonesScoper in bulk mode and only keep heavy chains"
+    )
+    # Results should be identical regardless of row order
+    db_result4_ordered <- db_result4[match(db_result3$sequence_id, db_result4$sequence_id), ]
+    expect_equal(db_result3, db_result4_ordered,  check.attributes = FALSE)
+})
+
 #### clone - spectralClones - novj method ####
 
 test_that("Test spectralClones - novj", {
@@ -407,7 +863,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
     # expect sequences from cells 1 and 3 in clone 1, and
     # sequences from cell 2 in clone 2
     clones_split_F_th0@db %>%
-        mutate(expected_clone_id = dplyr::case_when(
+        dplyr::mutate(expected_clone_id = dplyr::case_when(
             cell_id %in% c(1, 3) ~ "1",
             cell_id %in% c(2) ~ "2",
             TRUE ~ NA_character_
@@ -484,7 +940,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
     # sequences from cell 2 in clone 2, regardless of
     # light chains
     clones_split_F_th0_2l@db %>%
-        mutate(expected_clone_id = dplyr::case_when(
+        dplyr::mutate(expected_clone_id = dplyr::case_when(
             cell_id %in% c(1, 3) ~ "1",
             cell_id %in% c(2) ~ "2",
             TRUE ~ NA_character_
@@ -558,3 +1014,5 @@ test_that("Testing split_light warnings for all cloning mehtods", {
                                 cell_id = "cell_id", split_light = TRUE))
    expect_equal(db_nsplit[['clone_id']], db_split[['clone_id']])
 })
+
+

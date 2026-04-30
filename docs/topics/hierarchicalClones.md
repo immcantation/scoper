@@ -51,7 +51,8 @@ threshold
 
 method
 :   one of the `"nt"` for nucleotide based clustering or 
-`"aa"` for amino acid based clustering.
+`"aa"` for amino acid based clustering. Method `"aa"` still expects nucleotide sequences, 
+which will be translated to amino acids.
 
 linkage
 :   available linkage are `"single"`, `"average"`, and `"complete"`.
