@@ -874,4 +874,89 @@ test_that("Testing split_light warnings for all cloning mehtods", {
    expect_equal(db_nsplit[['clone_id']], db_split[['clone_id']])
 })
 
+#### fastDist_rcpp vs pairwiseDist ####
+
+test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
+    # fastDist_rcpp returns raw integer mismatch counts (IntegerMatrix).
+    # pairwiseDist also returns raw mismatch counts (NumericMatrix) — it does NOT
+    # normalize by sequence length. Normalization by junc_length happens inside
+    # hierarchicalClones_helper before passing to hclust.
+    # For pure ATCG sequences (the IUPAC=FALSE, max_n=0 use case), both functions
+    # should return identical values.
+    # N-N is treated as a match (distance=0) by both functions, consistent with
+    # getDNAMatrix(gap=0) where N represents any nucleotide and N ∩ N ≠ ∅.
+
+    dna_mat <- alakazam::getDNAMatrix(gap=0)
+
+    # --- Basic ATCG cases ---
+    seqs <- c(
+        "ACGTACGT",  # seq1
+        "ACGTACGT",  # seq2: identical to seq1 (0 mismatches)
+        "ACGTACGC",  # seq3: 1 mismatch from seq1 (last position T->C)
+        "TTTTTTTT"   # seq4: 6 mismatches from seq1 (positions 1,2,3,5,6,7)
+    )
+
+    fast_counts <- scoper:::fastDist_rcpp(seqs)
+    pw_dist     <- alakazam::pairwiseDist(seqs, dna_mat)
+
+    # Diagonal should be 0
+    expect_equal(diag(fast_counts), rep(0L, length(seqs)))
+    expect_equal(diag(pw_dist),     rep(0,  length(seqs)))
+
+    # Known pairwise mismatch counts
+    expect_equal(fast_counts[1, 2], 0L)  # identical
+    expect_equal(fast_counts[1, 3], 1L)  # one mismatch
+    expect_equal(fast_counts[1, 4], 6L)  # six mismatches
+
+    # Raw counts must match pairwiseDist for ATCG-only input
+    expect_equal(matrix(as.numeric(fast_counts), nrow=nrow(fast_counts)),
+                 pw_dist, check.attributes=FALSE)
+
+    # Matrix must be symmetric
+    expect_equal(fast_counts, t(fast_counts))
+
+    # --- N behaviour ---
+    # N represents any nucleotide. Distance 0 vs any known base
+
+    seqs_n <- c("ACGN", "ACGN", "ACGA", "ACGT")
+    fast_n <- scoper:::fastDist_rcpp(seqs_n)
+    pw_n   <- alakazam::pairwiseDist(seqs_n, dna_mat)
+
+    expect_equal(fast_n[1, 2], 0L)  # N-N: match
+    expect_equal(fast_n[1, 3], 0L)  # N vs A: match
+    expect_equal(fast_n[1, 4], 0L)  # N vs T: match
+    expect_equal(fast_n[3, 4], 1L)  # A vs T: mismatch
+    expect_equal(matrix(as.numeric(fast_n), nrow=nrow(fast_n)),
+                 pw_n, check.attributes=FALSE)
+
+    # --- ? behaviour ---
+    # ? means missing data: matches only itself, mismatches everything else
+
+    seqs_q <- c("ACG?", "ACG?", "ACGA", "ACGN")
+    fast_q <- scoper:::fastDist_rcpp(seqs_q)
+    pw_q   <- alakazam::pairwiseDist(seqs_q, dna_mat)
+
+    expect_equal(fast_q[1, 2], 0L)  # ?-?: match
+    expect_equal(fast_q[1, 3], 1L)  # ? vs A: mismatch
+    expect_equal(fast_q[1, 4], 1L)  # ? vs N: mismatch
+    expect_equal(matrix(as.numeric(fast_q), nrow=nrow(fast_q)),
+                 pw_q, check.attributes=FALSE)
+
+    # --- Mixed N, ?, and ATCG: full matrix matches pairwiseDist ---
+    seqs_mixed <- c("ACGTNACGT?", "ACGTNACGT?", "ACGTAACGTA", "TTTTTTTTTT")
+    fast_mixed <- scoper:::fastDist_rcpp(seqs_mixed)
+    pw_mixed   <- alakazam::pairwiseDist(seqs_mixed, dna_mat)
+
+    expect_equal(fast_mixed[1, 2], 0L)  # identical
+    expect_equal(matrix(as.numeric(fast_mixed), nrow=nrow(fast_mixed)),
+                 pw_mixed, check.attributes=FALSE)
+
+    # --- Single sequence: 1x1 matrix, diagonal = 0 ---
+    fast_single <- scoper:::fastDist_rcpp("ACGT")
+    single <- alakazam::pairwiseDist("ACGT", dna_mat)
+    expect_equal(dim(fast_single), c(1L, 1L))
+    expect_equal(fast_single[1, 1], 0L)
+    expect_equal(fast_single, single, check.attributes = FALSE)
+})
+
 
