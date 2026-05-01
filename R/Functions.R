@@ -790,9 +790,12 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              The maximum number of degenerate characters to permit in the junction sequence before excluding the 
-#'                              record from clonal assignment. Default is set to be zero. Set it as \code{"NULL"} for no 
-#'                              action.
+#' @param    max_n              The maximum number of non-ATCG characters to permit in the junction sequence before 
+#'                              excluding the record from clonal assignment. Counts non-ATCG characters using regex 
+#'                              \code{"[^ATCG]"}, which includes N, ?, and IUPAC ambiguity codes. 
+#'                              With the default value of 0, all sequences containing any non-ATCG character 
+#'                              (including IUPAC codes) in the junction are removed before clustering. Set to \code{NULL} 
+#'                              for no filtering.
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
 #'                              if \code{FALSE} (default) process cloning silently.
@@ -964,9 +967,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' @section IUPAC and max_n parameters:
 #' Note: The \code{IUPAC} parameter is only available for \code{hierarchicalClones} with 
 #' \code{method="nt"} (nucleotide mode). It is ignored when \code{method="aa"} (amino acid mode). 
-#' The \code{identicalClones} and \code{spectralClones} functions always operate as if 
-#' \code{IUPAC=FALSE} (standard bases plus N and ? only). The \code{max_n} parameter 
-#' is available for all cloning functions.
+#' The \code{max_n} parameter is available for all cloning functions.
 #' 
 #' The \code{IUPAC} and \code{max_n} parameters serve complementary but distinct purposes:
 #' 
@@ -978,29 +979,34 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' 
 #' \code{max_n} controls:
 #' \itemize{
-#'   \item Sequence filtering by counting non-ATCG characters
+#'   \item Sequence filtering by counting non-ATCG characters in the junction
 #' }
+#'
+#' \code{hierarchicalClones} with \code{method="aa"} accepts the full IUPAC DNA alphabet during validation, 
+#' then \code{max_n} controls filtering of sequences containing excess non-ATCG characters 
+#' before translating to amino acids and performing IUPAC-aware clustering.
 #' 
-#' Common use cases (for \code{method="nt"}):
+#' Example use cases for \code{hierarchicalClones} with \code{method="nt"}:
 #' \itemize{
 #'   \item \code{IUPAC=FALSE, max_n=0}: Strict ATCG-only mode with fast distance calculation. 
-#'         Will throw an error and exit if sequences with IUPAC codes not A, T, C, G, N, or ? are detected
-#'         among the first 1000 sequences. Fastest option for high-quality data.
-#'   \item \code{IUPAC=FALSE, max_n>0}: Will throw an error and exit if sequences with IUPAC 
-#'         codes not A, T, C, G, N, or ? are detected among the first 1000 sequences. Allows sequences 
+#'         Will throw an error and exit if sequences with characters not A, T, C, G, N, or ? are detected.
+#'         max_n=0 will filter out sequences with N or ? characters. Fastest option for high-quality data.
+#'   \item \code{IUPAC=FALSE, max_n>0}: Will throw an error and exit if sequences with characters
+#'         not A, T, C, G, N, or ? are detected. Allows sequences 
 #'         with limited N/? characters in distance calculation, using fast Hamming distance. 
 #'         Note: IUPAC codes are rejected during validation (before max_n filtering), so max_n only 
-#'         affects sequences that passed validation with N or ? characters. Useful for data with low-quality 
+#'         controls filtering of sequences with N or ? characters. Useful for data with low-quality 
 #'         or masked positions but no experimental ambiguity codes.
 #'   \item \code{IUPAC=TRUE, max_n=0}: Uses IUPAC-aware distance but filters out all non-ATCG 
-#'         characters anyway. Only standard bases remain after filtering.
+#'         characters anyway. Only standard bases remain after filtering. Slower than IUPAC=FALSE 
+#'         but handles any ambiguity codes in the input by filtering them out before clustering.
 #'   \item \code{IUPAC=TRUE, max_n>0}: Allows sequences with limited ambiguity codes and uses 
 #'         proper IUPAC-aware distance calculation. Slower but handles biological ambiguity correctly. 
 #'         Set max_n to the maximum number of ambiguous positions per sequence you want to tolerate 
 #'         (counts all non-ATCG: N, ?, and other IUPAC codes).
 #'   \item \code{IUPAC=TRUE, max_n=NULL}: Process all sequences with IUPAC codes regardless of the 
 #'         number of ambiguous positions. Uses IUPAC-aware distance calculation with no filtering. 
-#'         Most permissive option for data with extensive IUPAC ambiguity codes.
+#'         Most permissive option.
 #' }
 #' 
 #' Note: Validation occurs before filtering. When \code{IUPAC=FALSE}, sequences containing IUPAC 
@@ -1125,12 +1131,11 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              The maximum number of degenerate characters to permit in the junction sequence before excluding the 
-#'                              record from clonal assignment. Counts non-ATCG characters using regex \code{"[^ATCG]"}, which 
-#'                              includes N, ?, and IUPAC ambiguity codes. Note: \code{spectralClones} does not support the 
-#'                              \code{IUPAC} parameter and always validates sequences as if \code{IUPAC=FALSE} (only allows 
-#'                              standard bases A,T,C,G plus N and ?). IUPAC ambiguity codes will cause validation errors. 
-#'                              Default is 0. Set to \code{NULL} for no filtering.
+#' @param    max_n              The maximum number of non-ATCG characters to permit in the junction sequence before 
+#'                              excluding the record from clonal assignment. Counts non-ATCG characters using regex 
+#'                              \code{"[^ATCG]"}, which includes N, ?, and IUPAC ambiguity codes. 
+#'                              With the default value of 0, all sequences containing any non-ATCG character 
+#'                              are removed before clustering. Set to \code{NULL} for no filtering.
 #' @param    threshold          the supervising cut-off to enforce an upper-limit distance for clonal grouping.
 #'                              A numeric value between (0,1).
 #' @param    base_sim           required similarity cut-off for sequences in equal distances from each other.
