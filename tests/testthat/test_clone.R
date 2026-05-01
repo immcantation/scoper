@@ -21,7 +21,7 @@ pipeline_env <- TRUE
 #### clone - identicalClones ####
 
 test_that("Test identicalClones", {
-    # TruthR
+    # Truth
     expects <- as.integer(c(20, 21, 23, 26, 27, 28, 30, 44, 50, 100))
     
     # Reproduce example
