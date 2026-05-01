@@ -1323,10 +1323,10 @@ defineClonesScoper <- function(db,
         valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
     }
     .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
-    valid_seq <- sapply(head(db[[junction]],1000), .validateSeq)
+    valid_seq <- sapply(db[[junction]], .validateSeq)
     not_valid_seq <- which(!valid_seq)
     if (length(not_valid_seq) > 0) {
-        error_msg <- paste0("Invalid sequence characters in the ", junction, " column were found when checking the first 1000 sequences. ",
+        error_msg <- paste0("Invalid sequence characters in the ", junction, " column were found. ",
             length(not_valid_seq)," sequence(s) found.", "\n Valid characters are: '",  valid_chars, "'",
             "\n If you have other IUPAC characters in your sequences, set IUPAC=TRUE to allow all IUPAC bases, this will run a slower version of hierarchicalClustering.")
         if (method == "aa") {
