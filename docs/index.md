@@ -31,6 +31,7 @@ To receive alerts about Immcantation releases, news, events, and tutorials, join
 
 [Nima Nouri](mailto:nima.nouri@yale.edu) (aut)  
 [Edel Aron](mailto:edel.aron@yale.edu) (ctb)  
+[Robert Bjornson](mailto:robert.bjornson@yale.edu) (ctb)  
 [Gisela Gabernet](mailto:gisela.gabernet@yale.edu) (ctb)  
 [Cole Jensen](mailto:cole.jensen@yale.edu) (ctb)  
 [Huimin Lyu](mailto:huimin.lyu@yale.edu) (ctb)  
