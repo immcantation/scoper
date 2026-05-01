@@ -19,6 +19,7 @@ threshold,
 method = c("nt", "aa"),
 linkage = c("single", "average", "complete"),
 normalize = c("len", "none"),
+IUPAC = FALSE,
 junction = "junction",
 v_call = "v_call",
 j_call = "j_call",
@@ -52,7 +53,7 @@ threshold
 method
 :   one of the `"nt"` for nucleotide based clustering or 
 `"aa"` for amino acid based clustering. Method `"aa"` still expects nucleotide sequences, 
-which will be translated to amino acids.
+which will be translated to amino acids
 
 linkage
 :   available linkage are `"single"`, `"average"`, and `"complete"`.
@@ -60,6 +61,17 @@ linkage
 normalize
 :   method of normalization. The default is `"len"`, which divides the distance by the length 
 of the sequence group. If `"none"` then no normalization if performed.
+
+IUPAC
+:   If `TRUE`, allows sequences with IUPAC codes to pass validation 
+and be used in clustering with IUPAC-aware distance calculation 
+(via `alakazam::pairwiseDist`). If `FALSE` (default), uses fast Hamming distance 
+(via `fastDist_rcpp`) and only allows standard bases (A, T, C, G), N, and ? 
+in sequences. This parameter controls validation and distance
+calculation method, not sequence filtering. See `max_n` for 
+filtering sequences by character content. See the IUPAC and max_n 
+parameters section for more details and examples. Note: This parameter is only available 
+for `hierarchicalClones` with `method="nt"`.
 
 junction
 :   character name of the column containing junction sequences.
@@ -118,11 +130,14 @@ mod3
 3 in nucleotide space.
 
 max_n
-:   The maximum number of degenerate characters to permit in the junction sequence 
-before excluding the record from clonal assignment. Note, with 
-`linkage="single"` non-informative positions can create artifactual 
-links between unrelated sequences. Use with caution. 
-Default is set to be zero. Set it as `"NULL"` for no action.
+:   The maximum number of non-ATCG characters (degenerate positions) to permit 
+in the junction sequence before excluding the record from clonal assignment. 
+Note: `max_n` operates independently 
+from `IUPAC` - it controls filtering by character count, while 
+`IUPAC` controls validation and distance calculation method. 
+With `linkage="single"`, non-informative positions can create 
+artifactual links between unrelated sequences. Use with caution. 
+Default is 0 (ATCG-only). Set to `NULL` for no filtering.
 
 nproc
 :   number of cores to distribute the function over.
@@ -139,7 +154,8 @@ The default is `NULL` for no action.
 summarize_clones
 :   if `TRUE` performs a series of analysis to assess the clonal landscape
 and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` (default) then
-a modified input `db` is returned. When grouping by `fields`, 
+a modified input `db` is returned with clone identifiers in the specified 
+`clone` column. When grouping by `fields`, 
 `summarize_clones` should be `FALSE`.
 
 seq_id
@@ -156,6 +172,62 @@ specified `clone` column.
 If `summarize_clones=TRUE` a [ScoperClones](ScoperClones-class.md) object is returned that includes the 
 clonal assignment summary information and a modified input `db` in the `db` slot that 
 contains clonal identifiers in the specified `clone` column.
+
+
+IUPAC and max_n parameters
+-------------------
+
+
+Note: The `IUPAC` parameter is only available for `hierarchicalClones` with 
+`method="nt"` (nucleotide mode). It is ignored when `method="aa"` (amino acid mode). 
+The `max_n` parameter is available for all cloning functions.
+
+The `IUPAC` and `max_n` parameters serve complementary but distinct purposes:
+
+`IUPAC` controls:
+
++  Sequence validation (which characters are allowed)
++  Distance calculation method (fast Hamming vs IUPAC-aware scoring)
+
+
+`max_n` controls:
+
++  Sequence filtering by counting non-ATCG characters in the junction
+
+
+`hierarchicalClones` with `method="aa"` accepts the full IUPAC DNA alphabet during validation, 
+then `max_n` controls filtering of sequences containing excess non-ATCG characters 
+before translating to amino acids and performing IUPAC-aware clustering.
+
+Example use cases for `hierarchicalClones` with `method="nt"`:
+
++  `IUPAC=FALSE, max_n=0`: Strict ATCG-only mode with fast distance calculation. 
+Will throw an error and exit if sequences with characters not A, T, C, G, N, or ? are detected.
+max_n=0 will filter out sequences with N or ? characters. Fastest option for high-quality data.
++  `IUPAC=FALSE, max_n>0`: Will throw an error and exit if sequences with characters
+not A, T, C, G, N, or ? are detected. Allows sequences 
+with limited N/? characters in distance calculation, using fast Hamming distance. 
+Note: IUPAC codes are rejected during validation (before max_n filtering), so max_n only 
+controls filtering of sequences with N or ? characters. Useful for data with low-quality 
+or masked positions but no experimental ambiguity codes.
++  `IUPAC=TRUE, max_n=0`: Uses IUPAC-aware distance but filters out all non-ATCG 
+characters anyway. Only standard bases remain after filtering. Slower than IUPAC=FALSE 
+but handles any ambiguity codes in the input by filtering them out before clustering.
++  `IUPAC=TRUE, max_n>0`: Allows sequences with limited ambiguity codes and uses 
+proper IUPAC-aware distance calculation. Slower but handles biological ambiguity correctly. 
+Set max_n to the maximum number of ambiguous positions per sequence you want to tolerate 
+(counts all non-ATCG: N, ?, and other IUPAC codes).
++  `IUPAC=TRUE, max_n=NULL`: Process all sequences with IUPAC codes regardless of the 
+number of ambiguous positions. Uses IUPAC-aware distance calculation with no filtering. 
+Most permissive option.
+
+
+Note: Validation occurs before filtering. When `IUPAC=FALSE`, sequences containing IUPAC 
+ambiguity codes (R, Y, W, S, M, K, etc.) will fail validation and be rejected before the 
+`max_n` filtering step. Therefore, with `IUPAC=FALSE, max_n > 0`, only sequences 
+with N and ? characters (not IUPAC codes) can pass validation and be filtered by `max_n`. 
+The `max_n` parameter always counts using regex `"[^ATCG]"`, but `IUPAC` determines 
+which non-ATCG characters are allowed to reach the filtering step.
 
 
 Single-cell data
@@ -193,6 +265,11 @@ results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 
 ```
 
+
+```
+In modified Functions.R
+```
+
 *Running defineClonesScoper in bulk mode and only keep heavy chains*
 ```R
 
@@ -204,7 +281,7 @@ plot(results, binwidth=0.02)
 
 ```
 
-![4](hierarchicalClones-4.png)
+![5](hierarchicalClones-5.png)
 
 
 See also

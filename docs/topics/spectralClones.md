@@ -126,9 +126,11 @@ mod3
 3 in nucleotide space.
 
 max_n
-:   the maximum number of degenerate characters to permit in the junction sequence before excluding the 
-record from clonal assignment. Default is set to be zero. Set it as `"NULL"` 
-for no action.
+:   The maximum number of non-ATCG characters to permit in the junction sequence before 
+excluding the record from clonal assignment. Counts non-ATCG characters using regex 
+`"[^ATCG]"`, which includes N, ?, and IUPAC ambiguity codes. 
+With the default value of 0, all sequences containing any non-ATCG character 
+are removed before clustering. Set to `NULL` for no filtering.
 
 threshold
 :   the supervising cut-off to enforce an upper-limit distance for clonal grouping.
@@ -236,6 +238,11 @@ summarize_clones=TRUE)
 
 ```
 
+
+```
+In modified Functions.R
+```
+
 *Running defineClonesScoper in bulk mode and only keep heavy chains*
 ```R
 
@@ -247,7 +254,7 @@ plot(results, binwidth=0.02)
 
 ```
 
-![4](spectralClones-4.png)
+![5](spectralClones-5.png)
 
 
 See also
