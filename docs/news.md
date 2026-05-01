@@ -3,18 +3,14 @@
 Version 1.5.0: April 30, 2026
 -------------------------------------------------------------------------------
 
-Clonal analysis:
+Clonal analysis performance:
 
-+ Added `method="aa"` support to `hierarchicalClones` for amino acid-based
-  clustering. Nucleotide sequences are translated to amino acids on the fly.
-+ Added `IUPAC` parameter to `hierarchicalClones` to allow sequences with IUPAC
-  ambiguity codes to pass character validation and be used in clustering with
-  IUPAC-aware distance calculation (via `alakazam::pairwiseDist`).
-
-Performance:
-
-+ Added fast C++ Hamming distance implementation (`fastDist_rcpp`) used by
-  default in `hierarchicalClones` when `IUPAC=FALSE`.
++ Added `IUPAC` parameter to `hierarchicalClones`. When `IUPAC=TRUE`, sequences
+  containing IUPAC ambiguity codes are retained and distances are computed using an
+  IUPAC-aware substitution matrix (via `alakazam::pairwiseDist`).
++ Improved clonal clustering speed in `hierarchicalClones` with a new C++
+  Hamming distance implementation (`fastDist_rcpp`), used by default when
+  `IUPAC=FALSE` and `method="nt"`.
 
 Bug fixes:
 
