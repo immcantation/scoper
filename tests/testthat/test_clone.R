@@ -915,6 +915,9 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
     # Matrix must be symmetric
     expect_equal(fast_counts, t(fast_counts))
 
+    # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
+    expect_equal(fast_counts, pw_dist, check.attributes=F)
+
     # --- N behaviour ---
     # N represents any nucleotide. Distance 0 vs any known base
 
@@ -941,6 +944,9 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
     expect_equal(fast_q[1, 4], 1L)  # ? vs N: mismatch
     expect_equal(matrix(as.numeric(fast_q), nrow=nrow(fast_q)),
                  pw_q, check.attributes=FALSE)
+    
+    # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
+    expect_equal(fast_q, pw_q, check.attributes=F)
 
     # --- Mixed N, ?, and ATCG: full matrix matches pairwiseDist ---
     seqs_mixed <- c("ACGTNACGT?", "ACGTNACGT?", "ACGTAACGTA", "TTTTTTTTTT")
@@ -951,11 +957,16 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
     expect_equal(matrix(as.numeric(fast_mixed), nrow=nrow(fast_mixed)),
                  pw_mixed, check.attributes=FALSE)
 
+    # Expect same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
+    expect_equal(fast_mixed, pw_mixed, check.attributes=FALSE)
+
     # --- Single sequence: 1x1 matrix, diagonal = 0 ---
     fast_single <- scoper:::fastDist_rcpp("ACGT")
     single <- alakazam::pairwiseDist("ACGT", dna_mat)
     expect_equal(dim(fast_single), c(1L, 1L))
     expect_equal(fast_single[1, 1], 0L)
+
+    # Expect same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
     expect_equal(fast_single, single, check.attributes = FALSE)
 })
 
