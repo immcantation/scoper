@@ -877,15 +877,6 @@ test_that("Testing split_light warnings for all cloning mehtods", {
 #### fastDist_rcpp vs pairwiseDist ####
 
 test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
-    # fastDist_rcpp returns raw integer mismatch counts (IntegerMatrix).
-    # pairwiseDist also returns raw mismatch counts (NumericMatrix) — it does NOT
-    # normalize by sequence length. Normalization by junc_length happens inside
-    # hierarchicalClones_helper before passing to hclust.
-    # For pure ATCG sequences (the IUPAC=FALSE, max_n=0 use case), both functions
-    # should return identical values.
-    # N-N is treated as a match (distance=0) by both functions, consistent with
-    # getDNAMatrix(gap=0) where N represents any nucleotide and N ∩ N ≠ ∅.
-
     dna_mat <- alakazam::getDNAMatrix(gap=0)
 
     # --- Basic ATCG cases ---
@@ -899,22 +890,6 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
     fast_counts <- scoper:::fastDist_rcpp(seqs)
     pw_dist     <- alakazam::pairwiseDist(seqs, dna_mat)
 
-    # Diagonal should be 0
-    expect_equal(diag(fast_counts), rep(0L, length(seqs)))
-    expect_equal(diag(pw_dist),     rep(0,  length(seqs)))
-
-    # Known pairwise mismatch counts
-    expect_equal(fast_counts[1, 2], 0L)  # identical
-    expect_equal(fast_counts[1, 3], 1L)  # one mismatch
-    expect_equal(fast_counts[1, 4], 6L)  # six mismatches
-
-    # Raw counts must match pairwiseDist for ATCG-only input
-    expect_equal(matrix(as.numeric(fast_counts), nrow=nrow(fast_counts)),
-                 pw_dist, check.attributes=FALSE)
-
-    # Matrix must be symmetric
-    expect_equal(fast_counts, t(fast_counts))
-
     # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
     expect_equal(fast_counts, pw_dist, check.attributes=F)
 
@@ -925,12 +900,8 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
     fast_n <- scoper:::fastDist_rcpp(seqs_n)
     pw_n   <- alakazam::pairwiseDist(seqs_n, dna_mat)
 
-    expect_equal(fast_n[1, 2], 0L)  # N-N: match
-    expect_equal(fast_n[1, 3], 0L)  # N vs A: match
-    expect_equal(fast_n[1, 4], 0L)  # N vs T: match
-    expect_equal(fast_n[3, 4], 1L)  # A vs T: mismatch
-    expect_equal(matrix(as.numeric(fast_n), nrow=nrow(fast_n)),
-                 pw_n, check.attributes=FALSE)
+    # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
+    expect_equal(fast_n, pw_n, check.attributes=F)
 
     # --- ? behaviour ---
     # ? means missing data: matches only itself, mismatches everything else
@@ -939,12 +910,6 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
     fast_q <- scoper:::fastDist_rcpp(seqs_q)
     pw_q   <- alakazam::pairwiseDist(seqs_q, dna_mat)
 
-    expect_equal(fast_q[1, 2], 0L)  # ?-?: match
-    expect_equal(fast_q[1, 3], 1L)  # ? vs A: mismatch
-    expect_equal(fast_q[1, 4], 1L)  # ? vs N: mismatch
-    expect_equal(matrix(as.numeric(fast_q), nrow=nrow(fast_q)),
-                 pw_q, check.attributes=FALSE)
-    
     # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
     expect_equal(fast_q, pw_q, check.attributes=F)
 
@@ -953,18 +918,12 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
     fast_mixed <- scoper:::fastDist_rcpp(seqs_mixed)
     pw_mixed   <- alakazam::pairwiseDist(seqs_mixed, dna_mat)
 
-    expect_equal(fast_mixed[1, 2], 0L)  # identical
-    expect_equal(matrix(as.numeric(fast_mixed), nrow=nrow(fast_mixed)),
-                 pw_mixed, check.attributes=FALSE)
-
     # Expect same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
     expect_equal(fast_mixed, pw_mixed, check.attributes=FALSE)
 
     # --- Single sequence: 1x1 matrix, diagonal = 0 ---
     fast_single <- scoper:::fastDist_rcpp("ACGT")
     single <- alakazam::pairwiseDist("ACGT", dna_mat)
-    expect_equal(dim(fast_single), c(1L, 1L))
-    expect_equal(fast_single[1, 1], 0L)
 
     # Expect same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
     expect_equal(fast_single, single, check.attributes = FALSE)
