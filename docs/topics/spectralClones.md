@@ -238,11 +238,6 @@ summarize_clones=TRUE)
 
 ```
 
-
-```
-In modified Functions.R
-```
-
 *Running defineClonesScoper in bulk mode and only keep heavy chains*
 ```R
 
@@ -254,7 +249,7 @@ plot(results, binwidth=0.02)
 
 ```
 
-![5](spectralClones-5.png)
+![4](spectralClones-4.png)
 
 
 See also

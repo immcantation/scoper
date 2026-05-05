@@ -59,10 +59,6 @@ library(dplyr)
 results <- identicalClones(ExampleDb, method="nt", summarize_clones = TRUE)
 ```
 
-```
-## In modified Functions.R
-```
-
 A modified input data.frame with clonal identifiers in the `clone_id` column is contained in the
 `db` slot of the returned returned `ScoperClones` object, which can also be accessed by
 calling `as.data.frame` on the result object.
@@ -161,10 +157,6 @@ Identifying clonal groups using `hierachicalClones` is largely the same as the a
 ``` r
 # Clonal assignment using hierarchical clustering
 results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones = TRUE)
-```
-
-```
-## In modified Functions.R
 ```
 
 The results data.frame, summary plots, and summary table are accessed in the same manner as above.
@@ -266,13 +258,6 @@ same manner as shown above using the hierarchical approach.
 ``` r
 # Clonal assignment using the spectral clustering method novj
 results <- spectralClones(ExampleDb, method="novj", summarize_clones = TRUE)
-```
-
-```
-## In modified Functions.R
-```
-
-``` r
 # Plot a histogram of inter and intra clonal distances
 plot(results, binwidth=0.02)
 ```
@@ -284,13 +269,6 @@ plot(results, binwidth=0.02)
 # Clonal assignment using the spectral clustering method novj with threshold
 results <- spectralClones(ExampleDb, method="novj",
                           threshold=0.15, summarize_clones = TRUE)
-```
-
-```
-## In modified Functions.R
-```
-
-``` r
 # Plot a histogram of inter and intra clonal distances
 plot(results, binwidth=0.02)
 ```
@@ -304,10 +282,6 @@ results <- spectralClones(ExampleDb, method="vj",
                           threshold=0.15,
                           germline="germline_alignment_d_mask",
                           summarize_clones = TRUE)
-```
-
-```
-## In modified Functions.R
 ```
 
 

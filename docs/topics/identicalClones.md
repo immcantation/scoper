@@ -177,11 +177,6 @@ results <- identicalClones(ExampleDb, summarize_clones=TRUE)
 
 ```
 
-
-```
-In modified Functions.R
-```
-
 *Running defineClonesScoper in bulk mode and only keep heavy chains*
 ```R
 
@@ -193,7 +188,7 @@ plot(results, binwidth=0.02)
 
 ```
 
-![5](identicalClones-5.png)
+![4](identicalClones-4.png)
 
 
 See also
