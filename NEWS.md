@@ -1,4 +1,4 @@
-Version 1.5.0: Unreleased
+Version 1.5.0: May 5, 2026
 -------------------------------------------------------------------------------
 
 Clonal analysis performance:
