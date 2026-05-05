@@ -1264,8 +1264,6 @@ defineClonesScoper <- function(db,
                                iter_max = 1000, nstart = 1000, nproc = 1,
                                verbose = FALSE, log = NULL,
                                summarize_clones = FALSE) {
-
-    cat("In modified Functions.R")			       
     ### get model
     model <- match.arg(model)
     
