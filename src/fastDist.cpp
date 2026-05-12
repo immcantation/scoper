@@ -106,13 +106,15 @@ IntegerVector fastDist_rcpp(CharacterVector seqs) {
     // same known base
     bump_within(A);  bump_within(Cb);  bump_within(G);  bump_within(Tt);
 
-    // N with known (both directions)
+    // N with known (both directions), and N with N (N matches any base)
     std::vector<int> K; K.reserve(A.size()+Cb.size()+G.size()+Tt.size());
     K.insert(K.end(), A.begin(),  A.end());
     K.insert(K.end(), Cb.begin(), Cb.end());
     K.insert(K.end(), G.begin(),  G.end());
     K.insert(K.end(), Tt.begin(), Tt.end());
     bump_pairs(Ns, K);
+    bump_pairs(K, Ns);
+    bump_within(Ns);  // N-N is a match (consistent with getDNAMatrix(gap=0))
 
     // ? with ?
     bump_within(Q);

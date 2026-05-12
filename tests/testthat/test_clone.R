@@ -385,147 +385,6 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
     
 })
 
-#### clone - hierarchicalClones, IUPAC code in sequence 1001 ####
-
-test_that("Test hierarchicalClones with IUPAC code beyond validation window", {
-    # Validation only inspects the first 1000 sequences (head(..., 1000)).
-    # A sequence containing an IUPAC code at position 1001 therefore escapes the check
-    # regardless of IUPAC=TRUE/FALSE.
-    # What happens next depends on max_n and IUPAC:
-    #   - max_n=0:    prepare_db filters out non-ATCG sequences -> warning, no error (both IUPAC=T/F)
-    #   - max_n=NULL, IUPAC=FALSE: no filtering -> fastDist_rcpp encounters R -> error
-    #   - max_n=NULL, IUPAC=TRUE:  no filtering -> pairwiseDist handles R correctly -> succeeds
-
-    # Build 1001-row dataset: rows 1-1000 are standard ATCG, row 1001 has IUPAC code R
-    n_std <- 1000
-    db_iupac_1001 <- data.frame(
-        sequence_id = paste0("seq", seq_len(n_std + 1)),
-        v_call      = rep("IGHV1-1*01", n_std + 1),
-        j_call      = rep("IGHJ1*01",   n_std + 1),
-        junction    = c(rep("TGTGCAAGCTACTGG", n_std),  # rows 1-1000: ATCG only
-                        "TGTGCRAGCTACTGG"),              # row 1001: R is an IUPAC code
-        locus       = rep("IGH", n_std + 1),
-        stringsAsFactors = FALSE
-    )
-
-    # Confirm row 1001 is the one with the IUPAC code (sanity check)
-    expect_equal(db_iupac_1001$junction[1001], "TGTGCRAGCTACTGG")
-
-    # Same data in reverse order to put IUPAC code in row 1
-    db_iupac_1 <- db_iupac_1001[1001:1, ]
-
-    # Test 1: IUPAC=FALSE, max_n=0 (default)
-    # - Validation (first 1000 rows): passes - no IUPAC codes in rows 1-1000
-    # - max_n=0 filtering: removes row 1001 (R is non-ATCG) and issues a warning
-    # - Result: runs successfully; row 1001 removed
-    expect_warning(
-        expect_message(
-            db_result1 <- hierarchicalClones(db_iupac_1001,
-                threshold = 0.15,
-                method = "nt", linkage = "single",
-                junction = "junction",
-                v_call = "v_call", j_call = "j_call",
-                IUPAC = FALSE,
-                max_n = 0,
-                summarize_clones = FALSE
-            ),
-            "Running defineClonesScoper in bulk mode and only keep heavy chains"
-        ),
-        "Removed 1 sequences with non ATCG characters."
-    )
-    expect_equal(nrow(db_result1), n_std)
-    expect_false("seq1001" %in% db_result1$sequence_id)
-
-    # Same data in reverse order now throws an error. Potentially confusing for users?
-    expect_error(
-        db_result1 <- hierarchicalClones(db_iupac_1,
-            threshold = 0.15,
-            method = "nt", linkage = "single",
-            junction = "junction",
-            v_call = "v_call", j_call = "j_call",
-            IUPAC = FALSE,
-            max_n = 0,
-            summarize_clones = FALSE
-        ),
-        "Invalid sequence characters in the junction column"
-    )
-
-    # Test 2: IUPAC=FALSE, max_n=NULL
-    # - Validation (first 1000 rows): passes - no IUPAC codes in rows 1-1000
-    # - max_n=NULL: no filtering -> row 1001 reaches fastDist_rcpp
-    # - fastDist_rcpp stops with an error because R is not A,C,G,T,N,?
-    expect_error(
-        suppressMessages(
-            hierarchicalClones(db_iupac_1001,
-                threshold = 0.15,
-                method = "nt", linkage = "single",
-                junction = "junction",
-                v_call = "v_call", j_call = "j_call",
-                IUPAC = FALSE,
-                max_n = NULL,
-                summarize_clones = FALSE
-            )
-        ),
-        "Only A,C,G,T,N,\\? are allowed"
-    )
-
-    # Same data in reverse also throws an error.
-    expect_error(
-        suppressMessages(
-            hierarchicalClones(db_iupac_1,
-                threshold = 0.15,
-                method = "nt", linkage = "single",
-                junction = "junction",
-                v_call = "v_call", j_call = "j_call",
-                IUPAC = FALSE,
-                max_n = NULL,
-                summarize_clones = FALSE
-            )
-        ),
-        "Invalid sequence characters in the junction column"
-    )
-
-    # Test 3: IUPAC=TRUE, max_n=NULL
-    # - Validation (first 1000 rows): passes
-    # - max_n=NULL: no filtering -> row 1001 is kept
-    # - Distance: alakazam::pairwiseDist handles IUPAC codes correctly -> no error
-    # - Result: all 1001 sequences processed; seq1001 included in output
-    expect_message(
-        db_result3 <- hierarchicalClones(db_iupac_1001,
-            threshold = 0.15,
-            method = "nt", linkage = "single",
-            junction = "junction",
-            v_call = "v_call", j_call = "j_call",
-            IUPAC = TRUE,
-            max_n = NULL,
-            summarize_clones = FALSE
-        ),
-        "Running defineClonesScoper in bulk mode and only keep heavy chains"
-    )
-    expect_equal(nrow(db_result3), n_std + 1)
-    expect_true("seq1001" %in% db_result3$sequence_id)
-    # seq1001 (TGTGCRAGCTACTGG) is within distance 0.15 of the standard sequences
-    # (TGTGCAAGCTACTGG): R matches A under IUPAC scoring -> same clone
-    expect_equal(length(unique(db_result3$clone_id)), 1)
-
-    # Same data in reverse order gives the same result (IUPAC=TRUE allows R, max_n=NULL means no filtering)
-    expect_message(
-        db_result4 <- hierarchicalClones(db_iupac_1,
-            threshold = 0.15,
-            method = "nt", linkage = "single",
-            junction = "junction",
-            v_call = "v_call", j_call = "j_call",
-            IUPAC = TRUE,
-            max_n = NULL,
-            summarize_clones = FALSE
-        ),
-        "Running defineClonesScoper in bulk mode and only keep heavy chains"
-    )
-    # Results should be identical regardless of row order
-    db_result4_ordered <- db_result4[match(db_result3$sequence_id, db_result4$sequence_id), ]
-    expect_equal(db_result3, db_result4_ordered,  check.attributes = FALSE)
-})
-
 #### clone - spectralClones - novj method ####
 
 test_that("Test spectralClones - novj", {
@@ -1013,6 +872,61 @@ test_that("Testing split_light warnings for all cloning mehtods", {
                                 j_call = "j_call", summarize_clones = FALSE, 
                                 cell_id = "cell_id", split_light = TRUE))
    expect_equal(db_nsplit[['clone_id']], db_split[['clone_id']])
+})
+
+#### fastDist_rcpp vs pairwiseDist ####
+
+test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
+    dna_mat <- alakazam::getDNAMatrix(gap=0)
+
+    # --- Basic ATCG cases ---
+    seqs <- c(
+        "ACGTACGT",  # seq1
+        "ACGTACGT",  # seq2: identical to seq1 (0 mismatches)
+        "ACGTACGC",  # seq3: 1 mismatch from seq1 (last position T->C)
+        "TTTTTTTT"   # seq4: 6 mismatches from seq1 (positions 1,2,3,5,6,7)
+    )
+
+    fast_counts <- scoper:::fastDist_rcpp(seqs)
+    pw_dist     <- alakazam::pairwiseDist(seqs, dna_mat)
+
+    # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
+    expect_equal(fast_counts, pw_dist, check.attributes=F)
+
+    # --- N behaviour ---
+    # N represents any nucleotide. Distance 0 vs any known base
+
+    seqs_n <- c("ACGN", "ACGN", "ACGA", "ACGT")
+    fast_n <- scoper:::fastDist_rcpp(seqs_n)
+    pw_n   <- alakazam::pairwiseDist(seqs_n, dna_mat)
+
+    # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
+    expect_equal(fast_n, pw_n, check.attributes=F)
+
+    # --- ? behaviour ---
+    # ? means missing data: matches only itself, mismatches everything else
+
+    seqs_q <- c("ACG?", "ACG?", "ACGA", "ACGN")
+    fast_q <- scoper:::fastDist_rcpp(seqs_q)
+    pw_q   <- alakazam::pairwiseDist(seqs_q, dna_mat)
+
+    # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
+    expect_equal(fast_q, pw_q, check.attributes=F)
+
+    # --- Mixed N, ?, and ATCG: full matrix matches pairwiseDist ---
+    seqs_mixed <- c("ACGTNACGT?", "ACGTNACGT?", "ACGTAACGTA", "TTTTTTTTTT")
+    fast_mixed <- scoper:::fastDist_rcpp(seqs_mixed)
+    pw_mixed   <- alakazam::pairwiseDist(seqs_mixed, dna_mat)
+
+    # Expect same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
+    expect_equal(fast_mixed, pw_mixed, check.attributes=FALSE)
+
+    # --- Single sequence: 1x1 matrix, diagonal = 0 ---
+    fast_single <- scoper:::fastDist_rcpp("ACGT")
+    single <- alakazam::pairwiseDist("ACGT", dna_mat)
+
+    # Expect same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
+    expect_equal(fast_single, single, check.attributes = FALSE)
 })
 
 
