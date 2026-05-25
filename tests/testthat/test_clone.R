@@ -887,7 +887,7 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
         "TTTTTTTT"   # seq4: 6 mismatches from seq1 (positions 1,2,3,5,6,7)
     )
 
-    fast_counts <- scoper:::fastDist_rcpp(seqs)
+    fast_counts <- as.matrix(scoper:::fastDist(seqs))
     pw_dist     <- alakazam::pairwiseDist(seqs, dna_mat)
 
     # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
@@ -897,7 +897,7 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
     # N represents any nucleotide. Distance 0 vs any known base
 
     seqs_n <- c("ACGN", "ACGN", "ACGA", "ACGT")
-    fast_n <- scoper:::fastDist_rcpp(seqs_n)
+    fast_n <- as.matrix(scoper:::fastDist(seqs_n))
     pw_n   <- alakazam::pairwiseDist(seqs_n, dna_mat)
 
     # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
@@ -907,7 +907,7 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
     # ? means missing data: matches only itself, mismatches everything else
 
     seqs_q <- c("ACG?", "ACG?", "ACGA", "ACGN")
-    fast_q <- scoper:::fastDist_rcpp(seqs_q)
+    fast_q <- as.matrix(scoper:::fastDist(seqs_q))
     pw_q   <- alakazam::pairwiseDist(seqs_q, dna_mat)
 
     # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
@@ -915,14 +915,14 @@ test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
 
     # --- Mixed N, ?, and ATCG: full matrix matches pairwiseDist ---
     seqs_mixed <- c("ACGTNACGT?", "ACGTNACGT?", "ACGTAACGTA", "TTTTTTTTTT")
-    fast_mixed <- scoper:::fastDist_rcpp(seqs_mixed)
+    fast_mixed <- as.matrix(scoper:::fastDist(seqs_mixed))
     pw_mixed   <- alakazam::pairwiseDist(seqs_mixed, dna_mat)
 
     # Expect same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
     expect_equal(fast_mixed, pw_mixed, check.attributes=FALSE)
 
     # --- Single sequence: 1x1 matrix, diagonal = 0 ---
-    fast_single <- scoper:::fastDist_rcpp("ACGT")
+    fast_single <- as.matrix(scoper:::fastDist("ACGT"))
     single <- alakazam::pairwiseDist("ACGT", dna_mat)
 
     # Expect same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
