@@ -113,7 +113,7 @@ IntegerVector fastDist_rcpp(CharacterVector seqs) {
     K.insert(K.end(), G.begin(),  G.end());
     K.insert(K.end(), Tt.begin(), Tt.end());
     bump_pairs(Ns, K);
-    bump_pairs(K, Ns);
+    // bump_pairs(K, Ns); //  The bump_pairs(Ns, K) call already handles all N-vs-known-base pairs in both directions because tri_idx normalizes (i,j) and (j,i) to the same lower-triangle position.
     bump_within(Ns);  // N-N is a match (consistent with getDNAMatrix(gap=0))
 
     // ? with ?
