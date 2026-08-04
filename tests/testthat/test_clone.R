@@ -72,21 +72,22 @@ test_that("Test hierarchicalClones", {
 
 #### clone - hierarchicalClones with IUPAC parameter ####
 
-test_that("Test hierarchicalClones with IUPAC parameter", {
-    # IUPAC and max_n serve different purposes:
-    # - IUPAC: Controls (1) validation (which characters allowed) and 
-    #          (2) distance calculation method (fast Hamming vs IUPAC-aware scoring)
-    # - max_n: Filters sequences by counting non-ATCG characters using regex "[^ATCG]"
-    #          (includes N, ?, and all IUPAC codes - whatever passed validation)
-    #
-    # Processing order: Validation -> Filtering -> Distance calculation
-    #
-    # Key use cases tested:
-    # 1. IUPAC=FALSE, max_n=0: Strict ATCG-only mode with fast distance calculation
-    # 2. IUPAC=TRUE, max_n=0: IUPAC-aware distance (but filters out IUPAC seqs anyway)
-    # 3. IUPAC=TRUE, max_n=1+: Main use case - IUPAC codes with proper scoring
-    # 4. IUPAC=FALSE, max_n=1+: Allow N/? but reject IUPAC codes (validation blocks them)
-    # 5. IUPAC=FALSE/TRUE with standard bases: Backward compatibility (same results)
+# IUPAC and max_n serve different purposes:
+# - IUPAC: Controls (1) validation (which characters allowed) and 
+#          (2) distance calculation method (fast Hamming vs IUPAC-aware scoring)
+# - max_n: Filters sequences by counting non-ATCG characters using regex "[^ATCG]"
+#          (includes N, ?, and all IUPAC codes - whatever passed validation)
+#
+# Processing order: Validation -> Filtering -> Distance calculation
+#
+# Key use cases tested:
+# 1. IUPAC=FALSE, max_n=0: Strict ATCG-only mode with fast distance calculation
+# 2. IUPAC=TRUE, max_n=0: IUPAC-aware distance (but filters out IUPAC seqs anyway)
+# 3. IUPAC=TRUE, max_n=1+: Main use case - IUPAC codes with proper scoring
+# 4. IUPAC=FALSE, max_n=1+: Allow N/? but reject IUPAC codes (validation blocks them)
+# 5. IUPAC=FALSE/TRUE with standard bases: Backward compatibility (same results)
+
+test_that("Test hierarchicalClones with IUPAC parameter, test1", {
     
     # Create test data with IUPAC ambiguity codes
     # With threshold=0.15 and length 15, distance > 0.15 requires >=3 mutations (3/15=0.2)
@@ -119,7 +120,7 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
     # Test 1: IUPAC=FALSE should reject IUPAC characters at validation stage
     # Validation (IUPAC=FALSE): Only allows A,T,C,G,N,? - REJECTS IUPAC codes (R,Y,W,S,M,K,etc)
     # Result: Sequences with IUPAC codes fail validation and raise error before any filtering
-    # Use case: Strict ATCG-only mode with fast Hamming distance (fastDist_rcpp)
+    # Use case: Strict ATCG-only mode with fast Hamming distance (alakazam::fastDist)
     expect_error(
         hierarchicalClones(db_iupac,
             threshold = 0.15,
@@ -132,10 +133,40 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
         "Invalid sequence characters"
     )
 
+})
+
+test_that("Test hierarchicalClones with IUPAC parameter, test2", {
+
+    db_iupac <- data.frame(
+        sequence_id = paste0("seq", 1:12),
+        v_call = rep("IGHV1-1*01", 12),
+        j_call = rep("IGHJ1*01", 12),
+        # Use IUPAC ambiguity codes: R(A/G), Y(C/T), W(A/T), S(C/G), M(A/C), K(G/T)
+        junction = c(
+            # Clone 1: sequences similar to TGTGCAAGCTACTGG (0-1 mutations apart)
+            "TGTGCRAGCTACTGG", # R = A or G at pos 5
+            "TGTGCRAGCTACTGG", # identical to seq1
+            "TGTGCAAGCTACTGG", # standard bases only
+            "TGTGCYAGCTACTGG", # Y = C or T at pos 5, 1 mutation from seq3
+            "TGTGCYAGCTACTGG", # identical to seq4
+            "TGTGCMAGCTACTGG", # M = A or C at pos 5, 1 mutation from seq3
+            "TGTGCWAGCTACTGG", # W = A or T at pos 5, 1 mutation from seq3
+            
+            # Clone 2: sequences similar to ACGTTTGGCCAAACC (3+ mutations from Clone 1)
+            "ACGTTTGGCCAAACC", # standard bases, distant from Clone 1
+            "ACGTTTGGCCAAACC", # identical to seq8
+            "ACGKTTGGCCAAACC", # K = G or T at pos 4, 1 mutation from seq8
+            "ACGRTTGGCCAAACC", # R = A or G at pos 4, 1 mutation from seq8
+            "ACGTTTSGCCAAACC"  # S = C or G at pos 7, 1 mutation from seq8
+        ),
+        locus = rep("IGH", 12),
+        stringsAsFactors = FALSE
+    )
     # Test 2: IUPAC=TRUE with max_n=0 - validates with IUPAC but filters them out
     # 1. Validation (IUPAC=TRUE): Allows standard bases, N, ?, and IUPAC codes - all sequences pass
     # 2. Filtering (max_n=0): Counts non-ATCG using "[^ATCG]" - removes all sequences with any non-ATCG
     # Result: Only seq3, seq8 and seq9 (standard bases only) remain after filtering
+
     expect_warning(
         expect_message(
             db_result2 <- hierarchicalClones(db_iupac,
@@ -158,6 +189,34 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
     # They are in different clones (distant sequences)
     expect_equal(length(unique(db_result2$clone_id)), 2)
 
+})
+
+test_that("Test hierarchicalClones with IUPAC parameter, test3", {
+    db_iupac <- data.frame(
+        sequence_id = paste0("seq", 1:12),
+        v_call = rep("IGHV1-1*01", 12),
+        j_call = rep("IGHJ1*01", 12),
+        # Use IUPAC ambiguity codes: R(A/G), Y(C/T), W(A/T), S(C/G), M(A/C), K(G/T)
+        junction = c(
+            # Clone 1: sequences similar to TGTGCAAGCTACTGG (0-1 mutations apart)
+            "TGTGCRAGCTACTGG", # R = A or G at pos 5
+            "TGTGCRAGCTACTGG", # identical to seq1
+            "TGTGCAAGCTACTGG", # standard bases only
+            "TGTGCYAGCTACTGG", # Y = C or T at pos 5, 1 mutation from seq3
+            "TGTGCYAGCTACTGG", # identical to seq4
+            "TGTGCMAGCTACTGG", # M = A or C at pos 5, 1 mutation from seq3
+            "TGTGCWAGCTACTGG", # W = A or T at pos 5, 1 mutation from seq3
+            
+            # Clone 2: sequences similar to ACGTTTGGCCAAACC (3+ mutations from Clone 1)
+            "ACGTTTGGCCAAACC", # standard bases, distant from Clone 1
+            "ACGTTTGGCCAAACC", # identical to seq8
+            "ACGKTTGGCCAAACC", # K = G or T at pos 4, 1 mutation from seq8
+            "ACGRTTGGCCAAACC", # R = A or G at pos 4, 1 mutation from seq8
+            "ACGTTTSGCCAAACC"  # S = C or G at pos 7, 1 mutation from seq8
+        ),
+        locus = rep("IGH", 12),
+        stringsAsFactors = FALSE
+    )
     # Test 3a: Create dataset with N characters to distinguish from IUPAC codes
     db_with_n <- db_iupac
     db_with_n[13,] <- NA
@@ -211,6 +270,9 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
     expect_true(all(sapply(paste0("seq", 8:12), get_clone) == clone2_id))  # Clone 2: seq8-12
     expect_true(get_clone("seq13") == clone1_id)                           # seq13 joins Clone 1
 
+})
+
+test_that("Test hierarchicalClones with IUPAC parameter, test4", {
     # Test 4: IUPAC=FALSE with max_n=1+ - allows N/? but rejects other IUPAC codes
     # This demonstrates the two-stage process: validation -> filtering
     # 1. Validation (IUPAC=FALSE): Allows A,T,C,G,N,? but REJECTS IUPAC codes (R,Y,W,S,M,K,etc)
@@ -270,9 +332,12 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
     # All are similar sequences, should be in same clone
     expect_equal(length(unique(db_result5$clone_id)), 1)
 
+})
+
+test_that("Test hierarchicalClones with IUPAC parameter, test5", {
     # Test 5: Standard bases work with both IUPAC=TRUE and IUPAC=FALSE
     # This demonstrates backward compatibility and performance consideration:
-    # - IUPAC=FALSE: Uses fast Hamming distance (fastDist_rcpp) - faster
+    # - IUPAC=FALSE: Uses fast Hamming distance (alakazam::fastDist) - faster
     # - IUPAC=TRUE: Uses IUPAC-aware scoring (alakazam::pairwiseDist) - slower but handles ambiguity
     # For standard bases (ATCG), results should be identical
     db_standard <- ExampleDb[1:50, ]
@@ -319,7 +384,10 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
     # Clone assignments should be the same (though IDs may differ)
     expect_equal(length(unique(db_result_false$clone_id)),
                  length(unique(db_result_true$clone_id)))
-    
+
+})
+
+test_that("Test hierarchicalClones with IUPAC parameter, test6", {
     # Test 6: IUPAC=TRUE with max_n=NULL - no filtering, process all sequences
     # This is the most permissive option for IUPAC data
     # 1. Validation (IUPAC=TRUE): Allows standard bases, N, ?, and all IUPAC codes
@@ -384,6 +452,75 @@ test_that("Test hierarchicalClones with IUPAC parameter", {
     expect_true(all(sapply(paste0("seq", 5:8), get_clone6) == clone2_id))
     
 })
+
+
+test_that("Test hierarchicalClones with aa mode providing amino acid sequences ", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:5),
+        v_call = rep("IGHV1-1*01", 5),
+        j_call = rep("IGHJ1*01", 5),
+        junction_aa = c("CASSYEFG", "CASSYEFG", "CASSDEFG", "CASSDEFG", "CASSXEFB"),
+        locus = rep("IGH", 5),
+        stringsAsFactors = FALSE
+    )
+
+    db_result <- hierarchicalClones(
+        db,
+        method = "aa",
+        junction = "junction_aa",
+        threshold = 0.1,
+        linkage = "single",
+        normalize = "len"
+    )
+    expect_equal(nrow(db_result), 4)    
+    expect_equal(length(unique(db_result$clone_id)), 2)
+})
+
+test_that("Test hierarchicalClones with aa mode providing providing amino acid sequences, max_n = 2 ", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:5),
+        v_call = rep("IGHV1-1*01", 5),
+        j_call = rep("IGHJ1*01", 5),
+        junction_aa = c("CASSYEFG", "CASSYEFG", "CASSDEFG", "CASSDEFG", "CASSXEFB"),
+        locus = rep("IGH", 5),
+        stringsAsFactors = FALSE
+    )
+
+    db_result <- hierarchicalClones(
+        db,
+        method = "aa",
+        junction = "junction_aa",
+        threshold = 0.1,
+        linkage = "single",
+        normalize = "len",
+        max_n = 2
+    )
+    expect_equal(nrow(db_result), 5)    
+    expect_equal(length(unique(db_result$clone_id)), 3)
+})
+
+test_that("Test hierarchicalClones with aa mode providing nucleotide sequences ", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:5),
+        v_call = rep("IGHV1-1*01", 5),
+        j_call = rep("IGHJ1*01", 5),
+        junction = c("TGTGCTTCTTCTTAT", "TGTGCTTCTTCTTAT", "TGTGCTTCTTCTGAT", "TGTGCTTCTTCTGAT", "TGTGCTTCTTCTNAT"),
+        locus = rep("IGH", 5),
+        stringsAsFactors = FALSE
+    )
+
+    db_result <- hierarchicalClones(
+        db,
+        method = "aa",
+        junction = "junction",
+        threshold = 0.1,
+        linkage = "single",
+        normalize = "len"
+    )
+    expect_equal(nrow(db_result), 4)    
+    expect_equal(length(unique(db_result$clone_id)), 2)
+})
+
 
 #### clone - spectralClones - novj method ####
 
@@ -456,9 +593,8 @@ test_that("Test assigning clones works for heavy-only sc data", {
     expect_warning(cloned <- identicalClones(db_sc_heavy, method="aa",
                                cell_id = "cell_id",
                                locus = "locus", nproc=1),
-                   "Single cell mode requested, but")
+                   "Single cell mode requested, but `db` doesn't contain light chain data. Skipping.")
 })
-
 
 #### Single cell 
 
@@ -874,59 +1010,6 @@ test_that("Testing split_light warnings for all cloning mehtods", {
    expect_equal(db_nsplit[['clone_id']], db_split[['clone_id']])
 })
 
-#### fastDist_rcpp vs pairwiseDist ####
 
-test_that("fastDist_rcpp matches pairwiseDist for ATCG sequences", {
-    dna_mat <- alakazam::getDNAMatrix(gap=0)
-
-    # --- Basic ATCG cases ---
-    seqs <- c(
-        "ACGTACGT",  # seq1
-        "ACGTACGT",  # seq2: identical to seq1 (0 mismatches)
-        "ACGTACGC",  # seq3: 1 mismatch from seq1 (last position T->C)
-        "TTTTTTTT"   # seq4: 6 mismatches from seq1 (positions 1,2,3,5,6,7)
-    )
-
-    fast_counts <- scoper:::fastDist_rcpp(seqs)
-    pw_dist     <- alakazam::pairwiseDist(seqs, dna_mat)
-
-    # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
-    expect_equal(fast_counts, pw_dist, check.attributes=F)
-
-    # --- N behaviour ---
-    # N represents any nucleotide. Distance 0 vs any known base
-
-    seqs_n <- c("ACGN", "ACGN", "ACGA", "ACGT")
-    fast_n <- scoper:::fastDist_rcpp(seqs_n)
-    pw_n   <- alakazam::pairwiseDist(seqs_n, dna_mat)
-
-    # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
-    expect_equal(fast_n, pw_n, check.attributes=F)
-
-    # --- ? behaviour ---
-    # ? means missing data: matches only itself, mismatches everything else
-
-    seqs_q <- c("ACG?", "ACG?", "ACGA", "ACGN")
-    fast_q <- scoper:::fastDist_rcpp(seqs_q)
-    pw_q   <- alakazam::pairwiseDist(seqs_q, dna_mat)
-
-    # Same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
-    expect_equal(fast_q, pw_q, check.attributes=F)
-
-    # --- Mixed N, ?, and ATCG: full matrix matches pairwiseDist ---
-    seqs_mixed <- c("ACGTNACGT?", "ACGTNACGT?", "ACGTAACGTA", "TTTTTTTTTT")
-    fast_mixed <- scoper:::fastDist_rcpp(seqs_mixed)
-    pw_mixed   <- alakazam::pairwiseDist(seqs_mixed, dna_mat)
-
-    # Expect same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
-    expect_equal(fast_mixed, pw_mixed, check.attributes=FALSE)
-
-    # --- Single sequence: 1x1 matrix, diagonal = 0 ---
-    fast_single <- scoper:::fastDist_rcpp("ACGT")
-    single <- alakazam::pairwiseDist("ACGT", dna_mat)
-
-    # Expect same results when comparing to pairwiseDist with check.attributes=F (ignoring dimnames)
-    expect_equal(fast_single, single, check.attributes = FALSE)
-})
 
 
