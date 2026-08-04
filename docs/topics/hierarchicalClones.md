@@ -66,7 +66,7 @@ IUPAC
 :   If `TRUE`, allows sequences with IUPAC codes to pass validation 
 and be used in clustering with IUPAC-aware distance calculation 
 (via `alakazam::pairwiseDist`). If `FALSE` (default), uses fast Hamming distance 
-(via `fastDist_rcpp`) and only allows standard bases (A, T, C, G), N, and ? 
+(via `alakazam::fastDist`) and only allows standard bases (A, T, C, G), N, and ? 
 in sequences. This parameter controls validation and distance
 calculation method, not sequence filtering. See `max_n` for 
 filtering sequences by character content. See the IUPAC and max_n 
@@ -131,13 +131,11 @@ mod3
 
 max_n
 :   The maximum number of non-ATCG characters (degenerate positions) to permit 
-in the junction sequence before excluding the record from clonal assignment. 
-Note: `max_n` operates independently 
-from `IUPAC` - it controls filtering by character count, while 
+in the junction when junction sequence is nucleotide sequence. The maximum number of non-standard amino acid characters to permit in the junction when junction sequence is amino acid sequence. With `linkage="single"`, non-informative positions can create artifactual links between unrelated sequences. Use with caution. 
+Default is 0 (ATCG-only or standard amino acid only). Set to `NULL` for no filtering.
+Note: `max_n` operates independently from `IUPAC` - it controls filtering by character count, while 
 `IUPAC` controls validation and distance calculation method. 
-With `linkage="single"`, non-informative positions can create 
-artifactual links between unrelated sequences. Use with caution. 
-Default is 0 (ATCG-only). Set to `NULL` for no filtering.
+
 
 nproc
 :   number of cores to distribute the function over.
