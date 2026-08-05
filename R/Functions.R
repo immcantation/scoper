@@ -1798,13 +1798,12 @@ defineClonesScoper <- function(db,
                 db_na <- db_cloned[is.na(db_cloned[[clone]]), ]
                 db_cloned <- db_cloned[!is.na(db_cloned[[clone]]), ]
             }
-            db_cloned$clone_temp <- db_cloned %>%
-                dplyr::group_by(!!rlang::sym(clone)) %>%
-                dplyr::group_indices()
-            db_cloned[[clone]] <- db_cloned$clone_temp
-            db_cloned <- db_cloned[order(db_cloned[[clone]]), ] # Sorts them by clone_vj_group
-            db_cloned[[clone]] <- as.character(db_cloned[[clone]])
-            db_cloned$clone_temp <- NULL
+            # Clone ids are already final (assigned above, before the light chain
+            # merge); light chain rows only ever copy an existing heavy chain clone
+            # id or stay NA, so nothing needs to be renumbered. Re-sort by the
+            # existing numeric id so a clone's heavy and light chain rows sit
+            # together.
+            db_cloned <- db_cloned[order(as.integer(db_cloned[[clone]])), ]
             if (na.count > 0) {
                 db_cloned <- bind_rows(db_cloned, db_na)
             }
