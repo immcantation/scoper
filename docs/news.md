@@ -1,5 +1,17 @@
 # Release Notes
 
+Version 1.5.0.999: Unreleased
+-------------------------------------------------------------------------------
+
+Bug fixes:
+
++ Fixed `identicalClones`, `hierarchicalClones`, and `spectralClones` in
+  single-cell mode with `summarize_clones=TRUE`: `vjl_groups` and
+  `inter_intra` could reference `clone_id` values no longer matching those in
+  `db`, due to clone ids being renumbered again after merging light chain
+  data without updating those summaries. (Issue #52)
+
+
 Version 1.5.0: May 5, 2026
 -------------------------------------------------------------------------------
 

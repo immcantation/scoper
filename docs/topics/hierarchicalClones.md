@@ -155,7 +155,8 @@ summarize_clones
 :   if `TRUE` performs a series of analysis to assess the clonal landscape
 and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` (default) then
 a modified input `db` is returned with clone identifiers in the specified 
-`clone` column. When grouping by `fields`, 
+`clone` column. In single-cell mode, `vjl_groups` summarizes
+heavy/long-chain partitions used for clustering. When grouping by `fields`,
 `summarize_clones` should be `FALSE`.
 
 seq_id
@@ -242,12 +243,11 @@ Values in the `locus` column must be one of `c("IGH", "IGI", "IGK", "IGL")` for 
 or `c("TRA", "TRB", "TRD", "TRG")` for TCR sequences. Otherwise, the operation will exit and 
 return an error message.
 
-Under single-cell mode with paired-chain sequences, there is a choice of whether 
-grouping should be done by (a) using IGH (BCR) or TRB/TRD (TCR) sequences only or
-(b) using IGH plus IGK/IGL (BCR) or TRB/TRD plus TRA/TRG (TCR) sequences. 
-This is governed by the `only_heavy` argument. There is also choice as to whether 
-inferred clones should be split by the light/short chain (IGK, IGL, TRA, TRG) following 
-heavy/long chain clustering, which is governed by the `split_light` argument.
+In single-cell mode, clonal clustering is performed using heavy/long chains only
+(IGH for BCR or TRB/TRD for TCR). The `only_heavy=FALSE` and
+`split_light=TRUE` options are deprecated and ignored with warnings.
+Consequently, `vjl_groups` summarizes heavy/long-chain V/J/junction-length
+partitions and does not define groups from light/short chains.
 
 In single-cell mode, clonal clustering will not be performed on data where cells are 
 assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation 

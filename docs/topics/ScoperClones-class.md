@@ -51,7 +51,8 @@ the column specified during processing.
 
 `vjl_groups`
 :   `data.frame` of clonal summary, including sequence count, V gene, 
-J gene, junction length, and clone counts.
+J gene, junction length, and clone counts. In single-cell mode, this 
+summary is defined from heavy/long-chain partitions (IGH or TRB/TRD).
 
 `inter_intra`
 :   `data.frame` containing minimum inter (between) and maximum intra 
