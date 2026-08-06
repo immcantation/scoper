@@ -809,6 +809,72 @@ test_that("Test hierarchicalClones only_heavy and first", {
         }
 })
 
+test_that("Test vjl_groups and inter_intra clone_id stay in sync with db in single-cell summarize_clones mode (issue #52)", {
+    # 3 distinct V/J/junction-length groups (A/B/C), 4 distinct heavy chain
+    # sequences each -> 12 clones total, each paired with a light chain.
+    # Deliberately >= 10 clones so that clone ids span both one and two
+    # digits ("1".."12"): a lexical (as opposed to numeric) re-sort of the
+    # character clone id column reorders "10","11","12" ahead of "2".."9".
+    heavy_junctions <- c(
+        "TCGAAATTA", "TCGAAATTC", "TCGAAATTG", "TCGAAATTT", # group A
+        "TCGCCCTTA", "TCGCCCTTC", "TCGCCCTTG", "TCGCCCTTT", # group B
+        "TCGGGGTTA", "TCGGGGTTC", "TCGGGGTTG", "TCGGGGTTT"  # group C
+    )
+    heavy_v_call <- rep(c("IGHV1-2*02", "IGHV3-23*04", "IGHV4-34*01"), each = 4)
+    heavy_j_call <- rep(c("IGHJ4*02", "IGHJ6*02", "IGHJ3*02"), each = 4)
+    n_cells <- length(heavy_junctions)
+    cell_ids <- paste0("cell", seq_len(n_cells))
+
+    db <- data.frame(
+        sequence_id = paste0("seq", seq_len(2 * n_cells)),
+        cell_id = rep(cell_ids, each = 2),
+        v_call = as.vector(rbind(heavy_v_call, rep("IGLV1*01", n_cells))),
+        j_call = as.vector(rbind(heavy_j_call, rep("IGLJ1*01", n_cells))),
+        junction = as.vector(rbind(heavy_junctions, rep("TCGTTTTTC", n_cells))),
+        stringsAsFactors = FALSE
+    )
+    db$locus <- alakazam::getLocus(db$v_call)
+    db$junction_len <- stringi::stri_length(db[["junction"]])
+
+    expect_message(
+        clones <- identicalClones(
+            db,
+            method = "nt",
+            cell_id = "cell_id",
+            locus = "locus",
+            only_heavy = TRUE,
+            summarize_clones = TRUE,
+            nproc = 1
+        ),
+        "Running defineClonesScoper in single cell mode",
+        fixed = TRUE
+    )
+
+    # Expect 12 distinct clone ids in db
+    expect_equal(length(unique(clones@db[["clone_id"]])), 12L)
+
+    # For every vjl_groups row, the clone ids it lists must, when looked up
+    # in db, actually belong to that same V/J/junction-length group. In 
+    # issue #52 clone ids pointed at unrelated group's summary rows. 
+    # vjl_groups summarizes heavy chains only, so restrict 
+    # the lookup to heavy chain rows.
+    for (i in seq_len(nrow(clones@vjl_groups))) {
+        row_clone_ids <- strsplit(clones@vjl_groups$clone_id[i], ",", fixed = TRUE)[[1]]
+        db_rows <- clones@db[clones@db[["clone_id"]] %in% row_clone_ids &
+                                  !is.na(clones@db[["clone_id"]]) &
+                                  clones@db[["locus"]] == "IGH", ]
+        expect_true(all(row_clone_ids %in% clones@db[["clone_id"]]))
+        expect_true(all(db_rows[["v_call"]] == clones@vjl_groups$v_call[i]))
+        expect_true(all(db_rows[["j_call"]] == clones@vjl_groups$j_call[i]))
+        expect_true(all(db_rows[["junction_len"]] == clones@vjl_groups$junction_length[i]))
+    }
+
+    # Consistency of inter_intra's clone ids.
+    inter_intra_ids <- unique(c(clones@inter_intra$clone_id_x, clones@inter_intra$clone_id_y))
+    inter_intra_ids <- inter_intra_ids[inter_intra_ids != "NA"]
+    expect_true(all(inter_intra_ids %in% clones@db[["clone_id"]]))
+})
+
 ## Add test for clones by light chain
 # CGJ 1/29/25 This is no longer needed as we do not split by light chains so I 
 # changed the test to best for a warning when split_lights = TRUE

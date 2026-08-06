@@ -8,7 +8,8 @@
 #' @slot   db              \code{data.frame} of repertoire data including with clonal identifiers in 
 #'                         the column specified during processing.
 #' @slot   vjl_groups      \code{data.frame} of clonal summary, including sequence count, V gene, 
-#'                         J gene, junction length, and clone counts.
+#'                         J gene, junction length, and clone counts. In single-cell mode, this 
+#'                         summary is defined from heavy/long-chain partitions (IGH or TRB/TRD).
 #' @slot   inter_intra     \code{data.frame} containing minimum inter (between) and maximum intra 
 #'                         (within) clonal distances.
 #' @slot   eff_threshold   effective cut-off separating the inter (between) and intra (within) clonal 
@@ -804,8 +805,9 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              The default is \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} (default) then
-#'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
-#'                              \code{summarize_clones} should be \code{FALSE}.
+#'                              a modified input \code{db} is returned. In single-cell mode, \code{vjl_groups}
+#'                              summarizes heavy/long-chain partitions used for clustering. When grouping by
+#'                              \code{fields}, \code{summarize_clones} should be \code{FALSE}.
 #' 
 #' @return
 #' If \code{summarize_clones=FALSE} (default) a modified \code{data.frame} is returned with clone identifiers in the 
@@ -823,12 +825,11 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' or \code{c("TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the operation will exit and 
 #' return an error message.
 #' 
-#' Under single-cell mode with paired-chain sequences, there is a choice of whether 
-#' grouping should be done by (a) using IGH (BCR) or TRB/TRD (TCR) sequences only or
-#' (b) using IGH plus IGK/IGL (BCR) or TRB/TRD plus TRA/TRG (TCR) sequences. 
-#' This is governed by the \code{only_heavy} argument. There is also choice as to whether 
-#' inferred clones should be split by the light/short chain (IGK, IGL, TRA, TRG) following 
-#' heavy/long chain clustering, which is governed by the \code{split_light} argument.
+#' In single-cell mode, clonal clustering is performed using heavy/long chains only
+#' (IGH for BCR or TRB/TRD for TCR). The \code{only_heavy=FALSE} and
+#' \code{split_light=TRUE} options are deprecated and ignored with warnings.
+#' Consequently, \code{vjl_groups} summarizes heavy/long-chain V/J/junction-length
+#' partitions and does not define groups from light/short chains.
 #' 
 #' In single-cell mode, clonal clustering will not be performed on data where cells are 
 #' assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation 
@@ -953,7 +954,8 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} (default) then
 #'                              a modified input \code{db} is returned with clone identifiers in the specified 
-#'                              `clone` column. When grouping by \code{fields}, 
+#'                              `clone` column. In single-cell mode, \code{vjl_groups} summarizes
+#'                              heavy/long-chain partitions used for clustering. When grouping by \code{fields},
 #'                              \code{summarize_clones} should be \code{FALSE}. 
 #' @param   seq_id              The column containing sequence ids
 #'
@@ -1025,12 +1027,11 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' or \code{c("TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the operation will exit and 
 #' return an error message.
 #' 
-#' Under single-cell mode with paired-chain sequences, there is a choice of whether 
-#' grouping should be done by (a) using IGH (BCR) or TRB/TRD (TCR) sequences only or
-#' (b) using IGH plus IGK/IGL (BCR) or TRB/TRD plus TRA/TRG (TCR) sequences. 
-#' This is governed by the \code{only_heavy} argument. There is also choice as to whether 
-#' inferred clones should be split by the light/short chain (IGK, IGL, TRA, TRG) following 
-#' heavy/long chain clustering, which is governed by the \code{split_light} argument.
+#' In single-cell mode, clonal clustering is performed using heavy/long chains only
+#' (IGH for BCR or TRB/TRD for TCR). The \code{only_heavy=FALSE} and
+#' \code{split_light=TRUE} options are deprecated and ignored with warnings.
+#' Consequently, \code{vjl_groups} summarizes heavy/long-chain V/J/junction-length
+#' partitions and does not define groups from light/short chains.
 #' 
 #' In single-cell mode, clonal clustering will not be performed on data where cells are 
 #' assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation 
@@ -1149,8 +1150,9 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              The default is \code{NULL} for no action.
 #' @param    summarize_clones   if \code{TRUE} performs a series of analysis to assess the clonal landscape
 #'                              and returns a \link{ScoperClones} object. If \code{FALSE} (default) then
-#'                              a modified input \code{db} is returned. When grouping by \code{fields}, 
-#'                              \code{summarize_clones} should be \code{FALSE}.
+#'                              a modified input \code{db} is returned. In single-cell mode, \code{vjl_groups}
+#'                              summarizes heavy/long-chain partitions used for clustering. When grouping by
+#'                              \code{fields}, \code{summarize_clones} should be \code{FALSE}.
 #' @return
 #' If \code{summarize_clones=FALSE} (default) a modified \code{data.frame} is returned with clone identifiers in the 
 #' specified \code{clone} column.
@@ -1186,14 +1188,13 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' or \code{c("TRA", "TRB", "TRD", "TRG")} for TCR sequences. Otherwise, the operation will exit and 
 #' return an error message.
 #' 
-#' Under single-cell mode with paired-chain sequences, there is a choice of whether 
-#' grouping should be done by (a) using IGH (BCR) or TRB/TRD (TCR) sequences only or
-#' (b) using IGH plus IGK/IGL (BCR) or TRB/TRD plus TRA/TRG (TCR) sequences. 
-#' This is governed by the \code{only_heavy} argument. There is also choice as to whether 
-#' inferred clones should be split by the light/short chain (IGK, IGL, TRA, TRG) following 
-#' heavy/long chain clustering, which is governed by the \code{split_light} argument.
+#' In single-cell mode, clonal clustering is performed using heavy/long chains only
+#' (IGH for BCR or TRB/TRD for TCR). The \code{only_heavy=FALSE} and
+#' \code{split_light=TRUE} options are deprecated and ignored with warnings.
+#' Consequently, \code{vjl_groups} summarizes heavy/long-chain V/J/junction-length
+#' partitions and does not define groups from light/short chains.
 #' 
-#' In single-cell mode, clonal clustering will not be performed on data were cells are 
+#' In single-cell mode, clonal clustering will not be performed on data where cells are 
 #' assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation 
 #' will exit and return an error message. Cells that lack a heavy/long chain sequence (i.e., cells with 
 #' light/short chains only) will be assigned a \code{clone_id} of \code{NA}.
@@ -1798,13 +1799,12 @@ defineClonesScoper <- function(db,
                 db_na <- db_cloned[is.na(db_cloned[[clone]]), ]
                 db_cloned <- db_cloned[!is.na(db_cloned[[clone]]), ]
             }
-            db_cloned$clone_temp <- db_cloned %>%
-                dplyr::group_by(!!rlang::sym(clone)) %>%
-                dplyr::group_indices()
-            db_cloned[[clone]] <- db_cloned$clone_temp
-            db_cloned <- db_cloned[order(db_cloned[[clone]]), ] # Sorts them by clone_vj_group
-            db_cloned[[clone]] <- as.character(db_cloned[[clone]])
-            db_cloned$clone_temp <- NULL
+            # Clone ids are already final (assigned above, before the light chain
+            # merge); light chain rows only ever copy an existing heavy chain clone
+            # id or stay NA, so nothing needs to be renumbered. Re-sort by the
+            # existing numeric id so a clone's heavy and light chain rows sit
+            # together.
+            db_cloned <- db_cloned[order(as.integer(db_cloned[[clone]])), ]
             if (na.count > 0) {
                 db_cloned <- bind_rows(db_cloned, db_na)
             }
