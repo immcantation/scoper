@@ -566,7 +566,6 @@ prepare_db <- function(db,
       
       # Count the number of non-ATCG's in junction
       if (non_ATCG_remove == TRUE){
-        if (!is.null(max_n)) {
           n_before <- nrow(db)
           db <- db %>% 
             dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
@@ -575,11 +574,8 @@ prepare_db <- function(db,
           if ( n_before > n_after) {
             warning(paste("Removed", n_rmv_N, "sequences with non ATCG characters."))
           }
-        } else {
-          n_rmv_N <- 0
-        }
-      } 
-    }else{
+        } 
+      } else{
       n_rmv_N <- 0
     }
     
