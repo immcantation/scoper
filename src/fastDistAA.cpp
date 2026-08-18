@@ -3,7 +3,7 @@ using namespace Rcpp;
 
 // A=0 C=1 D=2 E=3 F=4 G=5 H=6 I=7 K=8 L=9
 // M=10 N=11 P=12 Q=13 R=14 S=15 T=16 V=17 W=18 Y=19
-// X=20 (wildcard) ?=21
+// X=20 .=21 -=22 (universal wildcards) *=23 (matches only X/./-/itself)
 inline uint8_t code_aa(char c){
   switch(c){
     case 'A': return 0;  case 'C': return 1;  case 'D': return 2;
@@ -13,7 +13,8 @@ inline uint8_t code_aa(char c){
     case 'P': return 12; case 'Q': return 13; case 'R': return 14;
     case 'S': return 15; case 'T': return 16; case 'V': return 17;
     case 'W': return 18; case 'Y': return 19;
-    case 'X': return 20; case '?': return 21;
+    case 'X': return 20; case '.': return 21;
+    case '-': return 22; case '*': return 23;
     default:  return 255;
   }
 }
@@ -65,7 +66,7 @@ IntegerVector fastDistAA_rcpp(CharacterVector seqs) {
     for (int p = 0; p < L; ++p) {
       char up = (char)std::toupper((unsigned char)s[p]);
       uint8_t c = code_aa(up);
-      if (c == 255) stop("Only the 20 standard AAs plus X and ? are allowed");
+      if (c == 255) stop("Only the 20 standard AAs plus X, ., -, and * are allowed");
       enc[(size_t)i * L + p] = c;
     }
   }
@@ -82,9 +83,9 @@ IntegerVector fastDistAA_rcpp(CharacterVector seqs) {
   };
 
   for (int p = 0; p < L; ++p) {
-    // one bucket per code (0-19 known AAs, 20 = X, 21 = ?)
-    std::vector<int> buckets[22];
-    for (int b = 0; b < 22; ++b) buckets[b].reserve(8);
+    // one bucket per code (0-19 known AAs, 20=X, 21=., 22=-, 23=*)
+    std::vector<int> buckets[24];
+    for (int b = 0; b < 24; ++b) buckets[b].reserve(8);
 
     for (int i = 0; i < N; ++i)
       buckets[enc[(size_t)i * L + p]].push_back(i);
@@ -109,15 +110,25 @@ IntegerVector fastDistAA_rcpp(CharacterVector seqs) {
     for (int b = 0; b < 20; ++b)
       bump_within(buckets[b]);
 
-    // X (wildcard) with any known AA — but not X-X
+    // X, ., - are universal wildcards: match each other and * (but AA-vs-AA
+    // is already covered above, and AA-vs-* never matches)
+    std::vector<int> W; // X, ., -
+    W.reserve(N);
+    for (int b = 20; b <= 22; ++b)
+      W.insert(W.end(), buckets[b].begin(), buckets[b].end());
+
+    std::vector<int> C = W; // X, ., -, *
+    C.insert(C.end(), buckets[23].begin(), buckets[23].end());
+
+    // any pair drawn from {X, ., -, *} matches, regardless of which symbol
+    bump_within(C);
+
+    // any known AA matches X, ., - (but not *)
     std::vector<int> K;
     K.reserve(N);
     for (int b = 0; b < 20; ++b)
       K.insert(K.end(), buckets[b].begin(), buckets[b].end());
-    bump_pairs(buckets[20], K);
-
-    // ? with ?
-    bump_within(buckets[21]);
+    bump_pairs(K, W);
   }
 
   // convert matches -> distances

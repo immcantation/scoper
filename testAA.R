@@ -7,24 +7,27 @@ fastDistAA <- function(seqs) {
   structure(v, class="dist", Size=n, Labels=names(seqs), Diag=FALSE, Upper=FALSE)
 }
 
-# Naive reference: pure Hamming with X/? semantics matching fastDistAA
+# Naive reference: pure Hamming matching fastDistAA's rules
 # Rules:
 #   - same known AA -> match
-#   - X vs known AA (either order) -> match (wildcard)
-#   - ? vs ? -> match
-#   - everything else -> mismatch
+#   - X, ., - (universal wildcards) vs known AA (either order) -> match
+#   - any pair drawn from {X, ., -, *} -> match (including X-X, X-., X-*, etc.)
+#   - known AA vs * -> mismatch (* only matches X/./-/itself)
+#   - two different known AAs -> mismatch
 naiveDistAA <- function(s1, s2) {
   c1 <- strsplit(toupper(s1), "")[[1]]
   c2 <- strsplit(toupper(s2), "")[[1]]
   known <- c("A","C","D","E","F","G","H","I","K","L",
              "M","N","P","Q","R","S","T","V","W","Y")
+  wild  <- c("X",".","-")        # match known AAs and each other
+  univ  <- c(wild, "*")          # all pairwise-matching wildcard symbols
   mismatches <- 0L
   for (i in seq_along(c1)) {
     a <- c1[i]; b <- c2[i]
     is_match <- (a == b && a %in% known) ||
-                (a == "X" && b %in% known) ||
-                (b == "X" && a %in% known) ||
-                (a == "?" && b == "?")
+                (a %in% univ && b %in% univ) ||
+                (a %in% known && b %in% wild) ||
+		(b %in% known && a %in% wild)
     if (!is_match) mismatches <- mismatches + 1L
   }
   mismatches
@@ -42,7 +45,7 @@ cat(sprintf("Testing fastDistAA: k=%d sequences, l=%d length\n", K, L))
 
 set.seed(42)
 AAS  <- c("A","C","D","E","F","G","H","I","K","L",
-          "M","N","P","Q","R","S","T","V","W","Y","X","?")
+          "M","N","P","Q","R","S","T","V","W","Y","X",".","-","*")
 seqs <- replicate(K, paste(sample(AAS, L, replace=TRUE), collapse=""))
 
 # ---- pairwise naive reference ----
