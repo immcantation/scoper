@@ -75,19 +75,19 @@ test_that("Test hierarchicalClones", {
 # IUPAC and max_n serve different purposes:
 # - IUPAC: Controls (1) validation (which characters allowed) and 
 #          (2) distance calculation method (fast Hamming vs IUPAC-aware scoring)
-# - max_n: Filters sequences by counting non-ATCG characters using regex "[^ATCG]"
-#          (includes N, ?, and all IUPAC codes - whatever passed validation)
+# - max_n: Filters sequences by counting non-ATCG characters using regex "[^ATCG]" in nucleotide junction sequences 
+#          or filters sequences by counting non-standard amino acid characters in amino acid junction sequences
 #
 # Processing order: Validation -> Filtering -> Distance calculation
 #
-# Key use cases tested:
+# Key use cases tested when method is nt:
 # 1. IUPAC=FALSE, max_n=0: Strict ATCG-only mode with fast distance calculation
 # 2. IUPAC=TRUE, max_n=0: IUPAC-aware distance (but filters out IUPAC seqs anyway)
 # 3. IUPAC=TRUE, max_n=1+: Main use case - IUPAC codes with proper scoring
 # 4. IUPAC=FALSE, max_n=1+: Allow N/? but reject IUPAC codes (validation blocks them)
 # 5. IUPAC=FALSE/TRUE with standard bases: Backward compatibility (same results)
 
-test_that("Test hierarchicalClones with IUPAC parameter, test1", {
+test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test1", {
     
     # Create test data with IUPAC ambiguity codes
     # With threshold=0.15 and length 15, distance > 0.15 requires >=3 mutations (3/15=0.2)
@@ -130,12 +130,12 @@ test_that("Test hierarchicalClones with IUPAC parameter, test1", {
             IUPAC = FALSE,  # Use fast Hamming distance for ATCG only
             summarize_clones = FALSE
         ),
-        "Invalid sequence characters"
+        "Invalid nucleotide characters"
     )
 
 })
 
-test_that("Test hierarchicalClones with IUPAC parameter, test2", {
+test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test2", {
 
     db_iupac <- data.frame(
         sequence_id = paste0("seq", 1:12),
@@ -191,7 +191,7 @@ test_that("Test hierarchicalClones with IUPAC parameter, test2", {
 
 })
 
-test_that("Test hierarchicalClones with IUPAC parameter, test3", {
+test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test3", {
     db_iupac <- data.frame(
         sequence_id = paste0("seq", 1:12),
         v_call = rep("IGHV1-1*01", 12),
@@ -272,7 +272,7 @@ test_that("Test hierarchicalClones with IUPAC parameter, test3", {
 
 })
 
-test_that("Test hierarchicalClones with IUPAC parameter, test4", {
+test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test4", {
     # Test 4: IUPAC=FALSE with max_n=1+ - allows N/? but rejects other IUPAC codes
     # This demonstrates the two-stage process: validation -> filtering
     # 1. Validation (IUPAC=FALSE): Allows A,T,C,G,N,? but REJECTS IUPAC codes (R,Y,W,S,M,K,etc)
@@ -304,7 +304,7 @@ test_that("Test hierarchicalClones with IUPAC parameter, test4", {
             max_n = 1,      # Allow up to 1 N or ?
             summarize_clones = FALSE
         ),
-        "Invalid sequence characters"
+        "Invalid nucleotide characters"
     )
     
     # Test with only N/? (no IUPAC codes) - should succeed
@@ -334,7 +334,7 @@ test_that("Test hierarchicalClones with IUPAC parameter, test4", {
 
 })
 
-test_that("Test hierarchicalClones with IUPAC parameter, test5", {
+test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test5", {
     # Test 5: Standard bases work with both IUPAC=TRUE and IUPAC=FALSE
     # This demonstrates backward compatibility and performance consideration:
     # - IUPAC=FALSE: Uses fast Hamming distance (alakazam::fastDist) - faster
@@ -387,7 +387,7 @@ test_that("Test hierarchicalClones with IUPAC parameter, test5", {
 
 })
 
-test_that("Test hierarchicalClones with IUPAC parameter, test6", {
+test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test6", {
     # Test 6: IUPAC=TRUE with max_n=NULL - no filtering, process all sequences
     # This is the most permissive option for IUPAC data
     # 1. Validation (IUPAC=TRUE): Allows standard bases, N, ?, and all IUPAC codes
@@ -453,8 +453,19 @@ test_that("Test hierarchicalClones with IUPAC parameter, test6", {
     
 })
 
+# Key hierarchicalClones use cases tested with IUPAC parameter and aa method:
+# 1. IUPAC=FALSE, amino acid sequences in junction with IUPAC characters
+# 2. IUPAC=FALSE, max_n=0, amino acid sequences in junction with non-IUPAC characters but some non-standard AA
+# 3. IUPAC=FALSE, max_n=2, amino acid sequences in junction with non-IUPAC characters but some non-standard AA
+# 4. IUPAC=TRUE, max_n=2, amino acid sequences in junction with IUPAC characters
+# 5. IUPAC=FALSE, nt sequences in junction with IUPAC characters
+# 6. IUPAC=FALSE, max_n=0, nt sequences in junction with only "ATCGN?"
+# 7. IUPAC=FALSE, max_n=2, nt sequences in junction with only "ATCGN?"    
+# 8. IUPAC=TRUE, max_n=2, nt sequences in junction with IUPAC characters
 
-test_that("Test hierarchicalClones with aa mode providing amino acid sequences ", {
+
+# 1. IUPAC=FALSE, amino acid sequences in junction with IUPAC characters
+test_that("Test hierarchicalClones with IUPAC and aa method, test1", {
     db <- data.frame(
         sequence_id = paste0("seq", 1:5),
         v_call = rep("IGHV1-1*01", 5),
@@ -464,24 +475,52 @@ test_that("Test hierarchicalClones with aa mode providing amino acid sequences "
         stringsAsFactors = FALSE
     )
 
+    expect_error(
+        db_result <- hierarchicalClones(
+            db,
+            method = "aa",
+            junction = "junction_aa",
+            threshold = 0.1,
+            linkage = "single",
+            normalize = "len",
+            IUPAC=FALSE
+            ),
+        "Invalid aa seqeunce characters were found in the junction_aa."
+    )
+})
+
+#2. IUPAC=FALSE, max_n=0, amino acid sequences in junction with non-IUPAC characters but some non-standard AA
+test_that("Test hierarchicalClones with IUPAC and aa method, test2", {
+  db <- data.frame(
+    sequence_id = paste0("seq", 1:5),
+    v_call = rep("IGHV1-1*01", 5),
+    j_call = rep("IGHJ1*01", 5),
+    junction_aa = c("CASSYEFG", "CASSYEFG", "CASSDEFG", "CASSDEFG", "CASSXEF*"),
+    locus = rep("IGH", 5),
+    stringsAsFactors = FALSE
+  )
+  
     db_result <- hierarchicalClones(
-        db,
-        method = "aa",
-        junction = "junction_aa",
-        threshold = 0.1,
-        linkage = "single",
-        normalize = "len"
+      db,
+      method = "aa",
+      junction = "junction_aa",
+      threshold = 0.1,
+      linkage = "single",
+      normalize = "len",
+      IUPAC=FALSE,
+      max_n = 0
     )
     expect_equal(nrow(db_result), 4)    
     expect_equal(length(unique(db_result$clone_id)), 2)
 })
 
-test_that("Test hierarchicalClones with aa mode providing providing amino acid sequences, max_n = 2 ", {
+# 3. IUPAC=FALSE, max_n=2, amino acid sequences in junction with non-IUPAC characters but some non-standard AA
+test_that("Test hierarchicalClones with IUPAC and aa method, test3", {
     db <- data.frame(
         sequence_id = paste0("seq", 1:5),
         v_call = rep("IGHV1-1*01", 5),
         j_call = rep("IGHJ1*01", 5),
-        junction_aa = c("CASSYEFG", "CASSYEFG", "CASSDEFG", "CASSDEFG", "CASSXEFB"),
+        junction_aa = c("CASSYEFG", "CASSYEFG", "CASSDEFG", "CASSDEFG", "CASSXEF*"),
         locus = rep("IGH", 5),
         stringsAsFactors = FALSE
     )
@@ -493,32 +532,136 @@ test_that("Test hierarchicalClones with aa mode providing providing amino acid s
         threshold = 0.1,
         linkage = "single",
         normalize = "len",
+        IUPAC=FALSE,
         max_n = 2
     )
     expect_equal(nrow(db_result), 5)    
     expect_equal(length(unique(db_result$clone_id)), 3)
 })
 
-test_that("Test hierarchicalClones with aa mode providing nucleotide sequences ", {
-    db <- data.frame(
-        sequence_id = paste0("seq", 1:5),
-        v_call = rep("IGHV1-1*01", 5),
-        j_call = rep("IGHJ1*01", 5),
-        junction = c("TGTGCTTCTTCTTAT", "TGTGCTTCTTCTTAT", "TGTGCTTCTTCTGAT", "TGTGCTTCTTCTGAT", "TGTGCTTCTTCTNAT"),
-        locus = rep("IGH", 5),
-        stringsAsFactors = FALSE
+# 4. IUPAC=TRUE, max_n=2, amino acid sequences in junction with IUPAC characters
+test_that("Test hierarchicalClones with IUPAC and aa method, test4", {
+  db <- data.frame(
+    sequence_id = paste0("seq", 1:6),
+    v_call = rep("IGHV1-1*01", 6),
+    j_call = rep("IGHJ1*01", 6),
+    junction_aa = c("CASSYEFG", "CASSY-FG", "CASSDEFG", "CASSDEF*", "CASSXEFB", "CASSEEFB"),
+    locus = rep("IGH", 6),
+    stringsAsFactors = FALSE
+  )
+  
+  db_result <- hierarchicalClones(
+      db,
+      method = "aa",
+      junction = "junction_aa",
+      threshold = 0.1,
+      linkage = "single",
+      normalize = "len",
+      IUPAC=TRUE,
+      max_n=2
     )
+  expect_equal(nrow(db_result), 6)    
+  expect_equal(length(unique(db_result$clone_id)), 4)
+})
 
+# 5. IUPAC=FALSE, nt sequences in junction with IUPAC characters
+test_that("Test hierarchicalClones with IUPAC and aa method, test5", {
+  db <- data.frame(
+    sequence_id = paste0("seq", 1:5),
+    v_call = rep("IGHV1-1*01", 5),
+    j_call = rep("IGHJ1*01", 5),
+    junction = c("TGTGCTTCTTCTTATW", "TGTGCTTCTTCTTATS", "TGTGCTTCTTCTGATA", "TGTGCTTCTTCTGATA", "TGTGCTTCTTCTNATA"),
+    locus = rep("IGH", 5),
+    stringsAsFactors = FALSE
+  )
+  
+  expect_error(
     db_result <- hierarchicalClones(
-        db,
-        method = "aa",
-        junction = "junction",
-        threshold = 0.1,
-        linkage = "single",
-        normalize = "len"
-    )
-    expect_equal(nrow(db_result), 4)    
-    expect_equal(length(unique(db_result$clone_id)), 2)
+      db,
+      method = "aa",
+      junction = "junction",
+      threshold = 0.1,
+      linkage = "single",
+      normalize = "len",
+      IUPAC=FALSE
+    ),
+    "Invalid nucleotide characters were found"
+  )
+})
+
+# 6. IUPAC=FALSE, max_n=0, nt sequences in junction with only "ATCGN?"
+test_that("Test hierarchicalClones with IUPAC and aa method, test6", {
+  db <- data.frame(
+    sequence_id = paste0("seq", 1:5),
+    v_call = rep("IGHV1-1*01", 5),
+    j_call = rep("IGHJ1*01", 5),
+    junction = c("TGTGCTTCTTCTTAT", "TGTGCTTCTTCTTAT", "TGTGCTTCTTCTGAT", "TGTGCTTCTTCTGA?", "TGTGCTTCTTCTNAT"),
+    locus = rep("IGH", 5),
+    stringsAsFactors = FALSE
+  )
+  
+  db_result <- hierarchicalClones(
+      db,
+      method = "aa",
+      junction = "junction",
+      threshold = 0.1,
+      linkage = "single",
+      normalize = "len",
+      IUPAC=FALSE,
+      max_n=0
+  )
+  expect_equal(nrow(db_result), 3)    
+  expect_equal(length(unique(db_result$clone_id)), 2)
+})
+
+# 7. IUPAC=FALSE, max_n=2, nt sequences in junction with only "ATCGN?"
+test_that("Test hierarchicalClones with IUPAC and aa method, test7", {
+  db <- data.frame(
+    sequence_id = paste0("seq", 1:5),
+    v_call = rep("IGHV1-1*01", 5),
+    j_call = rep("IGHJ1*01", 5),
+    junction = c("TGTGCTTCTTCTTAT", "TGTGCTTCTTCTTAT", "TGTGCTTCTTCTGAT", "TGTGCTTCTTCTGAN", "ACAGCTTCTTCTNAT"),
+    locus = rep("IGH", 5),
+    stringsAsFactors = FALSE
+  )
+  
+  db_result <- hierarchicalClones(
+    db,
+    method = "aa",
+    junction = "junction",
+    threshold = 0.1,
+    linkage = "single",
+    normalize = "len",
+    IUPAC=FALSE,
+    max_n=2
+  )
+  expect_equal(nrow(db_result), 5)    
+  expect_equal(length(unique(db_result$clone_id)), 2)
+})
+
+# 8. IUPAC=TRUE, max_n=2, nt sequences in junction with IUPAC characters
+test_that("Test hierarchicalClones with IUPAC and aa method, test8", {
+  db <- data.frame(
+    sequence_id = paste0("seq", 1:5),
+    v_call = rep("IGHV1-1*01", 5),
+    j_call = rep("IGHJ1*01", 5),
+    junction = c("MGTGCTTCTTCTTAT", "MGTGCTTCTTCTTAT", "MGTGCTTCTTCTGAT", "MGTGCTTCTTCTGAN", "DGTGCTTCTTCTNAT"),
+    locus = rep("IGH", 5),
+    stringsAsFactors = FALSE
+  )
+  
+  db_result <- hierarchicalClones(
+    db,
+    method = "aa",
+    junction = "junction",
+    threshold = 0.1,
+    linkage = "single",
+    normalize = "len",
+    IUPAC=TRUE,
+    max_n=2
+  )
+  expect_equal(nrow(db_result), 5)    
+  expect_equal(length(unique(db_result$clone_id)), 1)
 })
 
 
