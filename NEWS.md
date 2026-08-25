@@ -1,3 +1,13 @@
+Version 1.6.0: M D, 2026
+-------------------------------------------------------------------------------
+
+Clonal analysis performance:
++ Allowed amino acid junction sequences in `hierarchicalClones` and `identicalClones` if `method="aa"`. 
++ Expand the usage of `IUPAC` parameter in `hierarchicalClones` to both `method="nt"` and `method="aa"`. If `method="aa"` and `IUPAC=FALSE` (default), Improved clonal clustering speed with a new C++ Hamming distance implementation (`fastDistAA_rcpp`) from Alakazam .
+
+
+
+
 Version 1.5.0: May 5, 2026
 -------------------------------------------------------------------------------
 
