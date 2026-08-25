@@ -476,13 +476,15 @@ logVerbose <- function(out_dir, log_verbose_name,
 }
 # *****************************************************************************
 
-# *****************************************************************************
 # helper function .isNucleotideSequence, check whether a sequence is nucleotide sequence
 .isNucleotideSequence <- function(x) {
   dna_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
   letters <- strsplit(toupper(as.character(x)), "", fixed = TRUE)[[1]]
   all(letters %in% dna_chars)
 }
+
+# *****************************************************************************
+
 
 prepare_db <- function(db, 
                        junction = "junction", v_call = "v_call", j_call = "j_call",
@@ -535,14 +537,16 @@ prepare_db <- function(db,
     }
     
     
-   ### check for non-standard amino acid characters if method is aa and sequences are also aa 
-   ### check for degenerate characters (non-ATCG's) if method is nt or if method is aa but sequences are nt
+   ### check for non-standard amino acid characters if method is aa and junction sequences are also aa 
+
     if (!is.null(max_n)){
+      non_ATCG_remove <- TRUE  # if max_n is not null, need to do ATCG remove
       if (method == 'aa'){
         valid_nn_seq <- vapply(db[[junction]], .isNucleotideSequence, logical(1))
-        not_valid_seq <- which(!valid_nn_seq)
+        not_valid_nn_seq <- which(!valid_nn_seq)
         # if it's amino acid sequences, remove sequences with > `max_n` non-standard amino acid in junction
-        if (length(not_valid_seq) > 0) {
+        if (length(not_valid_nn_seq) > 0) {
+          non_ATCG_remove <- FALSE   # when sequence is also aa, remove non-standard amino acid instead of non-ATCG
           n_before <- nrow(db)
           db <- db %>% 
             dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ACDEFGHIKLMNPQRSTVWY]") <= max_n)
@@ -554,28 +558,24 @@ prepare_db <- function(db,
           else {
             n_rmv_N <- 0
           } 
-          non_ATCG_remove <- FALSE
         }
-        # if it's nt sequences, remove sequences with > `max_n` non-ATCG's in junction in the following step
-        else{
-          non_ATCG_remove <- TRUE
-        }
-      }else{
-        non_ATCG_remove <- TRUE
       }
-      
-      # Count the number of non-ATCG's in junction
-      if (non_ATCG_remove == TRUE){
-          n_before <- nrow(db)
-          db <- db %>% 
-            dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
-          n_after <- nrow(db)
-          n_rmv_N <- n_before - n_after
-          if ( n_before > n_after) {
-            warning(paste("Removed", n_rmv_N, "sequences with non ATCG characters."))
-          }
-        } 
-      } else{
+    }else{
+      non_ATCG_remove <- FALSE  # if max_n is null, do not need to do ATCG remove
+    }
+
+   ### check for degenerate characters (non-ATCG's) if method is nt or if method is aa but junction sequences are nt    
+   # Count the number of non-ATCG's in junction
+    if (non_ATCG_remove == TRUE){
+        n_before <- nrow(db)
+        db <- db %>% 
+          dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
+        n_after <- nrow(db)
+        n_rmv_N <- n_before - n_after
+        if ( n_before > n_after) {
+          warning(paste("Removed", n_rmv_N, "sequences with non ATCG characters."))
+        }
+     }else{
       n_rmv_N <- 0
     }
     
@@ -826,12 +826,12 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              The maximum number of non-ATCG characters to permit in the junction sequence before 
-#'                              excluding the record from clonal assignment. Counts non-ATCG characters using regex 
-#'                              \code{"[^ATCG]"}, which includes N, ?, and IUPAC ambiguity codes. 
-#'                              With the default value of 0, all sequences containing any non-ATCG character 
-#'                              (including IUPAC codes) in the junction are removed before clustering. Set to \code{NULL} 
-#'                              for no filtering.
+#' @param    max_n              The maximum number of non-ATCG characters permitted in the junction nucleotide sequence,
+#'                              or the maximum number of non-standard amino acid characters permitted in the junction
+#'                              amino acid sequence, before excluding the record from clonal assignment.
+#'                              With the default value of 0, nucleotide sequences containing any non-ATCG characters
+#'                              (including IUPAC codes), or amino acid sequences containing any non-standard amino acid
+#'                              characters, are removed before clustering. Set to \code{NULL} to disable filtering.
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
 #'                              if \code{FALSE} (default) process cloning silently.
@@ -934,11 +934,13 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              and be used in clustering with IUPAC-aware distance calculation 
 #'                              (via \code{alakazam::pairwiseDist}). If \code{FALSE} (default), uses fast Hamming distance 
 #'                              (via \code{alakazam::fastDist}) and only allows standard bases (A, T, C, G), N, and ? 
-#'                              in sequences. This parameter controls validation and distance
+#'                              in nt sequences if \code{method="nt"} or uses fast Hamming distance 
+#'                              (via \code{alakazam#::fastDistAA}) and only allows 20 standard amino acids, X, *, - and . in 
+#'                              aa sequences if \code{method="aa"}. This parameter controls validation and distance
 #'                              calculation method, not sequence filtering. See \code{max_n} for 
 #'                              filtering sequences by character content. See the IUPAC and max_n 
-#'                              parameters section for more details and examples. Note: This parameter is only available 
-#'                              for \code{hierarchicalClones} with \code{method="nt"}. 
+#'                              parameters section for more details and examples. Note: This parameter applies only to
+#'                              \code{hierarchicalClones}. 
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
 #' @param    v_call             name of the column containing the V-segment allele calls.
@@ -971,14 +973,16 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              less than 7 nucleotides.
 #' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
 #'                              3 in nucleotide space.
-#' @param    max_n              The maximum number of non-ATCG characters (degenerate positions) to permit 
-#'                              in the junction nt sequence before excluding the record from clonal assignment. 
+#' @param    max_n              The maximum number of non-ATCG characters permitted in the junction nucleotide sequence,
+#'                              or the maximum number of non-standard amino acid characters permitted in the junction
+#'                              amino acid sequence, before excluding the record from clonal assignment.
+#'                              With the default value of 0, nucleotide sequences containing any non-ATCG characters
+#'                              (including IUPAC codes), or amino acid sequences containing any non-standard amino acid
+#'                              characters, are removed before clustering. Default is 0 (ATCG-only). 
+#'                              Set to \code{NULL} to disable filtering.
 #'                              Note: \code{max_n} operates independently 
 #'                              from \code{IUPAC} - it controls filtering by character count, while 
 #'                              \code{IUPAC} controls validation and distance calculation method. 
-#'                              With \code{linkage="single"}, non-informative positions can create 
-#'                              artifactual links between unrelated sequences. Use with caution. 
-#'                              Default is 0 (ATCG-only). Set to \code{NULL} for no filtering.
 #' @param    nproc              number of cores to distribute the function over.
 #' @param    verbose            if \code{TRUE} prints out a summary of each step cloning process.
 #'                              if \code{FALSE} (default) process cloning silently.
@@ -1000,11 +1004,8 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' contains clonal identifiers in the specified \code{clone} column.
 #' 
 #' @section IUPAC and max_n parameters:
-#' Note: The \code{IUPAC} parameter is only available for \code{prepare_db} with 
-#' \code{method="nt"} (nucleotide mode). It is ignored when \code{method="aa"} (amino acid mode). 
-#' The \code{max_n} parameter is available for all cloning functions.
 #' 
-#' The \code{IUPAC} and \code{max_n} parameters serve complementary but distinct purposes:
+#' Note: The \code{IUPAC} and \code{max_n} parameters serve complementary but distinct purposes:
 #' 
 #' \code{IUPAC} controls:
 #' \itemize{
@@ -1014,14 +1015,12 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' 
 #' \code{max_n} controls:
 #' \itemize{
-#'   \item Sequence filtering by counting non-ATCG characters in the junction
+#'   \item Sequence filtering by counting non-ATCG characters in the nt junction or by counting non-standard AA characters 
+#'   in the aa junction
 #' }
 #'
-#' \code{prepare_db} with \code{method="aa"} accepts the full IUPAC DNA alphabet during validation, 
-#' then \code{max_n} controls filtering of sequences containing excess non-ATCG characters 
-#' before translating to amino acids and performing IUPAC-aware clustering.
 #' 
-#' Example use cases for \code{prepare_db} with \code{method="nt"}:
+#' Example use cases for \code{prepare_db} with \code{method="nt"} or \code{method="aa"} but nt sequences in the junctions :
 #' \itemize{
 #'   \item \code{IUPAC=FALSE, max_n=0}: Strict ATCG-only mode with fast distance calculation. 
 #'         Will throw an error and exit if sequences with characters not A, T, C, G, N, or ? are detected.
@@ -1043,13 +1042,26 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'         number of ambiguous positions. Uses IUPAC-aware distance calculation with no filtering. 
 #'         Most permissive option.
 #' }
+#'
+#' Example use cases for \code{prepare_db} with \code{method="aa"} and amino acid sequences in the junction:
+#' \itemize{
+#'   \item \code{IUPAC=FALSE, max_n=0}, with amino acid sequences in the junction:
+#'         Strict standard amino acid mode with fast distance calculation. 
+#'         Will throw an error and exit if sequences with IUPAC ambiguous amino acid characters and 
+#'         max_n=0 will filter out sequences with non-standard amino acid characters. Fastest option for high-quality data.
+#'   \item \code{IUPAC=FALSE, max_n>0}, with amino acid sequences in the junction: 
+#'         Will throw an error and exit if sequences have IUPAC ambiguous amino acid characters. 
+#'         Allows sequences with limited non-standard amino acid characters in distance calculation.
+#'         Use fast Hamming distance. 
+#'   \item \code{IUPAC=TRUE, max_n=2}, with amino acide sequences in the junction: 
+#'         Uses IUPAC-aware distance but filters out sequences with more than \code{max_n} non-standard
+#'         amino acid characters.
+#'         Slower than IUPAC=FALSE, but handles any ambiguity codes in the input.
+#' }
 #' 
-#' Note: Validation occurs before filtering. When \code{IUPAC=FALSE}, sequences containing IUPAC 
-#' ambiguity codes (R, Y, W, S, M, K, etc.) will fail validation and be rejected before the 
-#' \code{max_n} filtering step. Therefore, with \code{IUPAC=FALSE, max_n > 0}, only sequences 
-#' with N and ? characters (not IUPAC codes) can pass validation and be filtered by \code{max_n}. 
-#' The \code{max_n} parameter always counts using regex \code{"[^ATCG]"}, but \code{IUPAC} determines 
-#' which non-ATCG characters are allowed to reach the filtering step.
+#' Note: Validation occurs before filtering. When \code{IUPAC=FALSE}, junction nucleotide sequences containing IUPAC 
+#' ambiguity codes (R, Y, W, S, M, K, etc.)  or junction amino acide sequences containing IUPAC ambiguity codes (B,Z,J)
+#' will fail validation and be rejected before the \code{max_n} filtering step.
 #' 
 #' @section Single-cell data:
 #' To invoke single-cell mode the \code{cell_id} argument must be specified and the \code{locus} 
@@ -1355,45 +1367,55 @@ defineClonesScoper <- function(db,
     
     ### Check for invalid characters
 
+    valid_characters_pass <- FALSE
     # Check valid amino acid characters if method is "aa"
     valid_AAseq <- rep(FALSE, nrow(db))
     not_valid_AAseq <- integer(0)
     if(method == "aa"){
-        valid_AAchars <- colnames(alakazam::getAAMatrix(gap=0))
+      valid_nn_seq <- vapply(db[[junction]], .isNucleotideSequence, logical(1))
+      not_valid_nn_seq <- which(!valid_nn_seq)
+      # Check amino acid characters if junction is of amino acid sequence
+      if (length(not_valid_nn_seq) > 0){
+        if (isFALSE(IUPAC) && model == "hierarchical") {
+          valid_AAchars <- c("A","C","D","E","F","G","H","I","K","L",
+                             "M","N","P","Q","R","S","T","V","W","Y","X",".","-","*")
+        } else {
+          valid_AAchars <- colnames(alakazam::getAAMatrix(gap=0))
+        }
         .validateAASeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_AAchars) }
         valid_AAseq <- sapply(db[[junction]], .validateAASeq)
         not_valid_AAseq <- which(!valid_AAseq)
+        if (length(not_valid_AAseq) > 0) {
+          valid_AAchars <- paste0(valid_AAchars, collapse=",")
+          method_aa_msg <- paste0("Invalid aa seqeunce characters were found in the ", junction, ".",
+                                  "\n Valid aa characters are: '", valid_AAchars, "'.",
+                                  "\n If you have other IUPAC AA characters in your sequences, set IUPAC=TRUE to allow all IUPAC bases, this will run a slower version of hierarchicalClustering.")
+          stop(paste0(method_aa_msg))
+        }
+        else{valid_characters_pass <- TRUE}  # method aa with aa sequences that all pass the valid characters check
+      }
     }
     
     # check valid nt characters
-    # The IUPAC parameter is applicable only to hierarchical clustering and nt method
-    if (isFALSE(IUPAC) && model == "hierarchical" && method == "nt") {
+    # The IUPAC parameter is applicable only to hierarchical clustering
+    if (!valid_characters_pass){
+      if (isFALSE(IUPAC) && model == "hierarchical") {
         valid_chars <- c("A", "T", "C", "G", "N", "?")
-    } else {
+      } else {
         valid_chars <- colnames(alakazam::getDNAMatrix(gap = 0))
-    }
-    .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
-    valid_seq <- sapply(db[[junction]], .validateSeq)
-    if (method == "aa") {
-        valid_seq <- valid_AAseq | valid_seq
-    }
-    not_valid_seq <- which(!valid_seq)
-    if (length(not_valid_seq) > 0) {
-        error_msg <- paste0("Invalid sequence characters were found in ",
-            length(not_valid_seq)," sequence(s). in the ", junction, "column.", "\n Valid characters are: '",  valid_chars, "'",
-            "\n If you have other IUPAC characters in your sequences, set IUPAC=TRUE to allow all IUPAC bases, this will run a slower version of hierarchicalClustering.")
-        if (method == "aa") {
-            if (length(not_valid_AAseq) > 0){
-                method_aa_msg <- paste0("Clustering with method='aa' expects either amino acid sqeucnes or nucleotide sequences. Invalid nt and aa seqeunce characters were found in the ", junction, ".",
-                "\n Valid nt characters are: '",  valid_chars, "'.", 
-                "\n Valid aa characters are: '", valid_AAchars, "'.")
-                stop(paste0(method_aa_msg))
-            }
-        } else {
-            stop(error_msg)
+      }
+      .validateSeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_chars) }
+      valid_seq <- sapply(db[[junction]], .validateSeq)
+      not_valid_seq <- which(!valid_seq)
+      if (length(not_valid_seq) > 0) {
+        valid_chars <- paste0(valid_chars, collapse=",")
+        error_msg <- paste0("Invalid nucleotide characters were found in ",
+                            length(not_valid_seq)," sequence(s). in the ", junction, " column.", "\n Valid characters are: '",  valid_chars, "'",
+                            "\n If you have other IUPAC characters in your sequences, set IUPAC=TRUE to allow all IUPAC bases, this will run a slower version of hierarchicalClustering.")
+        stop(error_msg)
         }  
     }
-    
+
     ### temp columns
     temp_cols <- c("vj_group", "vjl_group", "junction_l",  "cdr3_col", "clone_temp", "cell_id_temp")
     
@@ -1587,7 +1609,7 @@ defineClonesScoper <- function(db,
                                                               method = method,
                                                               linkage = ifelse(model == "hierarchical", linkage, NA),
                                                               normalize = ifelse(model == "hierarchical", normalize, NA),
-                                                              IUPAC = ifelse(model == "hierarchical" & method == "nt", IUPAC, FALSE),
+                                                              IUPAC = ifelse(model == "hierarchical", IUPAC, FALSE),
                                                               germline = germline,
                                                               sequence = sequence,
                                                               junction = junction,
@@ -1957,13 +1979,16 @@ identicalClones_helper <- function(db_gp,
     
     ### cloning
     seq_col <- ifelse(cdr3, cdr3_col, junction)
-    if (method == "aa") {
-        seqs <- db_gp[[seq_col]]
-        nt_idx <- vapply(seqs, .isNucleotideSequence, logical(1))
-        if (all(nt_idx)) {
-            db_gp[[seq_col]] <- translateDNA(seqs)
-        }
+    if (method == "nt") {
+      seqs <- db_gp[[seq_col]]
+    } else if (method == "aa") {
+      seqs <- db_gp[[seq_col]]
+      nt_idx <- vapply(seqs, .isNucleotideSequence, logical(1))
+      if (all(nt_idx)) {
+        seqs <- alakazam::translateDNA(seqs)
+      }
     }
+    
     idCluster <- db_gp %>% 
         dplyr::group_by(!!rlang::sym(seq_col)) %>% 
         group_indices()
@@ -2026,17 +2051,25 @@ hierarchicalClones_helper <- function(db_gp,
 
     # calculate distance matrix
     if (method == "nt") {
-    	if (isFALSE(IUPAC)){
-            dist_mtx <- alakazam::fastDist(seqs_unq)
-            dist_mtx <- as.matrix(dist_mtx)
-        }
-       	else{
-            dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
-                                 dist_mat = getDNAMatrix(gap = 0))
-        }
+      if (isFALSE(IUPAC)) {
+        dist_mtx <- alakazam::fastDist(seqs_unq)
+        dist_mtx <- as.matrix(dist_mtx)
+      } else {
+        dist_mtx <- alakazam::pairwiseDist(
+          seq = seqs_unq,
+          dist_mat = getDNAMatrix(gap = 0)
+        )
+      }
     } else if (method == "aa") {
-        dist_mtx <- alakazam::pairwiseDist(seq = seqs_unq, 
-                                 dist_mat = getAAMatrix(gap = 0))
+      if (isFALSE(IUPAC)) {
+        dist_mtx <- alakazam::fastDistAA(seqs_unq)
+        dist_mtx <- as.matrix(dist_mtx)
+      } else {
+        dist_mtx <- alakazam::pairwiseDist(
+          seq = seqs_unq,
+          dist_mat = getAAMatrix(gap = 0)
+        )
+      }
     }
     
     # perform hierarchical clustering

@@ -104,12 +104,12 @@ mod3
 3 in nucleotide space.
 
 max_n
-:   The maximum number of non-ATCG characters to permit in the junction sequence before 
-excluding the record from clonal assignment. Counts non-ATCG characters using regex 
-`"[^ATCG]"`, which includes N, ?, and IUPAC ambiguity codes. 
-With the default value of 0, all sequences containing any non-ATCG character 
-(including IUPAC codes) in the junction are removed before clustering. Set to `NULL` 
-for no filtering.
+:   The maximum number of non-ATCG characters permitted in the junction nucleotide sequence,
+or the maximum number of non-standard amino acid characters permitted in the junction
+amino acid sequence, before excluding the record from clonal assignment.
+With the default value of 0, nucleotide sequences containing any non-ATCG characters
+(including IUPAC codes), or amino acid sequences containing any non-standard amino acid
+characters, are removed before clustering. Set to `NULL` to disable filtering.
 
 nproc
 :   number of cores to distribute the function over.

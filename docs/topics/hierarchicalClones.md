@@ -52,8 +52,7 @@ threshold
 
 method
 :   one of the `"nt"` for nucleotide based clustering or 
-`"aa"` for amino acid based clustering. Method `"aa"` still expects nucleotide sequences, 
-which will be translated to amino acids
+`"aa"` for amino acid based clustering. Method `"aa"` accepts either amino acid or nucleotide sequences. Nucleotide sequences are automatically translated into amino acid sequences.
 
 linkage
 :   available linkage are `"single"`, `"average"`, and `"complete"`.
@@ -67,11 +66,13 @@ IUPAC
 and be used in clustering with IUPAC-aware distance calculation 
 (via `alakazam::pairwiseDist`). If `FALSE` (default), uses fast Hamming distance 
 (via `alakazam::fastDist`) and only allows standard bases (A, T, C, G), N, and ? 
-in sequences. This parameter controls validation and distance
+in nt sequences if `method="nt"` or uses fast Hamming distance 
+(via `alakazam#::fastDistAA`) and only allows 20 standard amino acids, X, *, - and . in 
+aa sequences if `method="aa"`. This parameter controls validation and distance
 calculation method, not sequence filtering. See `max_n` for 
 filtering sequences by character content. See the IUPAC and max_n 
-parameters section for more details and examples. Note: This parameter is only available 
-for `hierarchicalClones` with `method="nt"`.
+parameters section for more details and examples. Note: This parameter applies only to
+`hierarchicalClones`.
 
 junction
 :   character name of the column containing junction sequences.
@@ -130,12 +131,16 @@ mod3
 3 in nucleotide space.
 
 max_n
-:   The maximum number of non-ATCG characters (degenerate positions) to permit 
-in the junction when junction sequence is nucleotide sequence. The maximum number of non-standard amino acid characters to permit in the junction when junction sequence is amino acid sequence. With `linkage="single"`, non-informative positions can create artifactual links between unrelated sequences. Use with caution. 
-Default is 0 (ATCG-only or standard amino acid only). Set to `NULL` for no filtering.
-Note: `max_n` operates independently from `IUPAC` - it controls filtering by character count, while 
-`IUPAC` controls validation and distance calculation method. 
-
+:   The maximum number of non-ATCG characters permitted in the junction nucleotide sequence,
+or the maximum number of non-standard amino acid characters permitted in the junction
+amino acid sequence, before excluding the record from clonal assignment.
+With the default value of 0, nucleotide sequences containing any non-ATCG characters
+(including IUPAC codes), or amino acid sequences containing any non-standard amino acid
+characters, are removed before clustering. Default is 0 (ATCG-only). 
+Set to `NULL` to disable filtering.
+Note: `max_n` operates independently 
+from `IUPAC` - it controls filtering by character count, while 
+`IUPAC` controls validation and distance calculation method.
 
 nproc
 :   number of cores to distribute the function over.
@@ -176,11 +181,8 @@ IUPAC and max_n parameters
 -------------------
 
 
-Note: The `IUPAC` parameter is only available for `hierarchicalClones` with 
-`method="nt"` (nucleotide mode). It is ignored when `method="aa"` (amino acid mode). 
-The `max_n` parameter is available for all cloning functions.
 
-The `IUPAC` and `max_n` parameters serve complementary but distinct purposes:
+Note: The `IUPAC` and `max_n` parameters serve complementary but distinct purposes:
 
 `IUPAC` controls:
 
@@ -190,14 +192,12 @@ The `IUPAC` and `max_n` parameters serve complementary but distinct purposes:
 
 `max_n` controls:
 
-+  Sequence filtering by counting non-ATCG characters in the junction
++  Sequence filtering by counting non-ATCG characters in the nt junction or by counting non-standard AA characters 
+in the aa junction
 
 
-`hierarchicalClones` with `method="aa"` accepts the full IUPAC DNA alphabet during validation, 
-then `max_n` controls filtering of sequences containing excess non-ATCG characters 
-before translating to amino acids and performing IUPAC-aware clustering.
 
-Example use cases for `hierarchicalClones` with `method="nt"`:
+Example use cases for `prepare_db` with `method="nt"` or `method="aa"` but nt sequences in the junctions :
 
 +  `IUPAC=FALSE, max_n=0`: Strict ATCG-only mode with fast distance calculation. 
 Will throw an error and exit if sequences with characters not A, T, C, G, N, or ? are detected.
@@ -220,12 +220,25 @@ number of ambiguous positions. Uses IUPAC-aware distance calculation with no fil
 Most permissive option.
 
 
-Note: Validation occurs before filtering. When `IUPAC=FALSE`, sequences containing IUPAC 
-ambiguity codes (R, Y, W, S, M, K, etc.) will fail validation and be rejected before the 
-`max_n` filtering step. Therefore, with `IUPAC=FALSE, max_n > 0`, only sequences 
-with N and ? characters (not IUPAC codes) can pass validation and be filtered by `max_n`. 
-The `max_n` parameter always counts using regex `"[^ATCG]"`, but `IUPAC` determines 
-which non-ATCG characters are allowed to reach the filtering step.
+Example use cases for `prepare_db` with `method="aa"` and amino acid sequences in the junction:
+
++  `IUPAC=FALSE, max_n=0`, with amino acid sequences in the junction:
+Strict standard amino acid mode with fast distance calculation. 
+Will throw an error and exit if sequences with IUPAC ambiguous amino acid characters and 
+max_n=0 will filter out sequences with non-standard amino acid characters. Fastest option for high-quality data.
++  `IUPAC=FALSE, max_n>0`, with amino acid sequences in the junction: 
+Will throw an error and exit if sequences have IUPAC ambiguous amino acid characters. 
+Allows sequences with limited non-standard amino acid characters in distance calculation.
+Use fast Hamming distance. 
++  `IUPAC=TRUE, max_n=2`, with amino acide sequences in the junction: 
+Uses IUPAC-aware distance but filters out sequences with more than `max_n` non-standard
+amino acid characters.
+Slower than IUPAC=FALSE, but handles any ambiguity codes in the input.
+
+
+Note: Validation occurs before filtering. When `IUPAC=FALSE`, junction nucleotide sequences containing IUPAC 
+ambiguity codes (R, Y, W, S, M, K, etc.)  or junction amino acide sequences containing IUPAC ambiguity codes (B,Z,J)
+will fail validation and be rejected before the `max_n` filtering step.
 
 
 Single-cell data
