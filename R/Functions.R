@@ -1979,13 +1979,10 @@ identicalClones_helper <- function(db_gp,
     
     ### cloning
     seq_col <- ifelse(cdr3, cdr3_col, junction)
-    if (method == "nt") {
-      seqs <- db_gp[[seq_col]]
-    } else if (method == "aa") {
-      seqs <- db_gp[[seq_col]]
-      nt_idx <- vapply(seqs, .isNucleotideSequence, logical(1))
+    if (method == "aa") {
+      nt_idx <- vapply(db_gp[[seq_col]], .isNucleotideSequence, logical(1))
       if (all(nt_idx)) {
-        seqs <- alakazam::translateDNA(seqs)
+        db_gp[[seq_col]] <- alakazam::translateDNA(db_gp[[seq_col]])
       }
     }
     
