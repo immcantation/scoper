@@ -42,6 +42,31 @@ test_that("Test identicalClones", {
     }
 })
 
+test_that("Test identicalClones with method aa groups synonymous nucleotide junctions", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:3),
+        v_call = rep("IGHV1-1*01", 3),
+        j_call = rep("IGHJ1*01", 3),
+        locus = rep("IGH", 3),
+        junction = c("TGTGCTTCT", "TGCGCCTCC", "TGTGCATCA"),
+        stringsAsFactors = FALSE
+    )
+
+    # All three junctions translate to the same amino acid sequence ("CAS")
+    expect_identical(alakazam::translateDNA(db$junction), rep("CAS", 3))
+
+    db_result <- identicalClones(db, method = "aa",
+                                 junction = "junction", v_call = "v_call",
+                                 j_call = "j_call")
+    expect_equal(length(unique(db_result$clone_id)), 1)
+
+    # method = "nt" keeps them separate, since the nucleotide sequences differ
+    db_nt <- identicalClones(db, method = "nt",
+                             junction = "junction", v_call = "v_call",
+                             j_call = "j_call")
+    expect_equal(length(unique(db_nt$clone_id)), 3)
+})
+
 #### clone - hierarchicalClones ####
 
 test_that("Test hierarchicalClones", {
