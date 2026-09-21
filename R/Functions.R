@@ -936,7 +936,7 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              (via \code{alakazam::pairwiseDist}). If \code{FALSE} (default), uses fast Hamming distance 
 #'                              (via \code{alakazam::fastDist}) and only allows standard bases (A, T, C, G), N, and ? 
 #'                              in nt sequences if \code{method="nt"} or uses fast Hamming distance 
-#'                              (via \code{alakazam#::fastDistAA}) and only allows 20 standard amino acids, X, *, - and . in 
+#'                              (via \code{alakazam::fastDistAA}) and only allows 20 standard amino acids, X, *, - and . in 
 #'                              aa sequences if \code{method="aa"}. This parameter controls validation and distance
 #'                              calculation method, not sequence filtering. See \code{max_n} for 
 #'                              filtering sequences by character content. See the IUPAC and max_n 
