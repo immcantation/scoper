@@ -510,7 +510,7 @@ test_that("Test hierarchicalClones with IUPAC and aa method, test1", {
             normalize = "len",
             IUPAC=FALSE
             ),
-        "Invalid aa seqeunce characters were found in the junction_aa."
+        "Invalid aa sequence characters were found in the junction_aa."
     )
 })
 
@@ -685,8 +685,217 @@ test_that("Test hierarchicalClones with IUPAC and aa method, test8", {
     IUPAC=TRUE,
     max_n=2
   )
-  expect_equal(nrow(db_result), 5)    
+  expect_equal(nrow(db_result), 5)
   expect_equal(length(unique(db_result$clone_id)), 1)
+})
+
+# Regression tests for method = "aa" junction columns where some sequences look
+# nucleotide-compatible purely by coincidence (e.g. "CARDST", which only uses letters
+# that are also valid nucleotide IUPAC codes). junction/cdr3 sequences are always
+# homogeneous at the dataset level (never truly a mix of real nt and real aa content),
+# so a single sequence that unambiguously proves amino acid content (e.g. containing E,
+# F, I, L, P, or Q) must cause the ENTIRE column to be treated as amino acid -- not just
+# that one sequence.
+
+test_that("Test hierarchicalClones treats the whole dataset as amino acid once any junction sequence proves it, without aborting", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:3),
+        v_call = rep("IGHV1-1*01", 3),
+        j_call = rep("IGHJ1*01", 3),
+        # "CARDST" looks nucleotide-compatible on its own; "CARSSEFDY" contains E/F and
+        # proves the whole column is amino acid
+        junction = c("CARDST", "CARDST", "CARSSEFDY"),
+        locus = rep("IGH", 3),
+        stringsAsFactors = FALSE
+    )
+    db_result <- hierarchicalClones(
+        db,
+        method = "aa",
+        junction = "junction",
+        threshold = 0.1,
+        linkage = "single",
+        normalize = "len",
+        IUPAC = TRUE
+    )
+    expect_equal(nrow(db_result), 3)
+})
+
+test_that("Test prepare_db max_n filtering treats the whole dataset as amino acid once any junction sequence proves it", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:2),
+        v_call = rep("IGHV1-1*01", 2),
+        j_call = rep("IGHJ1*01", 2),
+        # "CARDSTN" looks nucleotide-compatible, but its "N" would be flagged as
+        # degenerate under the nucleotide alphabet used for max_n filtering; "CARSSEFDY"
+        # proves the column is amino acid, so "CARDSTN" must instead be checked against
+        # the amino acid alphabet, where "N" (Asn) is a standard residue
+        junction = c("CARDSTN", "CARSSEFDY"),
+        locus = rep("IGH", 2),
+        stringsAsFactors = FALSE
+    )
+    db$aa_confirmed <- TRUE
+    result <- scoper:::prepare_db(db, junction = "junction", v_call = "v_call", j_call = "j_call",
+                                  method = "aa", max_n = 0)
+    expect_equal(nrow(result$db), 2)
+    expect_equal(result$n_rmv_N, 0)
+})
+
+test_that("Test prepare_db cdr3 trimming removes 1 residue per end for the whole dataset once any junction sequence proves it is amino acid", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:2),
+        v_call = rep("IGHV1-1*01", 2),
+        j_call = rep("IGHJ1*01", 2),
+        # "CARDSTAW" looks nucleotide-compatible; "CARSSEFDYW" proves the column is
+        # amino acid, so both must be trimmed by 1 residue (not 1 codon) per end
+        junction = c("CARDSTAW", "CARSSEFDYW"),
+        locus = rep("IGH", 2),
+        stringsAsFactors = FALSE
+    )
+    db$aa_confirmed <- TRUE
+    result <- scoper:::prepare_db(db, junction = "junction", v_call = "v_call", j_call = "j_call",
+                                  cdr3 = TRUE, method = "aa")
+    expect_equal(result$db$cdr3_col[1], "ARDSTA")
+    expect_equal(result$db$cdr3_col[2], "ARSSEFDY")
+})
+
+test_that("Test prepare_db cdr3 trimming removes 1 codon per end for a purely nucleotide-compatible dataset", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:2),
+        v_call = rep("IGHV1-1*01", 2),
+        j_call = rep("IGHJ1*01", 2),
+        junction = c("TGTGCTTCTTCTGATTGG", "TGTGCTTCTTCTGATTGG"),
+        locus = rep("IGH", 2),
+        stringsAsFactors = FALSE
+    )
+    result <- scoper:::prepare_db(db, junction = "junction", v_call = "v_call", j_call = "j_call",
+                                  cdr3 = TRUE, method = "aa")
+    expect_equal(result$db$cdr3_col[1], "GCTTCTTCTGAT")
+})
+
+test_that("Test junction_type = 'aa' handles amino acid junctions that look nucleotide-compatible", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:3),
+        v_call = rep("IGHV1-1*01", 3),
+        j_call = rep("IGHJ1*01", 3),
+        junction = c("CARDST", "CARDST", "CARDSA"),
+        locus = rep("IGH", 3),
+        stringsAsFactors = FALSE
+    )
+    # declared amino acid: no autodetection warning, sequences grouped as amino acids
+    expect_no_warning(
+        db_aa <- identicalClones(db, method = "aa", junction_type = "aa",
+                                 junction = "junction", v_call = "v_call", j_call = "j_call")
+    )
+    ids <- setNames(db_aa$clone_id, db_aa$sequence_id)
+    expect_equal(ids[["seq1"]], ids[["seq2"]])
+    expect_false(ids[["seq1"]] == ids[["seq3"]])
+
+    # junction_type = "aa" is inconsistent with a nucleotide method
+    expect_error(
+        identicalClones(db, method = "nt", junction_type = "aa",
+                        junction = "junction", v_call = "v_call", j_call = "j_call"),
+        "requires method = 'aa'"
+    )
+    expect_error(
+        hierarchicalClones(db, method = "nt", junction_type = "aa", threshold = 0.1,
+                           junction = "junction", v_call = "v_call", j_call = "j_call"),
+        "requires method = 'aa'"
+    )
+})
+
+test_that("Test junction_type = 'nt' skips amino acid autodetection", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:3),
+        v_call = rep("IGHV1-1*01", 3),
+        j_call = rep("IGHJ1*01", 3),
+        junction = c("TGTGCTTCT", "TGCGCCTCC", "TGTGCATCA"),
+        locus = rep("IGH", 3),
+        stringsAsFactors = FALSE
+    )
+    # sequences are translated and grouped as amino acids, with no autodetection warning
+    expect_no_warning(
+        db_nt <- identicalClones(db, method = "aa", junction_type = "nt",
+                                 junction = "junction", v_call = "v_call", j_call = "j_call")
+    )
+    expect_equal(length(unique(db_nt$clone_id)), 1)
+
+    # the default "auto" warns for the same nucleotide-compatible input
+    expect_warning(
+        identicalClones(db, method = "aa",
+                        junction = "junction", v_call = "v_call", j_call = "j_call"),
+        "junction_type"
+    )
+})
+
+test_that("Test junction_type = 'auto' warns to set junction_type for nucleotide-compatible amino acid junctions", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:3),
+        v_call = rep("IGHV1-1*01", 3),
+        j_call = rep("IGHJ1*01", 3),
+        # amino acid junctions that use only nucleotide-compatible letters
+        junction = c("CARDST", "CARDST", "CARDSA"),
+        locus = rep("IGH", 3),
+        stringsAsFactors = FALSE
+    )
+    # in "auto" mode these are handled as nucleotides, so every row is dropped as
+    # non-ATCG and the call goes on to fail; the autodetection warning is still raised first
+    warns <- character(0)
+    try(withCallingHandlers(
+        identicalClones(db, method = "aa",
+                        junction = "junction", v_call = "v_call", j_call = "j_call"),
+        warning = function(w) {
+            warns <<- c(warns, conditionMessage(w))
+            invokeRestart("muffleWarning")
+        }), silent = TRUE)
+    expect_true(any(grepl("set junction_type = \"aa\"", warns, fixed = TRUE)))
+    # declaring the type suppresses the warning
+    expect_no_warning(
+        identicalClones(db, method = "aa", junction_type = "aa",
+                        junction = "junction", v_call = "v_call", j_call = "j_call")
+    )
+})
+
+test_that("Test CDR3_FILTER verbose message reports the length cutoff used", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:3),
+        v_call = rep("IGHV1-1*01", 3),
+        j_call = rep("IGHJ1*01", 3),
+        junction = c("CA", "CARDST", "CARDST"),
+        locus = rep("IGH", 3),
+        stringsAsFactors = FALSE
+    )
+    out_aa <- capture.output(suppressWarnings(
+        identicalClones(db, method = "aa", junction_type = "aa", cdr3 = TRUE, verbose = TRUE,
+                        junction = "junction", v_call = "v_call", j_call = "j_call")))
+    expect_true(any(grepl("CDR3_FILTER>  1 invalid junction length\\(s\\) \\(< 3 \\)", out_aa)))
+
+    db$junction <- c("TGTGCT", "TGTGCTTCTTCTGATTGG", "TGTGCTTCTTCTGATTGG")
+    out_nt <- capture.output(suppressWarnings(
+        identicalClones(db, method = "nt", cdr3 = TRUE, verbose = TRUE,
+                        junction = "junction", v_call = "v_call", j_call = "j_call")))
+    expect_true(any(grepl("CDR3_FILTER>  1 invalid junction length\\(s\\) \\(< 7 \\)", out_nt)))
+})
+
+test_that("Test identicalClones treats every V/J/length group as amino acid once any group anywhere proves the dataset is amino acid", {
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:3),
+        # rows 1-2 share a V/J/length group and only contain letters that are also
+        # valid nucleotide IUPAC codes ("CARDST" looks nucleotide-compatible on its
+        # own); row 3 is in a different V/J group and contains E/F, proving the whole
+        # dataset is amino acid. The nucleotide vs. amino acid decision is made once for
+        # the whole dataset (not re-derived per V/J/length group), so rows 1-2's group
+        # must NOT be translated just because none of its own members happen to prove it.
+        v_call = c("IGHV1-1*01", "IGHV1-1*01", "IGHV2-5*01"),
+        j_call = c("IGHJ1*01", "IGHJ1*01", "IGHJ2*01"),
+        junction = c("CARDST", "CARDST", "CARSSEFDY"),
+        locus = rep("IGH", 3),
+        stringsAsFactors = FALSE
+    )
+    db_result <- identicalClones(db, method = "aa", junction = "junction",
+                                 v_call = "v_call", j_call = "j_call")
+    # if rows 1-2 were (incorrectly) translated as if they were a 6-nt sequence, their
+    # junction values would no longer read "CARDST"
+    expect_true(all(db_result$junction[db_result$sequence_id %in% c("seq1", "seq2")] == "CARDST"))
 })
 
 
