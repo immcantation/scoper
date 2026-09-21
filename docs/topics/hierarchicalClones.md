@@ -67,7 +67,7 @@ and be used in clustering with IUPAC-aware distance calculation
 (via `alakazam::pairwiseDist`). If `FALSE` (default), uses fast Hamming distance 
 (via `alakazam::fastDist`) and only allows standard bases (A, T, C, G), N, and ? 
 in nt sequences if `method="nt"` or uses fast Hamming distance 
-(via `alakazam#::fastDistAA`) and only allows 20 standard amino acids, X, *, - and . in 
+(via `alakazam::fastDistAA`) and only allows 20 standard amino acids, X, *, - and . in 
 aa sequences if `method="aa"`. This parameter controls validation and distance
 calculation method, not sequence filtering. See `max_n` for 
 filtering sequences by character content. See the IUPAC and max_n 
