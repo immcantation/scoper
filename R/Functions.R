@@ -842,11 +842,13 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
 #'                              group all sequences with any overlapping gene calls.
-#' @param    cdr3               if \code{TRUE} removes 3 nucleotides from both ends of \code{"junction"} 
-#'                              prior to clustering (converts IMGT junction to CDR3 region). 
-#'                              If \code{TRUE} this will also remove records with a junction length 
-#'                              less than 7 nucleotides.
-#' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
+#' @param    cdr3               if \code{TRUE} removes 3 nucleotides or 1 amino acid residue from both ends
+#'                              of \code{"junction"} prior to clustering (converts IMGT junction to CDR3
+#'                              region). For nucleotide junctions this removes 3 nucleotides from each end
+#'                              and requires a junction length greater than 6 nucleotides; for amino acid
+#'                              junctions this removes 1 residue from each end and requires a junction
+#'                              length greater than 2 residues. Records that are too short are removed.
+#' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by
 #'                              3 in nucleotide space. Ignored (with a warning) if the \code{junction} column
 #'                              contains amino acid sequences.
 #' @param    max_n              The maximum number of non-ATCG characters permitted in the junction nucleotide sequence,
@@ -997,11 +999,13 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
 #'                              group all sequences with any overlapping gene calls.
-#' @param    cdr3               if \code{TRUE} removes 3 nucleotides from both ends of \code{"junction"} 
-#'                              prior to clustering (converts IMGT junction to CDR3 region). 
-#'                              If \code{TRUE} this will also remove records with a junction length 
-#'                              less than 7 nucleotides.
-#' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
+#' @param    cdr3               if \code{TRUE} removes 3 nucleotides on 1 amino acid residue from both ends
+#'                              of \code{"junction"} prior to clustering (converts IMGT junction to CDR3
+#'                              region). For nucleotide junctions this removes 3 nucleotides from each end
+#'                              and requires a junction length greater than 6 nucleotides; for amino acid
+#'                              junctions this removes 1 residue from each end and requires a junction
+#'                              length greater than 2 residues. Records that are too short are removed.
+#' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by
 #'                              3 in nucleotide space. Ignored (with a warning) if the \code{junction} column
 #'                              contains amino acid sequences.
 #' @param    max_n              The maximum number of non-ATCG characters permitted in the junction nucleotide sequence,
@@ -1210,11 +1214,13 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
 #'                              group all sequences with any overlapping gene calls.
-#' @param    cdr3               if \code{TRUE} removes 3 nucleotides from both ends of \code{"junction"} 
-#'                              prior to clustering (converts IMGT junction to CDR3 region). 
-#'                              If \code{TRUE} this will also remove records with a junction length 
-#'                              less than 7 nucleotides.
-#' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by 
+#' @param    cdr3               if \code{TRUE} removes 3 nucleotides or 1 amino acid residue from both ends
+#'                              of \code{"junction"} prior to clustering (converts IMGT junction to CDR3
+#'                              region). For nucleotide junctions this removes 3 nucleotides from each end
+#'                              and requires a junction length greater than 6 nucleotides; for amino acid
+#'                              junctions this removes 1 residue from each end and requires a junction
+#'                              length greater than 2 residues. Records that are too short are removed.
+#' @param    mod3               if \code{TRUE} removes records with a \code{junction} length that is not divisible by
 #'                              3 in nucleotide space. Ignored (with a warning) if the \code{junction} column
 #'                              contains amino acid sequences.
 #' @param    max_n              The maximum number of non-ATCG characters to permit in the junction sequence before 
