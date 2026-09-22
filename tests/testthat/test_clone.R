@@ -205,7 +205,7 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test2"
             ),
             "Running defineClonesScoper in bulk mode and only keep heavy chains"
         ),
-        "Removed 9 sequences with non-ATCG characters."
+        "Removed 9 sequences with non-ATCG characters"
     )
 
     # Only 3 sequences with standard bases remain
@@ -348,7 +348,7 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test4"
             ),
             "Running defineClonesScoper in bulk mode and only keep heavy chains"
         ),
-        "Removed 1 sequences with non-ATCG characters."  # seq4 with 2 N's filtered
+        "Removed 1 sequences with non-ATCG characters"  # seq4 with 2 N's filtered
     )
     
     # Should keep seq1, seq2, seq3 (0-1 non-ATCG characters each)

@@ -592,16 +592,16 @@ prepare_db <- function(db,
         if (method == "aa" && aa_confirmed) {
             db <- db %>%
                 dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ACDEFGHIKLMNPQRSTVWY]") <= max_n)
-            char_desc <- "non-standard amino acid"
+            char_desc <- "non-standard amino acid characters in the junction. 20 Standard amino acid cheracters are A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y."
         } else {
             db <- db %>%
                 dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
-            char_desc <- "non-ATCG"
+            char_desc <- "non-ATCG characters in the junction."
         }
         n_after <- nrow(db)
         n_rmv_N <- n_before - n_after
         if ( n_rmv_N > 0) {
-          warning(paste("Removed", n_rmv_N, "sequences with", char_desc, "characters."))
+          warning(paste("Removed", n_rmv_N, "sequences with", char_desc))
         }
         if (n_after == 0){
           stop(paste("No sequences left after removing sequences with", char_desc, "characters."))
