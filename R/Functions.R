@@ -604,7 +604,7 @@ prepare_db <- function(db,
           warning(paste("Removed", n_rmv_N, "sequences with", char_desc))
         }
         if (n_after == 0){
-          stop(paste("No sequences left after removing sequences with", char_desc, "characters."))
+          stop(paste("No sequences left after removing sequences with", char_desc))
         }
     } else {
       n_rmv_N <- 0
