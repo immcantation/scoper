@@ -1400,7 +1400,7 @@ defineClonesScoper <- function(db,
         }
     } else if (model == "hierarchical") {
         if (!(method %in% c("nt", "aa"))) {
-        stop(paste0("'method' should be one of 'nt' or 'aa' for model '", model, "'.")) 
+            stop(paste0("'method' should be one of 'nt' or 'aa' for model '", model, "'.")) 
         }
         ### get normalize
         normalize <- match.arg(normalize)
