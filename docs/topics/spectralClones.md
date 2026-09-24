@@ -116,14 +116,17 @@ If `FALSE` the union of ambiguous gene assignments is used to
 group all sequences with any overlapping gene calls.
 
 cdr3
-:   if `TRUE` removes 3 nucleotides from both ends of `"junction"` 
-prior to clustering (converts IMGT junction to CDR3 region). 
-If `TRUE` this will also remove records with a junction length 
-less than 7 nucleotides.
+:   if `TRUE` removes 3 nucleotides or 1 amino acid residue from both ends
+of `"junction"` prior to clustering (converts IMGT junction to CDR3
+region). For nucleotide junctions this removes 3 nucleotides from each end
+and requires a junction length greater than 6 nucleotides; for amino acid
+junctions this removes 1 residue from each end and requires a junction
+length greater than 2 residues. Records that are too short are removed.
 
 mod3
-:   if `TRUE` removes records with a `junction` length that is not divisible by 
-3 in nucleotide space.
+:   if `TRUE` removes records with a `junction` length that is not divisible by
+3 in nucleotide space. Ignored (with a warning) if the `junction` column
+contains amino acid sequences.
 
 max_n
 :   The maximum number of non-ATCG characters to permit in the junction sequence before 

@@ -33,7 +33,8 @@ max_n = 0,
 nproc = 1,
 verbose = FALSE,
 log = NULL,
-summarize_clones = FALSE
+summarize_clones = FALSE,
+junction_type = c("auto", "nt", "aa")
 )
 ```
 
@@ -94,14 +95,17 @@ If `FALSE` the union of ambiguous gene assignments is used to
 group all sequences with any overlapping gene calls.
 
 cdr3
-:   if `TRUE` removes 3 nucleotides from both ends of `"junction"` 
-prior to clustering (converts IMGT junction to CDR3 region). 
-If `TRUE` this will also remove records with a junction length 
-less than 7 nucleotides.
+:   if `TRUE` removes 3 nucleotides or 1 amino acid residue from both ends
+of `"junction"` prior to clustering (converts IMGT junction to CDR3
+region). For nucleotide junctions this removes 3 nucleotides from each end
+and requires a junction length greater than 6 nucleotides; for amino acid
+junctions this removes 1 residue from each end and requires a junction
+length greater than 2 residues. Records that are too short are removed.
 
 mod3
-:   if `TRUE` removes records with a `junction` length that is not divisible by 
-3 in nucleotide space.
+:   if `TRUE` removes records with a `junction` length that is not divisible by
+3 in nucleotide space. Ignored (with a warning) if the `junction` column
+contains amino acid sequences.
 
 max_n
 :   The maximum number of non-ATCG characters permitted in the junction nucleotide sequence,
@@ -129,6 +133,14 @@ and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` (default)
 a modified input `db` is returned. In single-cell mode, `vjl_groups`
 summarizes heavy/long-chain partitions used for clustering. When grouping by
 `fields`, `summarize_clones` should be `FALSE`.
+
+junction_type
+:   one of `"auto"` (default), `"nt"`, or `"aa"`. Only used when
+`method="aa"` (`"aa"` is an error for other methods). Declares whether the `junction` column holds nucleotide or
+amino acid sequences. With `"auto"`, amino acid content is inferred from the presence
+of amino-acid-only letters (E, F, I, L, P, Q, ...); short amino acid sequences made only of
+letters shared with the nucleotide alphabet (e.g. `"CARDST"`) cannot be told apart
+from nucleotides and will be mishandled. Set `"aa"` or `"nt"` to skip autodetection.
 
 
 
