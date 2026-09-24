@@ -205,7 +205,7 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test2"
             ),
             "Running defineClonesScoper in bulk mode and only keep heavy chains"
         ),
-        "Removed 9 sequences with non ATCG characters."
+        "Removed 9 sequences with non-ATCG characters"
     )
 
     # Only 3 sequences with standard bases remain
@@ -348,7 +348,7 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test4"
             ),
             "Running defineClonesScoper in bulk mode and only keep heavy chains"
         ),
-        "Removed 1 sequences with non ATCG characters."  # seq4 with 2 N's filtered
+        "Removed 1 sequences with non-ATCG characters"  # seq4 with 2 N's filtered
     )
     
     # Should keep seq1, seq2, seq3 (0-1 non-ATCG characters each)
@@ -898,6 +898,55 @@ test_that("Test identicalClones treats every V/J/length group as amino acid once
     expect_true(all(db_result$junction[db_result$sequence_id %in% c("seq1", "seq2")] == "CARDST"))
 })
 
+
+test_that("Test identicalClones that no sequences left after removing records with junction length that is not divisible by 3", {
+  db <- data.frame(
+    sequence_id = paste0("seq", 1:3),
+    v_call = c("IGHV1-1*01", "IGHV1-1*01", "IGHV2-5*01"),
+    j_call = c("IGHJ1*01", "IGHJ1*01", "IGHJ2*01"),
+    junction = c("ATCG", "ATCG", "ATCG"),
+    locus = rep("IGH", 3),
+    stringsAsFactors = FALSE
+  )
+  expect_error(
+      db_result <- identicalClones(db, method = "nt", junction = "junction",
+                               v_call = "v_call", j_call = "j_call", mod3 = TRUE),
+      "No sequences left"
+  )
+})
+
+
+test_that("Test hierarchicalClones that no sequences left after removing sequences with junction length too short to trim.", {
+  db <- data.frame(
+    sequence_id = paste0("seq", 1:3),
+    v_call = c("IGHV1-1*01", "IGHV1-1*01", "IGHV2-5*01"),
+    j_call = c("IGHJ1*01", "IGHJ1*01", "IGHJ2*01"),
+    junction = c("ATCG", "ATCG", "ATCG"),
+    locus = rep("IGH", 3),
+    stringsAsFactors = FALSE
+  )
+  expect_error(
+    db_result <- hierarchicalClones(db, method = "nt", junction = "junction",
+                                 v_call = "v_call", j_call = "j_call", cdr3 = TRUE, threshold = 0.1),
+    "No sequences left"
+  )
+})
+
+test_that("Test hierarchicalClones that no sequences left after removing junction with non standard aa characters", {
+  db <- data.frame(
+    sequence_id = paste0("seq", 1:3),
+    v_call = c("IGHV1-1*01", "IGHV1-1*01", "IGHV2-5*01"),
+    j_call = c("IGHJ1*01", "IGHJ1*01", "IGHJ2*01"),
+    junction = c("ATCGEJ", "ATCGIJ", "ATCGLJ"),
+    locus = rep("IGH", 3),
+    stringsAsFactors = FALSE
+  )
+  expect_error(
+    db_result <- hierarchicalClones(db, method = "aa", junction = "junction",
+                                 v_call = "v_call", j_call = "j_call", cdr3 = TRUE, threshold=0.1, IUPAC = TRUE),
+    "No sequences left after removing sequences with non-standard amino acid characters"
+  )
+})
 
 #### clone - spectralClones - novj method ####
 

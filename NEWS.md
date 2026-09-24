@@ -7,17 +7,18 @@ General:
 
 Clonal analysis:
 
-+ Allow amino acid junction sequences in `hierarchicalClones` and `identicalClones` when
-  `method="aa"`. Previously, the `junction` column was always assumed to hold nucleotide
++ `hierarchicalClones` and `identicalClones` now allow amino acid junction sequences in 
+  if `method="aa"`. Previously, the `junction` column was always assumed to hold nucleotide
   sequences and translated before clustering.
 + Added a `junction_type` argument (`"auto"`, `"nt"`, `"aa"`) to `identicalClones`,
   `hierarchicalClones`, and `defineClonesScoper`. It lets users declare whether `junction`
   holds nucleotide or amino acid content when `method="aa"`, instead of relying on
-  autodetection, which cannot reliably tell apart short amino acid junctions made only of
+  auto detection, which cannot reliably tell apart short amino acid junctions made only of
   letters shared with the nucleotide alphabet (e.g. `"CARDST"`).
 + Expanded the `IUPAC` parameter in `hierarchicalClones` to both `method="nt"` and
-  `method="aa"`. With `method="aa"` and `IUPAC=FALSE` (default), clustering now uses a
-  C++ Hamming distance implementation (`fastDistAA_rcpp`) provided by alakazam.
+  `method="aa"`.
++ Improved clonal clustering speed with a new Alakazam C++ Hamming distance implementation 
+  for amino acid sequences (`fastDistAA_rcpp`) if `method="aa"` and `IUPAC=FALSE` (default).
 
 Bug fixes:
 

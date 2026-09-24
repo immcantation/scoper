@@ -548,6 +548,9 @@ prepare_db <- function(db,
             if ( n_rmv_mod3 > 0) {
                 warning(paste("Removed", n_rmv_mod3, "sequences with junction length not divisible by 3."))
             }
+            if (n_after == 0){
+                stop("No sequences left after removing sequences with junction length not divisible by 3.")
+            }
         }
     }
     
@@ -569,6 +572,9 @@ prepare_db <- function(db,
         if ( n_rmv_cdr3 > 0) {
             warning(paste("Removed", n_rmv_cdr3, "sequences with junction length too short to trim."))
         }
+        if (nrow(db)==0){
+            stop("No sequences left after removing sequences with junction length too short to trim.")
+        }
         # add cdr3 column
         db$cdr3_col <- substr(db[[junction]], trim_n + 1, db[[junction_l]] - trim_n)
         cdr3_col <- "cdr3_col"
@@ -586,16 +592,19 @@ prepare_db <- function(db,
         if (method == "aa" && aa_confirmed) {
             db <- db %>%
                 dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ACDEFGHIKLMNPQRSTVWY]") <= max_n)
-            char_desc <- "non-standard amino acid"
+            char_desc <- "non-standard amino acid characters in the junction. 20 Standard amino acid characters are A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y."
         } else {
             db <- db %>%
                 dplyr::filter(stringi::stri_count(!!rlang::sym(junction), regex = "[^ATCG]") <= max_n)
-            char_desc <- "non ATCG"
+            char_desc <- "non-ATCG characters in the junction."
         }
         n_after <- nrow(db)
         n_rmv_N <- n_before - n_after
         if ( n_rmv_N > 0) {
-          warning(paste("Removed", n_rmv_N, "sequences with", char_desc, "characters."))
+          warning(paste("Removed", n_rmv_N, "sequences with", char_desc))
+        }
+        if (n_after == 0){
+          stop(paste("No sequences left after removing sequences with", char_desc))
         }
     } else {
       n_rmv_N <- 0
@@ -1390,6 +1399,9 @@ defineClonesScoper <- function(db,
             stop(paste0("'method' should be one of 'nt' or 'aa' for model '", model, "'.")) 
         }
     } else if (model == "hierarchical") {
+        if (!(method %in% c("nt", "aa"))) {
+            stop(paste0("'method' should be one of 'nt' or 'aa' for model '", model, "'.")) 
+        }
         ### get normalize
         normalize <- match.arg(normalize)
         if (!normalize %in% c("len", "none")) { 
@@ -1415,13 +1427,12 @@ defineClonesScoper <- function(db,
     ### Check for invalid characters
 
     valid_characters_pass <- FALSE
+    
     # Check valid amino acid characters if method is "aa"
-    valid_AAseq <- rep(FALSE, nrow(db))
-    not_valid_AAseq <- integer(0)
     if(method == "aa"){
       # junction/cdr3 sequences are homogeneous at the dataset level (always all
       # nucleotide or all amino acid); a single sequence containing an amino acid-only
-      # character (e.g. E, F, I, L, P, Q) is proof that the entire column is amino acid.
+      # character (E, F, I, J, L, P, Q, X, Z, *) is proof that the entire column is amino acid.
       # junction_type overrides autodetection: "aa" / "nt" declare the content of the
       # junction column, which is the only way to correctly handle amino acid sequences
       # that contain only nucleotide-compatible letters (e.g. "CARDST")
@@ -1438,8 +1449,7 @@ defineClonesScoper <- function(db,
         }
         .validateAASeq <- function(x) { all(unique(strsplit(x, "")[[1]]) %in% valid_AAchars) }
         valid_AAseq <- sapply(db[[junction]], .validateAASeq)
-        not_valid_AAseq <- which(!valid_AAseq)
-        if (length(not_valid_AAseq) > 0) {
+        if (any(!valid_AAseq)) {
           valid_AAchars <- paste0(valid_AAchars, collapse=",")
           method_aa_msg <- paste0("Invalid aa sequence characters were found in the ", junction, ".",
                                   "\n Valid aa characters are: '", valid_AAchars, "'.",
