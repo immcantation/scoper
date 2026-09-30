@@ -256,6 +256,8 @@ same manner as shown above using the hierarchical approach.
 
 
 ``` r
+# Setting seed for reproducibility of the example
+set.seed(12345)
 # Clonal assignment using the spectral clustering method novj
 results <- spectralClones(ExampleDb, method="novj", summarize_clones = TRUE)
 # Plot a histogram of inter and intra clonal distances
@@ -266,6 +268,8 @@ plot(results, binwidth=0.02)
 
 
 ``` r
+# Setting seed for reproducibility of the example
+set.seed(12345)
 # Clonal assignment using the spectral clustering method novj with threshold
 results <- spectralClones(ExampleDb, method="novj",
                           threshold=0.15, summarize_clones = TRUE)
@@ -277,6 +281,8 @@ plot(results, binwidth=0.02)
 
 
 ``` r
+# Setting seed for reproducibility of the example
+set.seed(12345)
 # Clonal assignment using the spectral clustering method vj with threshold
 results <- spectralClones(ExampleDb, method="vj",
                           threshold=0.15,
@@ -333,7 +339,7 @@ glimpse(summary(results))
 ## $ v_call          <chr> "Homsap IGHV1-18*01 F", "Homsap IGHV1-46*01 F,Homsap I~
 ## $ j_call          <chr> "Homsap IGHJ4*02 F,Homsap IGHJ4*03 F,Homsap IGHJ4*01 F~
 ## $ junction_length <int> 81, 81, 60, 102, 69, 66, 84, 96, 66, 75, 75, 84, 93, 6~
-## $ clone_count     <int> 19, 1, 1, 1, 6, 7, 3, 1, 11, 4, 9, 4, 3, 6, 5, 9, 4, 3~
-## $ clone_id        <chr> "438,439,440,441,442,443,444,445,446,447,448,449,450,4~
+## $ clone_count     <int> 19, 1, 1, 1, 6, 7, 3, 1, 11, 4, 9, 4, 3, 7, 5, 9, 4, 3~
+## $ clone_id        <chr> "436,437,438,439,440,441,442,443,444,445,446,447,448,4~
 ```
 
