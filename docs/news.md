@@ -5,11 +5,13 @@ Version 1.6.0: September 30, 2026
 General:
 
 + Increased required version of alakazam to >= 1.5.0. `hierarchicalClones` now uses
-  alakazam's C++ Hamming distance implementations (`fastDist`, `fastDistAA`).
+  alakazam's C++ Hamming distance implementations (`fastDist`, `fastDistAA`) and passes
+  their `dist` output directly to `hclust`, reducing memory usage for large VJL groups
+  when `IUPAC=FALSE`.
 
 Clonal analysis:
 
-+ `hierarchicalClones` and `identicalClones` now allow amino acid junction sequences in 
++ `hierarchicalClones` and `identicalClones` now allow amino acid junction sequences
   if `method="aa"`. Previously, the `junction` column was always assumed to hold nucleotide
   sequences and translated before clustering.
 + Added a `junction_type` argument (`"auto"`, `"nt"`, `"aa"`) to `identicalClones`,
