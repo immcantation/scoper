@@ -2143,7 +2143,6 @@ hierarchicalClones_helper <- function(db_gp,
     if (method == "nt") {
       if (isFALSE(IUPAC)) {
         dist_mtx <- alakazam::fastDist(seqs_unq)
-        dist_mtx <- as.matrix(dist_mtx)
       } else {
         dist_mtx <- alakazam::pairwiseDist(
           seq = seqs_unq,
@@ -2153,7 +2152,6 @@ hierarchicalClones_helper <- function(db_gp,
     } else if (method == "aa") {
       if (isFALSE(IUPAC)) {
         dist_mtx <- alakazam::fastDistAA(seqs_unq)
-        dist_mtx <- as.matrix(dist_mtx)
       } else {
         dist_mtx <- alakazam::pairwiseDist(
           seq = seqs_unq,
@@ -2164,23 +2162,27 @@ hierarchicalClones_helper <- function(db_gp,
     
     # perform hierarchical clustering
     if (normalize == "len") {
-        # calculate normalization factor
         junc_length <- unique(stringi::stri_length(seqs_unq))
-        if(n_unq<65536){
-            hc <- stats::hclust(as.dist(dist_mtx/junc_length), method = linkage) 
+        if (inherits(dist_mtx, "dist")) {
+            dist_norm <- dist_mtx
+            dist_norm[] <- dist_norm[] / junc_length
+        } else {
+            dist_norm <- as.dist(dist_mtx / junc_length)
         }
-        else{
+        if(n_unq<65536){
+            hc <- stats::hclust(dist_norm, method = linkage)
+        } else {
             print(paste0("VJL group size: ", n_unq, ". Function hclust from fastcluster will be used for large vjl group."))
-            hc <- fastcluster::hclust(as.dist(dist_mtx/junc_length), method = linkage)
+            hc <- fastcluster::hclust(dist_norm, method = linkage)
         }
     } else if (normalize == "none") {
+        dist_for_hclust <- if (inherits(dist_mtx, "dist")) dist_mtx else as.dist(dist_mtx)
         if(n_unq<65536){
-            hc <- stats::hclust(as.dist(dist_mtx), method = linkage) 
-        }
-        else{
+            hc <- stats::hclust(dist_for_hclust, method = linkage)
+        } else {
             print(paste0("VJL group size: ", n_unq, ". Function hclust from fastcluster will be used for large vjl group."))
-            hc <- fastcluster::hclust(as.dist(dist_mtx), method = linkage)
-        }    
+            hc <- fastcluster::hclust(dist_for_hclust, method = linkage)
+        }
     }
     
     # cut the tree
