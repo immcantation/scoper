@@ -2,8 +2,8 @@ Version 1.6.0: September 30, 2026
 -------------------------------------------------------------------------------
 General:
 
-+ Increased required version of alakazam to > 1.4.3. `hierarchicalClones` now uses
-  alakazam's C++ Hamming distance implementations (`fastDist_rcpp`, `fastDistAA_rcpp`).
++ Increased required version of alakazam to >= 1.5.0. `hierarchicalClones` now uses
+  alakazam's C++ Hamming distance implementations (`fastDist`, `fastDistAA`).
 
 Clonal analysis:
 
@@ -18,7 +18,7 @@ Clonal analysis:
 + Expanded the `IUPAC` parameter in `hierarchicalClones` to both `method="nt"` and
   `method="aa"`.
 + Improved clonal clustering speed with a new Alakazam C++ Hamming distance implementation 
-  for amino acid sequences (`fastDistAA_rcpp`) if `method="aa"` and `IUPAC=FALSE` (default).
+  for amino acid sequences (`fastDistAA`) if `method="aa"` and `IUPAC=FALSE` (default).
 
 Bug fixes:
 

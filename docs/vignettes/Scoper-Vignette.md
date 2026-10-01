@@ -256,6 +256,8 @@ same manner as shown above using the hierarchical approach.
 
 
 ``` r
+# Setting seed for reproducibility of the example
+set.seed(12345)
 # Clonal assignment using the spectral clustering method novj
 results <- spectralClones(ExampleDb, method="novj", summarize_clones = TRUE)
 # Plot a histogram of inter and intra clonal distances
@@ -266,6 +268,8 @@ plot(results, binwidth=0.02)
 
 
 ``` r
+# Setting seed for reproducibility of the example
+set.seed(12345)
 # Clonal assignment using the spectral clustering method novj with threshold
 results <- spectralClones(ExampleDb, method="novj",
                           threshold=0.15, summarize_clones = TRUE)
@@ -277,6 +281,8 @@ plot(results, binwidth=0.02)
 
 
 ``` r
+# Setting seed for reproducibility of the example
+set.seed(12345)
 # Clonal assignment using the spectral clustering method vj with threshold
 results <- spectralClones(ExampleDb, method="vj",
                           threshold=0.15,
