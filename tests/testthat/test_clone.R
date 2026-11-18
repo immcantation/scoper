@@ -1438,24 +1438,56 @@ test_that("Test vjl_groups and inter_intra clone_id stay in sync with db in sing
 })
 
 ## Add test for clones by light chain
-# CGJ 1/29/25 This is no longer needed as we do not split by light chains so I 
-# changed the test to best for a warning when split_lights = TRUE
+# CGJ 11/18/26 Add back in real tests
 test_that("Testing split_light warnings for all cloning mehtods", {
   # Load test db with light chain ambiguity
   db <- data.frame(
-    sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6","seq7","seq8"),
-    cell_id=c("cell1","cell1","cell2","cell2","cell3","cell3","cell4","cell4"),
-    v_call=c("IGHV1*01","IGLV1*01","IGHV1*01","IGLV1*01","IGHV1*01","IGLV2*01", "IGHV3*01,IGHV1*01","IGLV1*01"),
-    d_call=c("IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA),
-    j_call=c("IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01*01","IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01"),
-    junction=c("TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTTTTC","TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTC")
+    sequence_id = sprintf("seq%02d", setdiff(1:30, c(11, 19))),
+    subject_id = "S1",
+    v_call = c("IGHV1-1*01", "IGKV1-1*01", "IGHV1-1*01", "IGKV1-1*01", "IGHV1-1*01",
+               "IGKV2-1*01", "IGHV1-1*01", "IGKV1-1*01", "IGKV2-1*01", "IGHV1-1*01",
+               "IGHV1-1*01", "IGKV1-1*01,IGKV2-1*01", "IGHV1-1*01", "IGKV3-1*01", "IGHV2-1*01",
+               "IGKV1-1*01", "IGKV1-1*01", "IGHV1-1*01", "IGHV1-1*01", "IGHV1-1*01",
+               "IGKV4-1*01", "IGHV1-1*01", "IGKV4-1*01", "IGHV1-1*01", "IGHV1-1*01",
+               "IGKV1-1*01", "IGHV1-1*01", "IGKV1-1*01"),
+    j_call = c("IGHJ2*01", "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGHJ2*01",
+               "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGKJ1*01", "IGHJ2*01",
+               "IGHJ2*01", "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGHJ1*01",
+               "IGKJ1*01", "IGKJ1*01", "IGHJ2*01", "IGHJ2*01", "IGHJ2*01",
+               "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGHJ2*01", "IGHJ2*01",
+               "IGKJ1*01", "IGHJ2*01", "IGKJ1*01"),
+    junction = c("TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAAAAAATGT",
+                 "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTCCCCCCTGG", "TGTAAAAAATGG",
+                 "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAAAAAATCG", "TGTCCCCCCTGG", "TGTAAAACCTGG",
+                 "TGTCCCCCCTGG", "TGTCCCCCCTGG", "TGTAAAAAATGT", "TGTAAAAAATCG", "TGTAAAAAATGG",
+                 "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAGAAAATGG", "TGTAAAAAATGG",
+                 "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG"),
+    sequence_alignment = c("TCGA", "AGCT", "TCGA", "AGCT", "TCGA",
+                           "AGCT", "TCGA", "AGCT", "AGCT", "TCGA",
+                           "TCGA", "AGCT", "TCCA", "AGCT", "TCGA",
+                           "AGCT", "AGCT", "TCGA", "TCCA", "TCGA",
+                           "AGCT", "TCGA", "AGCT", "TCGA", "TCGA",
+                           "AGCT", "TCGA", "AGCT"),
+    locus = c("IGH", "IGK", "IGH", "IGK", "IGH", "IGK", "IGH", "IGK", "IGK", "IGH",
+              "IGH", "IGK", "IGH", "IGK", "IGH", "IGK", "IGK", "IGH",
+              "IGH", "IGH", "IGK", "IGH", "IGK", "IGH", "IGH", "IGK", "IGH", "IGK"),
+    cell_id = c(1, 1, 2, 2, 3, 3, 4, 4, 4, 6,
+                8, 8, 5, 5, 7, 7, 9, 10,
+                11, 12, 12, 13, 13, 14, 15, 15, 16, 16),
+    junction_length = 12,
+    expected_clone_id_split_light_F = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                        1, 1, 1, 1, 2, 2, NA, 1,
+                                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+    expected_clone_id_split_light_T = c("1_G1", "1_G1", "1_G1", "1_G1", "1_G1",
+                                        "1_G1", "1_G1", "1_G1", "1_G1", "1_G1",
+                                        "1_G1", "1_G1", "1_G2", "1_G2", "2", "2", NA, "1_G1",
+                                        "1_G2", "1_G3", "1_G3", "1_G3", "1_G3",
+                                        "1_G1", "1_G1", "1_G1", "1_G1", "1_G1"),
+    stringsAsFactors = FALSE
   )
-  db$chain <- "light"
-  db$chain[grepl("IGH",db[['v_call']])] <- "heavy"
-  db$locus <- alakazam::getLocus(db$v_call)
-  db$junction_len <- stringi::stri_length(db[['junction']])  
+  
   # Run hierarchicalClones without and with splitting light chain
-   db_nsplit <- hierarchicalClones(
+  expect_warning(db_nsplit <- hierarchicalClones(
       db,
       threshold=0.1,
       cell_id='cell_id',
@@ -1464,8 +1496,8 @@ test_that("Testing split_light warnings for all cloning mehtods", {
       split_light=FALSE,
       summarize_clones=TRUE,
       first=F, # default is first=F
-      nproc=1)
-   expect_warning(db_split <- hierarchicalClones(
+      nproc=1))
+  expect_warning(db_split <- hierarchicalClones(
      db,
      threshold=0.1,
      cell_id='cell_id',
@@ -1476,30 +1508,8 @@ test_that("Testing split_light warnings for all cloning mehtods", {
      first=F, # default is first=F
      nproc=1))
    # make sure they are the same 
-   expect_equal(db_nsplit@db[['clone_id']], db_split@db[['clone_id']])
-   
-   # Run spectralClones with and without splitting light chain
-   set.seed(12345)
-   db_nsplit <- spectralClones(db, method = "novj", 
-                        junction = "junction", v_call = "v_call", 
-                        j_call = "j_call", threshold=0.20, cell_id = "cell_id",
-                        summarize_clones = FALSE, split_light = FALSE)
-   expect_warning(db_split <- spectralClones(db, method = "novj", 
-                               junction = "junction", v_call = "v_call", 
-                               j_call = "j_call", threshold=0.20, cell_id = "cell_id",
-                               summarize_clones = FALSE, split_light = TRUE))
-   expect_equal(db_nsplit[['clone_id']], db_split[['clone_id']])
-   
-   # Run identicalClones with and withouth splitting light chain 
-   db_nsplit <- identicalClones(db, method ="nt", 
-                         junction = "junction", v_call = "v_call", 
-                         j_call = "j_call", summarize_clones = FALSE, 
-                         cell_id = "cell_id", split_light = FALSE)
-   expect_warning(db_split <- identicalClones(db, method ="nt", 
-                                junction = "junction", v_call = "v_call", 
-                                j_call = "j_call", summarize_clones = FALSE, 
-                                cell_id = "cell_id", split_light = TRUE))
-   expect_equal(db_nsplit[['clone_id']], db_split[['clone_id']])
+   expect_equal(db_nsplit@db[['clone_id']], db_nsplit@db[['expected_clone_id_split_light_F']])
+   expect_equal(db_split@db[['clone_id']], db_split@db[['expected_clone_id_split_light_T']])
 })
 
 

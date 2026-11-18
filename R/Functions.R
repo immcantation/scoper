@@ -845,8 +845,9 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #'                              Use only the IGH (BCR) or TRB/TRD (TCR) sequences 
 #'                              for grouping. Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    split_light        This is deprecated. If you desire to split clones by light chains 
-#'                              use dowser::resolveLightChains.
+#' @param    split_light        If \code{TRUE}, group sequences within each heavy 
+#'                              chain defined clone will be split by light chain 
+#'                              V gene, J gene, and (optionally) junction length.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
@@ -901,8 +902,8 @@ plotCloneSummary <- function(data, xmin=NULL, xmax=NULL, breaks=NULL,
 #' return an error message.
 #' 
 #' In single-cell mode, clonal clustering is performed using heavy/long chains only
-#' (IGH for BCR or TRB/TRD for TCR). The \code{only_heavy=FALSE} and
-#' \code{split_light=TRUE} options are deprecated and ignored with warnings.
+#' (IGH for BCR or TRB/TRD for TCR). The \code{only_heavy=FALSE} is deprecated 
+#' and ignored with warnings.
 #' Consequently, \code{vjl_groups} summarizes heavy/long-chain V/J/junction-length
 #' partitions and does not define groups from light/short chains.
 #' 
@@ -1002,8 +1003,9 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #'                              Use only the IGH (BCR) or TRB/TRD (TCR) sequences 
 #'                              for grouping. Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    split_light        This is deprecated. If you desire to split clones by light chains 
-#'                              use dowser::resolveLightChains.
+#' @param    split_light        If \code{TRUE}, group sequences within each heavy 
+#'                              chain defined clone will be split by light chain 
+#'                              V gene, J gene, and (optionally) junction length.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping. 
 #'                              If \code{TRUE} only the first call of the gene assignments is used. 
 #'                              If \code{FALSE} the union of ambiguous gene assignments is used to 
@@ -1124,8 +1126,8 @@ identicalClones <- function(db, method=c("nt", "aa"), junction="junction",
 #' return an error message.
 #' 
 #' In single-cell mode, clonal clustering is performed using heavy/long chains only
-#' (IGH for BCR or TRB/TRD for TCR). The \code{only_heavy=FALSE} and
-#' \code{split_light=TRUE} options are deprecated and ignored with warnings.
+#' (IGH for BCR or TRB/TRD for TCR). The \code{only_heavy=FALSE} is deprecated 
+#' and ignored with warnings.
 #' Consequently, \code{vjl_groups} summarizes heavy/long-chain V/J/junction-length
 #' partitions and does not define groups from light/short chains.
 #' 
@@ -1212,8 +1214,9 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #'                              Use only the IGH (BCR) or TRB/TRD (TCR) sequences 
 #'                              for grouping. Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    split_light        This is deprecated. If you desire to split clones by light chains 
-#'                              use dowser::resolveLightChains.
+#' @param    split_light        If \code{TRUE}, group sequences within each heavy 
+#'                              chain defined clone will be split by light chain 
+#'                              V gene, J gene, and (optionally) junction length.
 #' @param    targeting_model    \link[shazam]{TargetingModel} object. Only applicable if 
 #'                              \code{method="vj"}. See Details for description.
 #' @param    len_limit          \link[shazam]{IMGT_V} object defining the regions and boundaries of the Ig 
@@ -1289,8 +1292,8 @@ hierarchicalClones <- function(db, threshold, method=c("nt", "aa"), linkage=c("s
 #' return an error message.
 #' 
 #' In single-cell mode, clonal clustering is performed using heavy/long chains only
-#' (IGH for BCR or TRB/TRD for TCR). The \code{only_heavy=FALSE} and
-#' \code{split_light=TRUE} options are deprecated and ignored with warnings.
+#' (IGH for BCR or TRB/TRD for TCR). The \code{only_heavy=FALSE} is deprecated 
+#' and ignored with warnings.
 #' Consequently, \code{vjl_groups} summarizes heavy/long-chain V/J/junction-length
 #' partitions and does not define groups from light/short chains.
 #' 
@@ -1385,12 +1388,6 @@ defineClonesScoper <- function(db,
     if (!only_heavy) {
       warning('only_heavy = FALSE is deprecated. Running as if only_heavy = TRUE')
       only_heavy <- TRUE
-    }
-    
-    if (split_light) {
-      warning(paste('split_light = TRUE is deprecated. Please use split_light = FALSE.',
-                    'After clonal identification, light chain groups can be found with dowser::resolveLightChains'))
-      split_light <- FALSE
     }
 
     ### check model and method
@@ -1502,7 +1499,7 @@ defineClonesScoper <- function(db,
     }
 
     ### temp columns
-    temp_cols <- c("vj_group", "vjl_group", "junction_l",  "cdr3_col", "clone_temp", "cell_id_temp", "aa_confirmed")
+    temp_cols <- c("vj_group", "vjl_group", "junction_l",  "cdr3_col", "clone_temp", "cell_id_temp", "aa_confirmed", "vj_group_light")
 
     ### check for invalid columns
     invalid_cols <- c(clone, temp_cols)
@@ -1863,103 +1860,38 @@ defineClonesScoper <- function(db,
             # bind heavy and light chain data.frames
             stopifnot(all(names(db_cloned) == names(db_l)))
             db_cloned <- bind_rows(db_cloned, db_l)
-
-
+            
             # split clones by light chains
-            # CGJ 1/28/25 -- based on group meeting this is no longer needed. 
-            # if (split_light) {
-            #     clones <- unique(db_cloned[[clone]])
-            #     clones <- clones[!is.na(clones)]
-            #     #TODO: test if substituting this for loop for the resolveLightChains function works
-            #     #TODO: option2: update groupGenes, add new param that allows for light chain gene grouping instead of heavy chain.
-            #     for (cloneid in clones) {
-            #         db_c <- dplyr::filter(db_cloned, !!rlang::sym(clone) == cloneid)
-            #         if (length(unique(db_c[[cell_id]])) == 1) next()
-            #         db_c[['junction_l']] <- stringi::stri_length(db_c[[junction]])
-            #         # Create temporary fake v_call and j_call, to avoid grouping
-            #         # again using heavy chain gene calls. This matters if first=FALSE
-            #         # and "linker" ambiguous calls were left out of the same cluster id
-            #         # because of the distance threshold. The goal now is to divide the
-            #         # heavy chain clones using light chain info only.
-            #         # TODO: this is probably inefficient. Test is groupGenes could handle
-            #         # v_call=NULL and j_call=NULL. Or maybe add an option only_light.
-            #         db_c[[v_call]][db_c[['locus']] %in% c("IGH", "TRB", "TRD")] <- "IGHV0"
-            #         db_c[[j_call]][db_c[['locus']] %in% c("IGH", "TRB", "TRD")] <- "IGHJ0"
-            #         db_c <- groupGenes(data = db_c,
-            #                            v_call = v_call,
-            #                            j_call = j_call,
-            #                            junc_len = 'junction_l',
-            #                            cell_id = cell_id,
-            #                            locus = locus,
-            #                            only_heavy = TRUE,
-            #                            first = FALSE)
-            #         if (length(unique(db_c$vj_group)) == 1) next()
-            #         # CGJ 11/11/24
-            #         # use the dowser logic to check for nonpaired heavy chains and
-            #         # find the closest one via hamming distance (from resolveLightChains)
-            #         hc_df <- dplyr::filter(db_c, !!rlang::sym(locus) %in% c("IGH", "TRB", "TRD"))
-            #         lc_df <- dplyr::filter(db_c, !!rlang::sym(locus) %in% c("IGK", "IGL", "TRA", "TRG"))
-            #         # see if any HCs are no paired
-            #         hc_unpaired <- dplyr::setdiff(unique(hc_df[['cell_id']]), unique(lc_df[['cell_id']]))
-            #         if(length(hc_unpaired) > 0){
-            #           unpaired <- hc_df[hc_df[['cell_id']] %in% hc_unpaired,]
-            #           paired <- hc_df[!hc_df[['cell_id']] %in% hc_unpaired,]
-            #           for(indx in 1:nrow(unpaired)){
-            #             rating <- unlist(lapply(1:nrow(paired), function(x){
-            #               temp <- rbind(paired[x,], unpaired[indx,])
-            #               if(nchar(temp[['sequence']][1]) != nchar(temp[['sequence']][2])){
-            #                 temp <- alakazam::padSeqEnds(temp[['sequence']])
-            #                 value <- alakazam::seqDist(temp[1], temp[2])
-            #               } else{
-            #                 value <- alakazam::seqDist(temp[['sequence']][1], temp[['sequence']][2])
-            #               }
-            #               return(value)
-            #             }))
-            #             rating <- as.numeric(rating)
-            #             # row number of heavy chain only df with lowest seq dist
-            #             proper_index <- which(rating == min(rating))
-            #             if(length(proper_index) > 1){
-            #               # find the subgroups that belong to the lowest seq dists
-            #               subgroups <- paired$vj_group[proper_index]
-            #               if(length(unique(subgroups)) > 1){
-            #                 # if there is more than one subgroup find the subgroup sizes of the 
-            #                 # subgroups being considered
-            #                 subgroup_size <- data.frame(vj_group = unique(subgroups))
-            #                 subgroup_size$sizes <- unlist(lapply(1:nrow(subgroup_size), function(x){
-            #                   nrow(paired[paired$vj_group == subgroup_size$vj_group[x],])
-            #                 }))
-            #                 # if there is one subgroup that is the largest use it
-            #                 if(length(which(subgroup_size$sizes == max(subgroup_size$sizes))) == 1){
-            #                   proper_index_value <- subgroup_size$vj_group[
-            #                     which(subgroup_size$sizes == max(subgroup_size$sizes))]
-            #                 } else { 
-            #                   # if there are more than one subgroup with the same size use the lower number
-            #                   potential_subgroups <- subgroup_size$vj_group[
-            #                     which(subgroup_size$sizes == max(subgroup_size$sizes))]
-            #                   potential_subgroups <- sort(potential_subgroups)
-            #                   proper_index_value <- potential_subgroups[1]
-            #                 }
-            #               } else{
-            #                 proper_index_value <- paired$vj_group[proper_index[1]]
-            #               }
-            #             } else{
-            #               proper_index_value <- paired$vj_group[proper_index]
-            #             }
-            #             unpaired$vj_group[indx] <- proper_index_value
-            #           }
-            #           # update the df to have the new unpaired df in place of the old one
-            #           # then bind it all together
-            #           hc_df <- rbind(paired, unpaired)
-            #         }
-            #         db_c <- rbind(hc_df, lc_df)
-            #         # CGJ end of logic update for unpaired heavy chains
-            #         db_c[[clone]] <- paste(db_c[[clone]], db_c$vj_group, sep="_") # TODO: IDs get connected with underscore, figure out when the underscore is removed
-            #         for (cellid in unique(db_c[[cell_id]])) {
-            #             db_cloned[[clone]][db_cloned[[clone]] == cloneid & db_cloned[[cell_id]] == cellid] <-
-            #                 db_c[[clone]][db_c[[cell_id]] == cellid]
-            #         }
-            #     }
-            # }
+            # CGJ 11/18/25 -- reimplement an updated splitting by light chains 
+            if (split_light) {
+              db_cloned[["junction_l"]] <- stringi::stri_length(db_cloned[[junction]])
+              # keep the heavy chain only clone id before splitting
+              db_cloned <- alakazam::groupLightGenes(data = db_cloned,
+                                                     v_call = v_call,
+                                                     j_call = j_call,
+                                                     junc_len = "junction_l",
+                                                     cell_id = cell_id,
+                                                     clone = clone,
+                                                     locus = locus,
+                                                     first = FALSE,
+                                                     nproc = nproc)
+              db_cloned[["junction_l"]] <- NULL
+              # subdivide clone ids using light chain subgroups
+              # only update clones that were actually split
+              # (more than one vj_group_light)
+              clones <- unique(db_cloned[[clone]])
+              clones <- clones[!is.na(clones)]
+              for (cloneid in clones) {
+                idx <- which(db_cloned[[clone]] == cloneid)
+                groups <- db_cloned$vj_group_light[idx]
+                if (length(unique(groups[!is.na(groups)])) <= 1) next
+                db_cloned[[clone]][idx] <- paste(db_cloned[[clone]][idx],
+                                                 db_cloned$vj_group_light[idx],
+                                                 sep = "_")
+              }
+              # vj_group_light was only needed to build the split ids -- remove
+              db_cloned[["vj_group_light"]] <- NULL
+            }
 
             # sort clone ids
             na.count <- sum(is.na(db_cloned[[clone]]))
@@ -1971,8 +1903,10 @@ defineClonesScoper <- function(db,
             # merge); light chain rows only ever copy an existing heavy chain clone
             # id or stay NA, so nothing needs to be renumbered. Re-sort by the
             # existing numeric id so a clone's heavy and light chain rows sit
-            # together.
-            db_cloned <- db_cloned[order(as.integer(db_cloned[[clone]])), ]
+            # together. With split_light, ids look like "1_G2": sort by the
+            # numeric heavy chain part, then by the light chain subgroup.
+            clone_heavy_num <- as.integer(sub("_.*$", "", db_cloned[[clone]]))
+            db_cloned <- db_cloned[order(clone_heavy_num, db_cloned[[clone]]), ]
             if (na.count > 0) {
                 db_cloned <- bind_rows(db_cloned, db_na)
             }
