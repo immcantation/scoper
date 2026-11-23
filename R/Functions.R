@@ -1862,7 +1862,7 @@ defineClonesScoper <- function(db,
             db_cloned <- bind_rows(db_cloned, db_l)
             
             # split clones by light chains
-            # CGJ 11/18/25 -- reimplement an updated splitting by light chains 
+            # CGJ 11/18/26 -- reimplement an updated splitting by light chains 
             if (split_light) {
               db_cloned[["junction_l"]] <- stringi::stri_length(db_cloned[[junction]])
               # keep the heavy chain only clone id before splitting
