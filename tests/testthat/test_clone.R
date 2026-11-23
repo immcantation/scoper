@@ -1587,3 +1587,19 @@ test_that("Testing split_light warnings for all cloning methods", {
     expect_equal(db_nsplit@db[["clone_id"]], db_nsplit@db[["expected_clone_id_split_light_F"]])
     expect_equal(db_split@db[["clone_id"]], db_split@db[["expected_clone_id_split_light_T"]])
 })
+
+test_that("split_light: sequences of a split clone without a light chain group keep the clone id instead of '<clone>_NA'", {
+    # clone 1 is split (light chain groups G1 and G2); its third sequence has no light chain group
+    # clone 2 has a single light chain group, so it is not split
+    # the last sequence has no clone
+    clone_ids    <- c("1",  "1",  "1", "1",  "2", "2",  NA)
+    light_groups <- c("G1", "G2", NA,  "G1", NA,  "G1", "G1")
+    expect_warning(res <- splitCloneIds(clone_ids, light_groups),
+                   "1 sequence\\(s\\) in clone\\(s\\) split by light chain could not be assigned")
+    expect_equal(res, c("1_G1", "1_G2", "1", "1_G1", "2", "2", NA))
+    expect_false(any(grepl("_NA$", res)))
+
+    # no warning when every sequence of a split clone has a light chain group
+    expect_silent(res <- splitCloneIds(c("1", "1", "2"), c("G1", "G2", "G1")))
+    expect_equal(res, c("1_G1", "1_G2", "2"))
+})
