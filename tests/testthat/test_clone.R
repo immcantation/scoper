@@ -1603,3 +1603,30 @@ test_that("split_light: sequences of a split clone without a light chain group k
     expect_silent(res <- splitCloneIds(c("1", "1", "2"), c("G1", "G2", "G1")))
     expect_equal(res, c("1_G1", "1_G2", "2"))
 })
+
+test_that("split_light=TRUE requires single-cell data", {
+    db_bulk <- data.frame(
+        sequence_id = c("s1", "s2"),
+        v_call = "IGHV1-1*01", j_call = "IGHJ2*01",
+        junction = c("TGTAAAAAATGG", "TGTAAAAAATGG"),
+        sequence_alignment = c("TCGA", "TCGA"),
+        locus = "IGH",
+        stringsAsFactors = FALSE
+    )
+    # cell_id not set
+    expect_error(identicalClones(db_bulk, split_light = TRUE),
+                 "split_light=TRUE requires single-cell data: set `cell_id`")
+    expect_error(hierarchicalClones(db_bulk, threshold = 0.1, split_light = TRUE),
+                 "split_light=TRUE requires single-cell data: set `cell_id`")
+    # cell_id set, but the column doesn't exist
+    expect_error(identicalClones(db_bulk, cell_id = "cell_id", split_light = TRUE),
+                 "the cell_id column 'cell_id' was not found")
+    # locus not set
+    expect_error(identicalClones(cbind(db_bulk, cell_id = c(1, 2)), cell_id = "cell_id",
+                                 locus = NULL, split_light = TRUE),
+                 "split_light=TRUE requires the locus column, set `locus`")
+    # single-cell data without light chains: warn that the split had no effect
+    db_heavy <- cbind(db_bulk, cell_id = c(1, 2))
+    expect_warning(identicalClones(db_heavy, cell_id = "cell_id", split_light = TRUE),
+                   "split_light=TRUE has no effect")
+})

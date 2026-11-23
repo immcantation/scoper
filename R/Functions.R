@@ -925,7 +925,9 @@ plotCloneSummary <- function(data, xmin = NULL, xmax = NULL, breaks = NULL,
 #' @param    split_light        If \code{TRUE}, group sequences within each clone defined according to the heavy
 #'                              chain will be split by light chain
 #'                              V gene, J gene, and junction length.
-#' @param    sequence_alignment Character name of the column containing sequence alignments. This will be used in single-cell mode
+#'                              Requires single-cell data: \code{cell_id} must be set and the
+#'                              column must exist in \code{db}, otherwise an error is raised.
+#' @param    sequence           Character name of the column containing sequence alignments. This will be used in single-cell mode
 #'                              with split_light=TRUE to assign cells without light chains to a light chain group.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping.
 #'                              If \code{TRUE} only the first call of the gene assignments is used.
@@ -1010,7 +1012,7 @@ identicalClones <- function(db, method = c("nt", "aa"), junction = "junction",
                             cell_id = NULL, locus = "locus", only_heavy = TRUE, split_light = FALSE,
                             first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = 0, nproc = 1,
                             verbose = FALSE, log = NULL, summarize_clones = FALSE,
-                            junction_type = c("auto", "nt", "aa"), sequence_alignment = "sequence_alignment") {
+                            junction_type = c("auto", "nt", "aa"), sequence = "sequence_alignment") {
     results <- defineClonesScoper(
         db = db, junction_type = match.arg(junction_type),
         method = match.arg(method), model = "identical",
@@ -1018,7 +1020,7 @@ identicalClones <- function(db, method = c("nt", "aa"), junction = "junction",
         cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
         first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,
         verbose = verbose, log = log, summarize_clones = summarize_clones,
-        sequence_alignment = sequence_alignment
+        sequence = sequence
     )
 
     ### return results
@@ -1088,7 +1090,9 @@ identicalClones <- function(db, method = c("nt", "aa"), junction = "junction",
 #' @param    split_light        If \code{TRUE}, group sequences within each clone defined according to the heavy
 #'                              chain will be split by light chain
 #'                              V gene, J gene, and junction length.
-#' @param    sequence_alignment Character name of the column containing sequence alignments. This will be used in single-cell mode
+#'                              Requires single-cell data: \code{cell_id} must be set and the
+#'                              column must exist in \code{db}, otherwise an error is raised.
+#' @param    sequence           Character name of the column containing sequence alignments. This will be used in single-cell mode
 #'                              with split_light=TRUE to assign cells without light chains to a light chain group.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping.
 #'                              If \code{TRUE} only the first call of the gene assignments is used.
@@ -1241,7 +1245,7 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
                                cell_id = NULL, locus = "locus", only_heavy = TRUE, split_light = FALSE,
                                first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = 0, nproc = 1,
                                verbose = FALSE, log = NULL, summarize_clones = FALSE, seq_id = "sequence_id",
-                               junction_type = c("auto", "nt", "aa"), sequence_alignment = "sequence_alignment") {
+                               junction_type = c("auto", "nt", "aa"), sequence = "sequence_alignment") {
     results <- defineClonesScoper(
         db = db, junction_type = match.arg(junction_type), threshold = threshold, model = "hierarchical",
         method = match.arg(method), linkage = match.arg(linkage), normalize = match.arg(normalize),
@@ -1249,7 +1253,7 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
         cell_id = cell_id, locus = locus, only_heavy = only_heavy, split_light = split_light,
         first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n, nproc = nproc,
         verbose = verbose, log = log, summarize_clones = summarize_clones,
-        sequence_alignment = sequence_alignment
+        sequence = sequence
     )
 
     # return results
@@ -1280,7 +1284,9 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
 #' @param    db                 data.frame containing sequence data.
 #' @param    method             one of the \code{"novj"} or \code{"vj"}. See Details for description.
 #' @param    germline           character name of the column containing the germline or reference sequence.
-#' @param    sequence           character name of the column containing input sequences.
+#' @param    sequence           character name of the column containing input sequences. Required with
+#'                              \code{method="vj"}, and used in single-cell mode with \code{split_light=TRUE} to
+#'                              assign cells without light chains to a light chain group.
 #' @param    junction           character name of the column containing junction sequences.
 #'                              Also used to determine sequence length for grouping.
 #' @param    v_call             name of the column containing the V-segment allele calls.
@@ -1305,8 +1311,8 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
 #' @param    split_light        If \code{TRUE}, group sequences within each clone defined according to the heavy
 #'                              chain will be split by light chain
 #'                              V gene, J gene, and junction length.
-#' @param    sequence_alignment Character name of the column containing sequence alignments. This will be used in single-cell mode
-#'                              with split_light=TRUE to assign cells without light chains to a light chain group.
+#'                              Requires single-cell data: \code{cell_id} must be set and the
+#'                              column must exist in \code{db}, otherwise an error is raised.
 #' @param    targeting_model    \link[shazam]{TargetingModel} object. Only applicable if
 #'                              \code{method="vj"}. See Details for description.
 #' @param    len_limit          \link[shazam]{IMGT_V} object defining the regions and boundaries of the Ig
@@ -1415,7 +1421,7 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
 #'
 #' @export
 spectralClones <- function(db, method = c("novj", "vj"), germline = "germline_alignment", sequence = "sequence_alignment",
-                           junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id", sequence_alignment = "sequence_alignment", fields = NULL,
+                           junction = "junction", v_call = "v_call", j_call = "j_call", clone = "clone_id", fields = NULL,
                            cell_id = NULL, locus = "locus", only_heavy = TRUE, split_light = FALSE,
                            targeting_model = NULL, len_limit = NULL, first = FALSE, cdr3 = FALSE, mod3 = FALSE, max_n = 0,
                            threshold = NULL, base_sim = 0.95, iter_max = 1000, nstart = 1000, nproc = 1,
@@ -1429,8 +1435,7 @@ spectralClones <- function(db, method = c("novj", "vj"), germline = "germline_al
         first = first, cdr3 = cdr3, mod3 = mod3, max_n = max_n,
         threshold = threshold, base_sim = base_sim,
         iter_max = iter_max, nstart = nstart, nproc = nproc,
-        verbose = verbose, log = log, summarize_clones = summarize_clones,
-        sequence_alignment = sequence_alignment
+        verbose = verbose, log = log, summarize_clones = summarize_clones
     )
 
     # return results
@@ -1645,6 +1650,29 @@ defineClonesScoper <- function(db,
         check <- checkColumns(db, columns)
         if (is.character(check)) {
             stop(check)
+        }
+    }
+
+    ### split_light requires single-cell data (cell ids and loci), otherwise it
+    ### would be silently ignored
+    if (split_light) {
+        if (is.null(cell_id)) {
+            stop(
+                "split_light=TRUE requires single-cell data: set `cell_id` to the name ",
+                "of the column containing cell identifiers."
+            )
+        }
+        if (!cell_id %in% colnames(db)) {
+            stop(
+                "split_light=TRUE requires single-cell data, but the cell_id column '",
+                cell_id, "' was not found in `db`."
+            )
+        }
+        if (is.null(locus)) {
+            stop(
+                "split_light=TRUE requires the locus column, set `locus` to the name ",
+                "of the column containing locus information."
+            )
         }
     }
 
@@ -1906,6 +1934,9 @@ defineClonesScoper <- function(db,
     ### distances and the effective threshold describe the final (split) clone ids.
     ### Only heavy chain ids are updated here; light chains copy the clone id of
     ### their cell's heavy chain afterwards, in the single cell pipeline.
+    if (single_cell && split_light && nrow(db_l) == 0) {
+        warning("split_light=TRUE has no effect: `db` doesn't contain light chain data.")
+    }
     if (single_cell && split_light && nrow(db_l) > 0) {
         db_cloned[[clone]] <- splitByLightChains(
             db_h = db_cloned, db_l = db_l,
@@ -2031,7 +2062,7 @@ defineClonesScoper <- function(db,
     ### single cell pipeline
     if (single_cell) {
         db_l <- db_l[, !(names(db_l) %in% temp_cols)]
-        db_l[[clone]] <- NA
+        db_l[[clone]] <- rep(NA_character_, nrow(db_l))
 
         # If there is light chain info
         if (nrow(db_l) < 1) {
