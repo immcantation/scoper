@@ -1873,7 +1873,7 @@ defineClonesScoper <- function(db,
                                                      cell_id = cell_id,
                                                      clone = clone,
                                                      locus = locus,
-                                                     first = FALSE,
+                                                     first = first,
                                                      nproc = nproc)
               db_cloned[["junction_l"]] <- NULL
               # subdivide clone ids using light chain subgroups

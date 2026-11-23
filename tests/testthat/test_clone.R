@@ -1,16 +1,16 @@
 # Load test database
 e1 <- new.env()
 
-load(file.path("..", "data-tests", "ExampleDb.rda"), envir=e1)
-load(file.path("..", "data-tests", "Example10x.rda"), envir=e1)
-db <- get("ExampleDb", envir=e1)
-db_sc <- get("Example10x", envir=e1)
+load(file.path("..", "data-tests", "ExampleDb.rda"), envir = e1)
+load(file.path("..", "data-tests", "Example10x.rda"), envir = e1)
+db <- get("ExampleDb", envir = e1)
+db_sc <- get("Example10x", envir = e1)
 rm(e1)
 
-#ensure older version of sample() used
-R_v <- paste(version$major, version$minor,sep=".")
-if ( numeric_version(R_v) >= numeric_version("3.6.0") ) {
-    expect_warning(RNGkind(sample.kind="Round"))
+# ensure older version of sample() used
+R_v <- paste(version$major, version$minor, sep = ".")
+if (numeric_version(R_v) >= numeric_version("3.6.0")) {
+    expect_warning(RNGkind(sample.kind = "Round"))
 }
 
 # Check for pipelines environment
@@ -23,20 +23,24 @@ pipeline_env <- TRUE
 test_that("Test identicalClones", {
     # Truth
     expects <- as.integer(c(20, 21, 23, 26, 27, 28, 30, 44, 50, 100))
-    
+
     # Reproduce example
-    db <- identicalClones(ExampleDb, method ="nt", 
-                          junction = "junction", v_call = "v_call", 
-                          j_call = "j_call", summarize_clones = FALSE)
+    db <- identicalClones(ExampleDb,
+        method = "nt",
+        junction = "junction", v_call = "v_call",
+        j_call = "j_call", summarize_clones = FALSE
+    )
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
     expect_identical(clones, expects)
-    
+
     # Test parallel
     if (!pipeline_env) {
-        db <- identicalClones(ExampleDb, method ="nt",
-                              junction = "junction", v_call = "v_call",
-                              j_call = "j_call", summarize_clones = FALSE,
-                              nproc=2)
+        db <- identicalClones(ExampleDb,
+            method = "nt",
+            junction = "junction", v_call = "v_call",
+            j_call = "j_call", summarize_clones = FALSE,
+            nproc = 2
+        )
         clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
         expect_identical(clones, expects)
     }
@@ -55,15 +59,22 @@ test_that("Test identicalClones with method aa groups synonymous nucleotide junc
     # All three junctions translate to the same amino acid sequence ("CAS")
     expect_identical(alakazam::translateDNA(db$junction), rep("CAS", 3))
 
-    db_result <- identicalClones(db, method = "aa",
-                                 junction = "junction", v_call = "v_call",
-                                 j_call = "j_call")
+    db_result <- identicalClones(db,
+        method = "aa",
+        junction = "junction",
+        v_call = "v_call",
+        j_call = "j_call",
+        junction_type = "nt"
+    )
     expect_equal(length(unique(db_result$clone_id)), 1)
 
     # method = "nt" keeps them separate, since the nucleotide sequences differ
-    db_nt <- identicalClones(db, method = "nt",
-                             junction = "junction", v_call = "v_call",
-                             j_call = "j_call")
+    db_nt <- identicalClones(db,
+        method = "nt",
+        junction = "junction", v_call = "v_call",
+        j_call = "j_call",
+        junction_type = "nt"
+    )
     expect_equal(length(unique(db_nt$clone_id)), 3)
 })
 
@@ -72,24 +83,28 @@ test_that("Test identicalClones with method aa groups synonymous nucleotide junc
 test_that("Test hierarchicalClones", {
     # Truth
     expects <- as.integer(c(7, 8, 8, 8, 8, 9, 10, 11, 12, 683))
-    
+
     # Reproduce example
-    db <- hierarchicalClones(ExampleDb, threshold = 0.15,
-                             method = "nt", linkage = "single",
-                             junction = "junction", 
-                             v_call = "v_call", j_call = "j_call", 
-                             summarize_clones = FALSE)
+    db <- hierarchicalClones(ExampleDb,
+        threshold = 0.15,
+        method = "nt", linkage = "single",
+        junction = "junction",
+        v_call = "v_call", j_call = "j_call",
+        summarize_clones = FALSE
+    )
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
     expect_identical(clones, expects)
-    
+
     # Test parallel
     if (!pipeline_env) {
-        db <- hierarchicalClones(ExampleDb, threshold = 0.15,
-                                 method = "nt", linkage = "single",
-                                 junction = "junction",
-                                 v_call = "v_call", j_call = "j_call",
-                                 summarize_clones = FALSE,
-                                 nproc=2)
+        db <- hierarchicalClones(ExampleDb,
+            threshold = 0.15,
+            method = "nt", linkage = "single",
+            junction = "junction",
+            v_call = "v_call", j_call = "j_call",
+            summarize_clones = FALSE,
+            nproc = 2
+        )
         clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
         expect_identical(clones, expects)
     }
@@ -98,9 +113,9 @@ test_that("Test hierarchicalClones", {
 #### clone - hierarchicalClones with IUPAC parameter ####
 
 # IUPAC and max_n serve different purposes:
-# - IUPAC: Controls (1) validation (which characters allowed) and 
+# - IUPAC: Controls (1) validation (which characters allowed) and
 #          (2) distance calculation method (fast Hamming vs IUPAC-aware scoring)
-# - max_n: Filters sequences by counting non-ATCG characters using regex "[^ATCG]" in nucleotide junction sequences 
+# - max_n: Filters sequences by counting non-ATCG characters using regex "[^ATCG]" in nucleotide junction sequences
 #          or filters sequences by counting non-standard amino acid characters in amino acid junction sequences
 #
 # Processing order: Validation -> Filtering -> Distance calculation
@@ -113,7 +128,6 @@ test_that("Test hierarchicalClones", {
 # 5. IUPAC=FALSE/TRUE with standard bases: Backward compatibility (same results)
 
 test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test1", {
-    
     # Create test data with IUPAC ambiguity codes
     # With threshold=0.15 and length 15, distance > 0.15 requires >=3 mutations (3/15=0.2)
     db_iupac <- data.frame(
@@ -130,13 +144,13 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test1"
             "TGTGCYAGCTACTGG", # identical to seq4
             "TGTGCMAGCTACTGG", # M = A or C at pos 5, 1 mutation from seq3
             "TGTGCWAGCTACTGG", # W = A or T at pos 5, 1 mutation from seq3
-            
+
             # Clone 2: sequences similar to ACGTTTGGCCAAACC (3+ mutations from Clone 1)
             "ACGTTTGGCCAAACC", # standard bases, distant from Clone 1
             "ACGTTTGGCCAAACC", # identical to seq8
             "ACGKTTGGCCAAACC", # K = G or T at pos 4, 1 mutation from seq8
             "ACGRTTGGCCAAACC", # R = A or G at pos 4, 1 mutation from seq8
-            "ACGTTTSGCCAAACC"  # S = C or G at pos 7, 1 mutation from seq8
+            "ACGTTTSGCCAAACC" # S = C or G at pos 7, 1 mutation from seq8
         ),
         locus = rep("IGH", 12),
         stringsAsFactors = FALSE
@@ -152,16 +166,14 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test1"
             method = "nt", linkage = "single",
             junction = "junction",
             v_call = "v_call", j_call = "j_call",
-            IUPAC = FALSE,  # Use fast Hamming distance for ATCG only
+            IUPAC = FALSE, # Use fast Hamming distance for ATCG only
             summarize_clones = FALSE
         ),
         "Invalid nucleotide characters"
     )
-
 })
 
 test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test2", {
-
     db_iupac <- data.frame(
         sequence_id = paste0("seq", 1:12),
         v_call = rep("IGHV1-1*01", 12),
@@ -176,13 +188,13 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test2"
             "TGTGCYAGCTACTGG", # identical to seq4
             "TGTGCMAGCTACTGG", # M = A or C at pos 5, 1 mutation from seq3
             "TGTGCWAGCTACTGG", # W = A or T at pos 5, 1 mutation from seq3
-            
+
             # Clone 2: sequences similar to ACGTTTGGCCAAACC (3+ mutations from Clone 1)
             "ACGTTTGGCCAAACC", # standard bases, distant from Clone 1
             "ACGTTTGGCCAAACC", # identical to seq8
             "ACGKTTGGCCAAACC", # K = G or T at pos 4, 1 mutation from seq8
             "ACGRTTGGCCAAACC", # R = A or G at pos 4, 1 mutation from seq8
-            "ACGTTTSGCCAAACC"  # S = C or G at pos 7, 1 mutation from seq8
+            "ACGTTTSGCCAAACC" # S = C or G at pos 7, 1 mutation from seq8
         ),
         locus = rep("IGH", 12),
         stringsAsFactors = FALSE
@@ -199,8 +211,8 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test2"
                 method = "nt", linkage = "single",
                 junction = "junction",
                 v_call = "v_call", j_call = "j_call",
-                IUPAC = TRUE,   # Use IUPAC-aware distance calculation
-                max_n = 0,      # Filter out sequences with ANY non-ATCG chars
+                IUPAC = TRUE, # Use IUPAC-aware distance calculation
+                max_n = 0, # Filter out sequences with ANY non-ATCG chars
                 summarize_clones = FALSE
             ),
             "Running defineClonesScoper in bulk mode and only keep heavy chains"
@@ -213,7 +225,6 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test2"
     expect_equal(sort(db_result2$sequence_id), c("seq3", "seq8", "seq9"))
     # They are in different clones (distant sequences)
     expect_equal(length(unique(db_result2$clone_id)), 2)
-
 })
 
 test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test3", {
@@ -231,26 +242,26 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test3"
             "TGTGCYAGCTACTGG", # identical to seq4
             "TGTGCMAGCTACTGG", # M = A or C at pos 5, 1 mutation from seq3
             "TGTGCWAGCTACTGG", # W = A or T at pos 5, 1 mutation from seq3
-            
+
             # Clone 2: sequences similar to ACGTTTGGCCAAACC (3+ mutations from Clone 1)
             "ACGTTTGGCCAAACC", # standard bases, distant from Clone 1
             "ACGTTTGGCCAAACC", # identical to seq8
             "ACGKTTGGCCAAACC", # K = G or T at pos 4, 1 mutation from seq8
             "ACGRTTGGCCAAACC", # R = A or G at pos 4, 1 mutation from seq8
-            "ACGTTTSGCCAAACC"  # S = C or G at pos 7, 1 mutation from seq8
+            "ACGTTTSGCCAAACC" # S = C or G at pos 7, 1 mutation from seq8
         ),
         locus = rep("IGH", 12),
         stringsAsFactors = FALSE
     )
     # Test 3a: Create dataset with N characters to distinguish from IUPAC codes
     db_with_n <- db_iupac
-    db_with_n[13,] <- NA
-    db_with_n$junction[13] <- "TGTGCNAGCTACTGG"  # Add seq13 with N
+    db_with_n[13, ] <- NA
+    db_with_n$junction[13] <- "TGTGCNAGCTACTGG" # Add seq13 with N
     db_with_n$sequence_id <- c(db_with_n$sequence_id[1:12], "seq13")
     db_with_n$v_call <- c(db_with_n$v_call[1:12], "IGHV1-1*01")
     db_with_n$j_call <- c(db_with_n$j_call[1:12], "IGHJ1*01")
     db_with_n$locus <- c(db_with_n$locus[1:12], "IGH")
-    
+
     # Test 3b: IUPAC=TRUE with max_n=1 - allows up to 1 non-ATCG character per sequence
     # This is the main use case: proper IUPAC distance calculation with ambiguity codes
     # 1. Validation (IUPAC=TRUE): Allows standard bases (A,T,C,G) plus N, ?, and IUPAC codes (R,Y,W,S,M,K,etc)
@@ -262,39 +273,38 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test3"
             method = "nt", linkage = "single",
             junction = "junction",
             v_call = "v_call", j_call = "j_call",
-            IUPAC = TRUE,   # Use IUPAC-aware distance calculation
-            max_n = 1,      # Allow up to 1 non-ATCG character (IUPAC or N)
+            IUPAC = TRUE, # Use IUPAC-aware distance calculation
+            max_n = 1, # Allow up to 1 non-ATCG character (IUPAC or N)
             summarize_clones = FALSE
         ),
         "Running defineClonesScoper in bulk mode and only keep heavy chains"
     )
-    
+
     # All 13 sequences kept (each has ≤1 non-ATCG character)
     expect_equal(nrow(db_result3), 13)
-    
+
     # Verify that we have 2 different clusters (Clone 1 and Clone 2)
     n_clones <- length(unique(db_result3$clone_id))
     expect_equal(n_clones, 2)
-    
+
     # Identical sequences with IUPAC codes should cluster together
     # Note: rows may be reordered, so reference by sequence_id
     get_clone <- function(seq_id) db_result3$clone_id[db_result3$sequence_id == seq_id]
-    
-    expect_equal(get_clone("seq1"), get_clone("seq2"))  # seq1=seq2 (both R)
-    expect_equal(get_clone("seq4"), get_clone("seq5"))  # seq4=seq5 (both Y)
-    expect_equal(get_clone("seq8"), get_clone("seq9"))  # seq8=seq9 (standard)
-    
+
+    expect_equal(get_clone("seq1"), get_clone("seq2")) # seq1=seq2 (both R)
+    expect_equal(get_clone("seq4"), get_clone("seq5")) # seq4=seq5 (both Y)
+    expect_equal(get_clone("seq8"), get_clone("seq9")) # seq8=seq9 (standard)
+
     # seq13 (with N) should cluster with Clone 1 (similar to seq3)
     expect_equal(get_clone("seq3"), get_clone("seq13"))
-    
-    # Verify two distinct clones based on biological distance
-    clone1_id <- get_clone("seq3")  # seq3 in Clone 1
-    clone2_id <- get_clone("seq8")  # seq8 in Clone 2
-    expect_true(clone1_id != clone2_id)
-    expect_true(all(sapply(paste0("seq", 1:7), get_clone) == clone1_id))   # Clone 1: seq1-7
-    expect_true(all(sapply(paste0("seq", 8:12), get_clone) == clone2_id))  # Clone 2: seq8-12
-    expect_true(get_clone("seq13") == clone1_id)                           # seq13 joins Clone 1
 
+    # Verify two distinct clones based on biological distance
+    clone1_id <- get_clone("seq3") # seq3 in Clone 1
+    clone2_id <- get_clone("seq8") # seq8 in Clone 2
+    expect_true(clone1_id != clone2_id)
+    expect_true(all(sapply(paste0("seq", 1:7), get_clone) == clone1_id)) # Clone 1: seq1-7
+    expect_true(all(sapply(paste0("seq", 8:12), get_clone) == clone2_id)) # Clone 2: seq8-12
+    expect_true(get_clone("seq13") == clone1_id) # seq13 joins Clone 1
 })
 
 test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test4", {
@@ -308,16 +318,16 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test4"
         v_call = rep("IGHV1-1*01", 5),
         j_call = rep("IGHJ1*01", 5),
         junction = c(
-            "TGTGCAAGCTACTGG",  # standard bases only
-            "TGTGCNAGCTACTGG",  # 1 N (allowed with max_n=1)
-            "TGTGC?AGCTACTGG",  # 1 ? (allowed with max_n=1)
-            "TGTGCNNGCTACTGG",  # 2 N's (filtered with max_n=1)
-            "TGTGCRAGCTACTGG"   # IUPAC R code (should fail validation)
+            "TGTGCAAGCTACTGG", # standard bases only
+            "TGTGCNAGCTACTGG", # 1 N (allowed with max_n=1)
+            "TGTGC?AGCTACTGG", # 1 ? (allowed with max_n=1)
+            "TGTGCNNGCTACTGG", # 2 N's (filtered with max_n=1)
+            "TGTGCRAGCTACTGG" # IUPAC R code (should fail validation)
         ),
         locus = rep("IGH", 5),
         stringsAsFactors = FALSE
     )
-    
+
     # Should reject at validation stage due to IUPAC code (R) in seq5
     expect_error(
         hierarchicalClones(db_with_n_only,
@@ -325,16 +335,16 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test4"
             method = "nt", linkage = "single",
             junction = "junction",
             v_call = "v_call", j_call = "j_call",
-            IUPAC = FALSE,  # Reject IUPAC codes
-            max_n = 1,      # Allow up to 1 N or ?
+            IUPAC = FALSE, # Reject IUPAC codes
+            max_n = 1, # Allow up to 1 N or ?
             summarize_clones = FALSE
         ),
         "Invalid nucleotide characters"
     )
-    
+
     # Test with only N/? (no IUPAC codes) - should succeed
-    db_n_only_valid <- db_with_n_only[1:4, ]  # Remove seq5 with IUPAC code
-    
+    db_n_only_valid <- db_with_n_only[1:4, ] # Remove seq5 with IUPAC code
+
     expect_warning(
         expect_message(
             db_result5 <- hierarchicalClones(db_n_only_valid,
@@ -342,21 +352,20 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test4"
                 method = "nt", linkage = "single",
                 junction = "junction",
                 v_call = "v_call", j_call = "j_call",
-                IUPAC = FALSE,  # Use fast Hamming distance
-                max_n = 1,      # Allow up to 1 N or ?
+                IUPAC = FALSE, # Use fast Hamming distance
+                max_n = 1, # Allow up to 1 N or ?
                 summarize_clones = FALSE
             ),
             "Running defineClonesScoper in bulk mode and only keep heavy chains"
         ),
-        "Removed 1 sequences with non-ATCG characters"  # seq4 with 2 N's filtered
+        "Removed 1 sequences with non-ATCG characters" # seq4 with 2 N's filtered
     )
-    
+
     # Should keep seq1, seq2, seq3 (0-1 non-ATCG characters each)
     expect_equal(nrow(db_result5), 3)
     expect_equal(sort(db_result5$sequence_id), c("seq1", "seq2", "seq3"))
     # All are similar sequences, should be in same clone
     expect_equal(length(unique(db_result5$clone_id)), 1)
-
 })
 
 test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test5", {
@@ -383,7 +392,7 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test5"
             method = "nt", linkage = "single",
             junction = "junction",
             v_call = "v_call", j_call = "j_call",
-            IUPAC = FALSE,  # Fast Hamming distance for ATCG only
+            IUPAC = FALSE, # Fast Hamming distance for ATCG only
             summarize_clones = FALSE
         ),
         "Running defineClonesScoper in bulk mode and only keep heavy chains"
@@ -395,7 +404,7 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test5"
             method = "nt", linkage = "single",
             junction = "junction",
             v_call = "v_call", j_call = "j_call",
-            IUPAC = TRUE,   # IUPAC-aware distance (slower but handles ambiguity)
+            IUPAC = TRUE, # IUPAC-aware distance (slower but handles ambiguity)
             summarize_clones = FALSE
         ),
         "Running defineClonesScoper in bulk mode and only keep heavy chains"
@@ -407,9 +416,10 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test5"
     expect_true(all(!is.na(db_result_false$clone_id)))
     expect_true(all(!is.na(db_result_true$clone_id)))
     # Clone assignments should be the same (though IDs may differ)
-    expect_equal(length(unique(db_result_false$clone_id)),
-                 length(unique(db_result_true$clone_id)))
-
+    expect_equal(
+        length(unique(db_result_false$clone_id)),
+        length(unique(db_result_true$clone_id))
+    )
 })
 
 test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test6", {
@@ -419,7 +429,7 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test6"
     # 2. Filtering (max_n=NULL): No filtering - all sequences kept regardless of character count
     # 3. Distance: Uses IUPAC-aware scoring for proper ambiguity handling
     # Use case: Data with extensive IUPAC codes where you want to process everything
-    
+
     # Create test data with multiple IUPAC codes per sequence
     db_iupac_multi <- data.frame(
         sequence_id = paste0("seq", 1:8),
@@ -427,20 +437,20 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test6"
         j_call = rep("IGHJ1*01", 8),
         junction = c(
             # Clone 1: sequences with multiple IUPAC codes, similar to each other
-            "TGTGCRAGCTRYCTGG",  # R at pos 6, R at pos 12, Y at pos 13 (3 non-ATCG)
-            "TGTGCRAGCTRYCTGG",  # identical to seq1
-            "TGTGCRAGCTWYNMGG",  # R at pos 6, W at pos 12, Y at pos 13, N at pos 14, M at pos 15 (5 non-ATCG)
-            "TGTGCAAGCTACCTGG",  # standard bases only (0 non-ATCG)
+            "TGTGCRAGCTRYCTGG", # R at pos 6, R at pos 12, Y at pos 13 (3 non-ATCG)
+            "TGTGCRAGCTRYCTGG", # identical to seq1
+            "TGTGCRAGCTWYNMGG", # R at pos 6, W at pos 12, Y at pos 13, N at pos 14, M at pos 15 (5 non-ATCG)
+            "TGTGCAAGCTACCTGG", # standard bases only (0 non-ATCG)
             # Clone 2: sequences distant from Clone 1, also with IUPAC codes
-            "ACGKTTRGCCNNNYYY",  # K, R, 3 N's, 3 Y's (8 non-ATCG characters!)
-            "ACGKTTRGCCNNNYYY",  # identical to seq5
-            "ACGGTTAGCCAAACCC",  # standard bases only (0 non-ATCG)
-            "ACGKTTSGCCNNNYYY"   # K, S, 3 N's, 3 Y's (8 non-ATCG)
+            "ACGKTTRGCCNNNYYY", # K, R, 3 N's, 3 Y's (8 non-ATCG characters!)
+            "ACGKTTRGCCNNNYYY", # identical to seq5
+            "ACGGTTAGCCAAACCC", # standard bases only (0 non-ATCG)
+            "ACGKTTSGCCNNNYYY" # K, S, 3 N's, 3 Y's (8 non-ATCG)
         ),
         locus = rep("IGH", 8),
         stringsAsFactors = FALSE
     )
-    
+
     # With max_n=NULL, all sequences should be kept regardless of IUPAC code count
     expect_message(
         db_result6 <- hierarchicalClones(db_iupac_multi,
@@ -448,34 +458,33 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test6"
             method = "nt", linkage = "single",
             junction = "junction",
             v_call = "v_call", j_call = "j_call",
-            IUPAC = TRUE,     # Use IUPAC-aware distance calculation
-            max_n = NULL,     # No filtering - process all sequences
+            IUPAC = TRUE, # Use IUPAC-aware distance calculation
+            max_n = NULL, # No filtering - process all sequences
             summarize_clones = FALSE
         ),
         "Running defineClonesScoper in bulk mode and only keep heavy chains"
     )
-    
+
     # All 8 sequences kept (no filtering applied)
     expect_equal(nrow(db_result6), 8)
     expect_equal(sort(db_result6$sequence_id), paste0("seq", 1:8))
-    
+
     # Should have 2 clones based on biological distance
     expect_equal(length(unique(db_result6$clone_id)), 2)
-    
+
     # Helper function to get clone ID by sequence ID
     get_clone6 <- function(seq_id) db_result6$clone_id[db_result6$sequence_id == seq_id]
-    
+
     # Verify identical sequences cluster together despite many IUPAC codes
-    expect_equal(get_clone6("seq1"), get_clone6("seq2"))  # both identical with 3 IUPAC
-    expect_equal(get_clone6("seq5"), get_clone6("seq6"))  # both identical with 8 IUPAC
-    
+    expect_equal(get_clone6("seq1"), get_clone6("seq2")) # both identical with 3 IUPAC
+    expect_equal(get_clone6("seq5"), get_clone6("seq6")) # both identical with 8 IUPAC
+
     # Verify Clone 1 (seq1-4) and Clone 2 (seq5-8) are distinct
     clone1_id <- get_clone6("seq1")
     clone2_id <- get_clone6("seq5")
     expect_true(clone1_id != clone2_id)
     expect_true(all(sapply(paste0("seq", 1:4), get_clone6) == clone1_id))
     expect_true(all(sapply(paste0("seq", 5:8), get_clone6) == clone2_id))
-    
 })
 
 # Key hierarchicalClones use cases tested with IUPAC parameter and aa method:
@@ -485,7 +494,7 @@ test_that("Test hierarchicalClones with IUPAC parameter and method is nt, test6"
 # 4. IUPAC=TRUE, max_n=2, amino acid sequences in junction with IUPAC characters
 # 5. IUPAC=FALSE, nt sequences in junction with IUPAC characters
 # 6. IUPAC=FALSE, max_n=0, nt sequences in junction with only "ATCGN?"
-# 7. IUPAC=FALSE, max_n=2, nt sequences in junction with only "ATCGN?"    
+# 7. IUPAC=FALSE, max_n=2, nt sequences in junction with only "ATCGN?"
 # 8. IUPAC=TRUE, max_n=2, nt sequences in junction with IUPAC characters
 
 
@@ -508,34 +517,35 @@ test_that("Test hierarchicalClones with IUPAC and aa method, test1", {
             threshold = 0.1,
             linkage = "single",
             normalize = "len",
-            IUPAC=FALSE
-            ),
+            IUPAC = FALSE
+        ),
         "Invalid aa sequence characters were found in the junction_aa."
     )
 })
 
-#2. IUPAC=FALSE, max_n=0, amino acid sequences in junction with non-IUPAC characters but some non-standard AA
+# 2. IUPAC=FALSE, max_n=0, amino acid sequences in junction with non-IUPAC characters but some non-standard AA
 test_that("Test hierarchicalClones with IUPAC and aa method, test2", {
-  db <- data.frame(
-    sequence_id = paste0("seq", 1:5),
-    v_call = rep("IGHV1-1*01", 5),
-    j_call = rep("IGHJ1*01", 5),
-    junction_aa = c("CASSYEFG", "CASSYEFG", "CASSDEFG", "CASSDEFG", "CASSXEF*"),
-    locus = rep("IGH", 5),
-    stringsAsFactors = FALSE
-  )
-  
-    db_result <- hierarchicalClones(
-      db,
-      method = "aa",
-      junction = "junction_aa",
-      threshold = 0.1,
-      linkage = "single",
-      normalize = "len",
-      IUPAC=FALSE,
-      max_n = 0
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:5),
+        v_call = rep("IGHV1-1*01", 5),
+        j_call = rep("IGHJ1*01", 5),
+        junction_aa = c("CASSYEFG", "CASSYEFG", "CASSDEFG", "CASSDEFG", "CASSXEF*"),
+        locus = rep("IGH", 5),
+        stringsAsFactors = FALSE
     )
-    expect_equal(nrow(db_result), 4)    
+    # Expect warning due to non-IUPAC characters in the junction_aa sequence (*)
+    expect_warning(db_result <- hierarchicalClones(
+        db,
+        method = "aa",
+        junction = "junction_aa",
+        threshold = 0.1,
+        linkage = "single",
+        normalize = "len",
+        IUPAC = FALSE,
+        max_n = 0
+    ))
+    # Removed the sequence with non-IUPAC character (*)
+    expect_equal(nrow(db_result), 4)
     expect_equal(length(unique(db_result$clone_id)), 2)
 })
 
@@ -557,136 +567,141 @@ test_that("Test hierarchicalClones with IUPAC and aa method, test3", {
         threshold = 0.1,
         linkage = "single",
         normalize = "len",
-        IUPAC=FALSE,
+        IUPAC = FALSE,
         max_n = 2
     )
-    expect_equal(nrow(db_result), 5)    
+    expect_equal(nrow(db_result), 5)
     expect_equal(length(unique(db_result$clone_id)), 3)
 })
 
 # 4. IUPAC=TRUE, max_n=2, amino acid sequences in junction with IUPAC characters
 test_that("Test hierarchicalClones with IUPAC and aa method, test4", {
-  db <- data.frame(
-    sequence_id = paste0("seq", 1:6),
-    v_call = rep("IGHV1-1*01", 6),
-    j_call = rep("IGHJ1*01", 6),
-    junction_aa = c("CASSYEFG", "CASSY-FG", "CASSDEFG", "CASSDEF*", "CASSXEFB", "CASSEEFB"),
-    locus = rep("IGH", 6),
-    stringsAsFactors = FALSE
-  )
-  
-  db_result <- hierarchicalClones(
-      db,
-      method = "aa",
-      junction = "junction_aa",
-      threshold = 0.1,
-      linkage = "single",
-      normalize = "len",
-      IUPAC=TRUE,
-      max_n=2
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:6),
+        v_call = rep("IGHV1-1*01", 6),
+        j_call = rep("IGHJ1*01", 6),
+        junction_aa = c("CASSYEFG", "CASSY-FG", "CASSDEFG", "CASSDEF*", "CASSXEFB", "CASSEEFB"),
+        locus = rep("IGH", 6),
+        stringsAsFactors = FALSE
     )
-  expect_equal(nrow(db_result), 6)    
-  expect_equal(length(unique(db_result$clone_id)), 4)
+
+    db_result <- hierarchicalClones(
+        db,
+        method = "aa",
+        junction = "junction_aa",
+        threshold = 0.1,
+        linkage = "single",
+        normalize = "len",
+        IUPAC = TRUE,
+        max_n = 2
+    )
+    expect_equal(nrow(db_result), 6)
+    expect_equal(length(unique(db_result$clone_id)), 4)
 })
 
 # 5. IUPAC=FALSE, nt sequences in junction with IUPAC characters
 test_that("Test hierarchicalClones with IUPAC and aa method, test5", {
-  db <- data.frame(
-    sequence_id = paste0("seq", 1:5),
-    v_call = rep("IGHV1-1*01", 5),
-    j_call = rep("IGHJ1*01", 5),
-    junction = c("TGTGCTTCTTCTTATW", "TGTGCTTCTTCTTATS", "TGTGCTTCTTCTGATA", "TGTGCTTCTTCTGATA", "TGTGCTTCTTCTNATA"),
-    locus = rep("IGH", 5),
-    stringsAsFactors = FALSE
-  )
-  
-  expect_error(
-    db_result <- hierarchicalClones(
-      db,
-      method = "aa",
-      junction = "junction",
-      threshold = 0.1,
-      linkage = "single",
-      normalize = "len",
-      IUPAC=FALSE
-    ),
-    "Invalid nucleotide characters were found"
-  )
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:5),
+        v_call = rep("IGHV1-1*01", 5),
+        j_call = rep("IGHJ1*01", 5),
+        junction = c("TGTGCTTCTTCTTATW", "TGTGCTTCTTCTTATS", "TGTGCTTCTTCTGATA", "TGTGCTTCTTCTGATA", "TGTGCTTCTTCTNATA"),
+        locus = rep("IGH", 5),
+        stringsAsFactors = FALSE
+    )
+
+    expect_error(
+        db_result <- hierarchicalClones(
+            db,
+            method = "aa",
+            junction = "junction",
+            threshold = 0.1,
+            linkage = "single",
+            normalize = "len",
+            IUPAC = FALSE,
+            junction_type = "nt"
+        ),
+        "Invalid nucleotide characters were found"
+    )
 })
 
 # 6. IUPAC=FALSE, max_n=0, nt sequences in junction with only "ATCGN?"
 test_that("Test hierarchicalClones with IUPAC and aa method, test6", {
-  db <- data.frame(
-    sequence_id = paste0("seq", 1:5),
-    v_call = rep("IGHV1-1*01", 5),
-    j_call = rep("IGHJ1*01", 5),
-    junction = c("TGTGCTTCTTCTTAT", "TGTGCTTCTTCTTAT", "TGTGCTTCTTCTGAT", "TGTGCTTCTTCTGA?", "TGTGCTTCTTCTNAT"),
-    locus = rep("IGH", 5),
-    stringsAsFactors = FALSE
-  )
-  
-  db_result <- hierarchicalClones(
-      db,
-      method = "aa",
-      junction = "junction",
-      threshold = 0.1,
-      linkage = "single",
-      normalize = "len",
-      IUPAC=FALSE,
-      max_n=0
-  )
-  expect_equal(nrow(db_result), 3)    
-  expect_equal(length(unique(db_result$clone_id)), 2)
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:5),
+        v_call = rep("IGHV1-1*01", 5),
+        j_call = rep("IGHJ1*01", 5),
+        junction = c("TGTGCTTCTTCTTAT", "TGTGCTTCTTCTTAT", "TGTGCTTCTTCTGAT", "TGTGCTTCTTCTGA?", "TGTGCTTCTTCTNAT"),
+        locus = rep("IGH", 5),
+        stringsAsFactors = FALSE
+    )
+
+    # Expect warning due to max_n = 0, no non-ATCG characters or Ns are allowed
+    expect_warning(db_result <- hierarchicalClones(
+        db,
+        method = "aa",
+        junction = "junction",
+        threshold = 0.1,
+        linkage = "single",
+        normalize = "len",
+        IUPAC = FALSE,
+        max_n = 0,
+        junction_type = "nt"
+    ))
+    expect_equal(nrow(db_result), 3)
+    expect_equal(length(unique(db_result$clone_id)), 2)
 })
 
 # 7. IUPAC=FALSE, max_n=2, nt sequences in junction with only "ATCGN?"
 test_that("Test hierarchicalClones with IUPAC and aa method, test7", {
-  db <- data.frame(
-    sequence_id = paste0("seq", 1:5),
-    v_call = rep("IGHV1-1*01", 5),
-    j_call = rep("IGHJ1*01", 5),
-    junction = c("TGTGCTTCTTCTTAT", "TGTGCTTCTTCTTAT", "TGTGCTTCTTCTGAT", "TGTGCTTCTTCTGAN", "ACAGCTTCTTCTNAT"),
-    locus = rep("IGH", 5),
-    stringsAsFactors = FALSE
-  )
-  
-  db_result <- hierarchicalClones(
-    db,
-    method = "aa",
-    junction = "junction",
-    threshold = 0.1,
-    linkage = "single",
-    normalize = "len",
-    IUPAC=FALSE,
-    max_n=2
-  )
-  expect_equal(nrow(db_result), 5)    
-  expect_equal(length(unique(db_result$clone_id)), 2)
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:5),
+        v_call = rep("IGHV1-1*01", 5),
+        j_call = rep("IGHJ1*01", 5),
+        junction = c("TGTGCTTCTTCTTAT", "TGTGCTTCTTCTTAT", "TGTGCTTCTTCTGAT", "TGTGCTTCTTCTGAN", "ACAGCTTCTTCTNAT"),
+        locus = rep("IGH", 5),
+        stringsAsFactors = FALSE
+    )
+
+    db_result <- hierarchicalClones(
+        db,
+        method = "aa",
+        junction = "junction",
+        threshold = 0.1,
+        linkage = "single",
+        normalize = "len",
+        IUPAC = FALSE,
+        max_n = 2,
+        junction_type = "nt"
+    )
+    expect_equal(nrow(db_result), 5)
+    expect_equal(length(unique(db_result$clone_id)), 2)
 })
 
 # 8. IUPAC=TRUE, max_n=2, nt sequences in junction with IUPAC characters
 test_that("Test hierarchicalClones with IUPAC and aa method, test8", {
-  db <- data.frame(
-    sequence_id = paste0("seq", 1:5),
-    v_call = rep("IGHV1-1*01", 5),
-    j_call = rep("IGHJ1*01", 5),
-    junction = c("MGTGCTTCTTCTTAT", "MGTGCTTCTTCTTAT", "MGTGCTTCTTCTGAT", "MGTGCTTCTTCTGAN", "DGTGCTTCTTCTNAT"),
-    locus = rep("IGH", 5),
-    stringsAsFactors = FALSE
-  )
-  
-  db_result <- hierarchicalClones(
-    db,
-    method = "aa",
-    junction = "junction",
-    threshold = 0.1,
-    linkage = "single",
-    normalize = "len",
-    IUPAC=TRUE,
-    max_n=2
-  )
-  expect_equal(nrow(db_result), 5)
-  expect_equal(length(unique(db_result$clone_id)), 1)
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:5),
+        v_call = rep("IGHV1-1*01", 5),
+        j_call = rep("IGHJ1*01", 5),
+        junction = c("MGTGCTTCTTCTTAT", "MGTGCTTCTTCTTAT", "MGTGCTTCTTCTGAT", "MGTGCTTCTTCTGAN", "DGTGCTTCTTCTNAT"),
+        locus = rep("IGH", 5),
+        stringsAsFactors = FALSE
+    )
+
+    db_result <- hierarchicalClones(
+        db,
+        method = "aa",
+        junction = "junction",
+        threshold = 0.1,
+        linkage = "single",
+        normalize = "len",
+        IUPAC = TRUE,
+        max_n = 2,
+        junction_type = "nt"
+    )
+    expect_equal(nrow(db_result), 5)
+    expect_equal(length(unique(db_result$clone_id)), 1)
 })
 
 # Regression tests for method = "aa" junction columns where some sequences look
@@ -734,8 +749,10 @@ test_that("Test prepare_db max_n filtering treats the whole dataset as amino aci
         stringsAsFactors = FALSE
     )
     db$aa_confirmed <- TRUE
-    result <- scoper:::prepare_db(db, junction = "junction", v_call = "v_call", j_call = "j_call",
-                                  method = "aa", max_n = 0)
+    result <- scoper:::prepare_db(db,
+        junction = "junction", v_call = "v_call", j_call = "j_call",
+        method = "aa", max_n = 0
+    )
     expect_equal(nrow(result$db), 2)
     expect_equal(result$n_rmv_N, 0)
 })
@@ -752,8 +769,10 @@ test_that("Test prepare_db cdr3 trimming removes 1 residue per end for the whole
         stringsAsFactors = FALSE
     )
     db$aa_confirmed <- TRUE
-    result <- scoper:::prepare_db(db, junction = "junction", v_call = "v_call", j_call = "j_call",
-                                  cdr3 = TRUE, method = "aa")
+    result <- scoper:::prepare_db(db,
+        junction = "junction", v_call = "v_call", j_call = "j_call",
+        cdr3 = TRUE, method = "aa"
+    )
     expect_equal(result$db$cdr3_col[1], "ARDSTA")
     expect_equal(result$db$cdr3_col[2], "ARSSEFDY")
 })
@@ -767,8 +786,10 @@ test_that("Test prepare_db cdr3 trimming removes 1 codon per end for a purely nu
         locus = rep("IGH", 2),
         stringsAsFactors = FALSE
     )
-    result <- scoper:::prepare_db(db, junction = "junction", v_call = "v_call", j_call = "j_call",
-                                  cdr3 = TRUE, method = "aa")
+    result <- scoper:::prepare_db(db,
+        junction = "junction", v_call = "v_call", j_call = "j_call",
+        cdr3 = TRUE, method = "aa"
+    )
     expect_equal(result$db$cdr3_col[1], "GCTTCTTCTGAT")
 })
 
@@ -783,8 +804,10 @@ test_that("Test junction_type = 'aa' handles amino acid junctions that look nucl
     )
     # declared amino acid: no autodetection warning, sequences grouped as amino acids
     expect_no_warning(
-        db_aa <- identicalClones(db, method = "aa", junction_type = "aa",
-                                 junction = "junction", v_call = "v_call", j_call = "j_call")
+        db_aa <- identicalClones(db,
+            method = "aa", junction_type = "aa",
+            junction = "junction", v_call = "v_call", j_call = "j_call"
+        )
     )
     ids <- setNames(db_aa$clone_id, db_aa$sequence_id)
     expect_equal(ids[["seq1"]], ids[["seq2"]])
@@ -792,13 +815,17 @@ test_that("Test junction_type = 'aa' handles amino acid junctions that look nucl
 
     # junction_type = "aa" is inconsistent with a nucleotide method
     expect_error(
-        identicalClones(db, method = "nt", junction_type = "aa",
-                        junction = "junction", v_call = "v_call", j_call = "j_call"),
+        identicalClones(db,
+            method = "nt", junction_type = "aa",
+            junction = "junction", v_call = "v_call", j_call = "j_call"
+        ),
         "requires method = 'aa'"
     )
     expect_error(
-        hierarchicalClones(db, method = "nt", junction_type = "aa", threshold = 0.1,
-                           junction = "junction", v_call = "v_call", j_call = "j_call"),
+        hierarchicalClones(db,
+            method = "nt", junction_type = "aa", threshold = 0.1,
+            junction = "junction", v_call = "v_call", j_call = "j_call"
+        ),
         "requires method = 'aa'"
     )
 })
@@ -814,15 +841,19 @@ test_that("Test junction_type = 'nt' skips amino acid autodetection", {
     )
     # sequences are translated and grouped as amino acids, with no autodetection warning
     expect_no_warning(
-        db_nt <- identicalClones(db, method = "aa", junction_type = "nt",
-                                 junction = "junction", v_call = "v_call", j_call = "j_call")
+        db_nt <- identicalClones(db,
+            method = "aa", junction_type = "nt",
+            junction = "junction", v_call = "v_call", j_call = "j_call"
+        )
     )
     expect_equal(length(unique(db_nt$clone_id)), 1)
 
     # the default "auto" warns for the same nucleotide-compatible input
     expect_warning(
-        identicalClones(db, method = "aa",
-                        junction = "junction", v_call = "v_call", j_call = "j_call"),
+        identicalClones(db,
+            method = "aa",
+            junction = "junction", v_call = "v_call", j_call = "j_call"
+        ),
         "junction_type"
     )
 })
@@ -841,17 +872,22 @@ test_that("Test junction_type = 'auto' warns to set junction_type for nucleotide
     # non-ATCG and the call goes on to fail; the autodetection warning is still raised first
     warns <- character(0)
     try(withCallingHandlers(
-        identicalClones(db, method = "aa",
-                        junction = "junction", v_call = "v_call", j_call = "j_call"),
+        identicalClones(db,
+            method = "aa",
+            junction = "junction", v_call = "v_call", j_call = "j_call"
+        ),
         warning = function(w) {
             warns <<- c(warns, conditionMessage(w))
             invokeRestart("muffleWarning")
-        }), silent = TRUE)
+        }
+    ), silent = TRUE)
     expect_true(any(grepl("set junction_type = \"aa\"", warns, fixed = TRUE)))
     # declaring the type suppresses the warning
     expect_no_warning(
-        identicalClones(db, method = "aa", junction_type = "aa",
-                        junction = "junction", v_call = "v_call", j_call = "j_call")
+        identicalClones(db,
+            method = "aa", junction_type = "aa",
+            junction = "junction", v_call = "v_call", j_call = "j_call"
+        )
     )
 })
 
@@ -865,14 +901,20 @@ test_that("Test CDR3_FILTER verbose message reports the length cutoff used", {
         stringsAsFactors = FALSE
     )
     out_aa <- capture.output(suppressWarnings(
-        identicalClones(db, method = "aa", junction_type = "aa", cdr3 = TRUE, verbose = TRUE,
-                        junction = "junction", v_call = "v_call", j_call = "j_call")))
+        identicalClones(db,
+            method = "aa", junction_type = "aa", cdr3 = TRUE, verbose = TRUE,
+            junction = "junction", v_call = "v_call", j_call = "j_call"
+        )
+    ))
     expect_true(any(grepl("CDR3_FILTER>  1 invalid junction length\\(s\\) \\(< 3 \\)", out_aa)))
 
     db$junction <- c("TGTGCT", "TGTGCTTCTTCTGATTGG", "TGTGCTTCTTCTGATTGG")
     out_nt <- capture.output(suppressWarnings(
-        identicalClones(db, method = "nt", cdr3 = TRUE, verbose = TRUE,
-                        junction = "junction", v_call = "v_call", j_call = "j_call")))
+        identicalClones(db,
+            method = "nt", cdr3 = TRUE, verbose = TRUE,
+            junction = "junction", v_call = "v_call", j_call = "j_call"
+        )
+    ))
     expect_true(any(grepl("CDR3_FILTER>  1 invalid junction length\\(s\\) \\(< 7 \\)", out_nt)))
 })
 
@@ -891,8 +933,10 @@ test_that("Test identicalClones treats every V/J/length group as amino acid once
         locus = rep("IGH", 3),
         stringsAsFactors = FALSE
     )
-    db_result <- identicalClones(db, method = "aa", junction = "junction",
-                                 v_call = "v_call", j_call = "j_call")
+    db_result <- identicalClones(db,
+        method = "aa", junction = "junction",
+        v_call = "v_call", j_call = "j_call"
+    )
     # if rows 1-2 were (incorrectly) translated as if they were a 6-nt sequence, their
     # junction values would no longer read "CARDST"
     expect_true(all(db_result$junction[db_result$sequence_id %in% c("seq1", "seq2")] == "CARDST"))
@@ -900,52 +944,58 @@ test_that("Test identicalClones treats every V/J/length group as amino acid once
 
 
 test_that("Test identicalClones that no sequences left after removing records with junction length that is not divisible by 3", {
-  db <- data.frame(
-    sequence_id = paste0("seq", 1:3),
-    v_call = c("IGHV1-1*01", "IGHV1-1*01", "IGHV2-5*01"),
-    j_call = c("IGHJ1*01", "IGHJ1*01", "IGHJ2*01"),
-    junction = c("ATCG", "ATCG", "ATCG"),
-    locus = rep("IGH", 3),
-    stringsAsFactors = FALSE
-  )
-  expect_error(
-      db_result <- identicalClones(db, method = "nt", junction = "junction",
-                               v_call = "v_call", j_call = "j_call", mod3 = TRUE),
-      "No sequences left"
-  )
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:3),
+        v_call = c("IGHV1-1*01", "IGHV1-1*01", "IGHV2-5*01"),
+        j_call = c("IGHJ1*01", "IGHJ1*01", "IGHJ2*01"),
+        junction = c("ATCG", "ATCG", "ATCG"),
+        locus = rep("IGH", 3),
+        stringsAsFactors = FALSE
+    )
+    expect_error(expect_warning(
+        db_result <- identicalClones(db,
+            method = "nt", junction = "junction",
+            v_call = "v_call", j_call = "j_call", mod3 = TRUE
+        ),
+        "No sequences left"
+    ))
 })
 
 
 test_that("Test hierarchicalClones that no sequences left after removing sequences with junction length too short to trim.", {
-  db <- data.frame(
-    sequence_id = paste0("seq", 1:3),
-    v_call = c("IGHV1-1*01", "IGHV1-1*01", "IGHV2-5*01"),
-    j_call = c("IGHJ1*01", "IGHJ1*01", "IGHJ2*01"),
-    junction = c("ATCG", "ATCG", "ATCG"),
-    locus = rep("IGH", 3),
-    stringsAsFactors = FALSE
-  )
-  expect_error(
-    db_result <- hierarchicalClones(db, method = "nt", junction = "junction",
-                                 v_call = "v_call", j_call = "j_call", cdr3 = TRUE, threshold = 0.1),
-    "No sequences left"
-  )
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:3),
+        v_call = c("IGHV1-1*01", "IGHV1-1*01", "IGHV2-5*01"),
+        j_call = c("IGHJ1*01", "IGHJ1*01", "IGHJ2*01"),
+        junction = c("ATCG", "ATCG", "ATCG"),
+        locus = rep("IGH", 3),
+        stringsAsFactors = FALSE
+    )
+    expect_error(expect_warning(
+        db_result <- hierarchicalClones(db,
+            method = "nt", junction = "junction",
+            v_call = "v_call", j_call = "j_call", cdr3 = TRUE, threshold = 0.1
+        ),
+        "No sequences left"
+    ))
 })
 
 test_that("Test hierarchicalClones that no sequences left after removing junction with non standard aa characters", {
-  db <- data.frame(
-    sequence_id = paste0("seq", 1:3),
-    v_call = c("IGHV1-1*01", "IGHV1-1*01", "IGHV2-5*01"),
-    j_call = c("IGHJ1*01", "IGHJ1*01", "IGHJ2*01"),
-    junction = c("ATCGEJ", "ATCGIJ", "ATCGLJ"),
-    locus = rep("IGH", 3),
-    stringsAsFactors = FALSE
-  )
-  expect_error(
-    db_result <- hierarchicalClones(db, method = "aa", junction = "junction",
-                                 v_call = "v_call", j_call = "j_call", cdr3 = TRUE, threshold=0.1, IUPAC = TRUE),
-    "No sequences left after removing sequences with non-standard amino acid characters"
-  )
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:3),
+        v_call = c("IGHV1-1*01", "IGHV1-1*01", "IGHV2-5*01"),
+        j_call = c("IGHJ1*01", "IGHJ1*01", "IGHJ2*01"),
+        junction = c("ATCGEJ", "ATCGIJ", "ATCGLJ"),
+        locus = rep("IGH", 3),
+        stringsAsFactors = FALSE
+    )
+    expect_error(expect_warning(
+        db_result <- hierarchicalClones(db,
+            method = "aa", junction = "junction",
+            v_call = "v_call", j_call = "j_call", cdr3 = TRUE, threshold = 0.1, IUPAC = TRUE
+        ),
+        "No sequences left after removing sequences with non-standard amino acid characters"
+    ))
 })
 
 #### clone - spectralClones - novj method ####
@@ -953,25 +1003,29 @@ test_that("Test hierarchicalClones that no sequences left after removing junctio
 test_that("Test spectralClones - novj", {
     # Truth
     expects <- c(6, 7, 7, 7, 7, 8, 10, 11, 12, 679)
-    
+
     # Reproduce example
     set.seed(12345)
-    db <- spectralClones(ExampleDb, method = "novj", 
-                         junction = "junction", v_call = "v_call", 
-                         j_call = "j_call", threshold=0.20,
-                         summarize_clones = FALSE)
-    clones  <- as.numeric(tail(sort(table(db$clone_id)), 10))
+    db <- spectralClones(ExampleDb,
+        method = "novj",
+        junction = "junction", v_call = "v_call",
+        j_call = "j_call", threshold = 0.20,
+        summarize_clones = FALSE
+    )
+    clones <- as.numeric(tail(sort(table(db$clone_id)), 10))
     expect_identical(clones, expects)
-    
+
     # Test parallel
     if (!pipeline_env) {
         set.seed(12345)
-        db <- spectralClones(ExampleDb, method = "novj",
-                             junction = "junction", v_call = "v_call",
-                             j_call = "j_call", threshold=0.20,
-                             summarize_clones = FALSE,
-                             nproc=2)
-        clones  <- as.numeric(tail(sort(table(db$clone_id)), 10))
+        db <- spectralClones(ExampleDb,
+            method = "novj",
+            junction = "junction", v_call = "v_call",
+            j_call = "j_call", threshold = 0.20,
+            summarize_clones = FALSE,
+            nproc = 2
+        )
+        clones <- as.numeric(tail(sort(table(db$clone_id)), 10))
         expect_identical(clones, expects)
     }
 })
@@ -981,67 +1035,74 @@ test_that("Test spectralClones - novj", {
 test_that("Test spectralClones - vj", {
     # Truth
     expects <- as.integer(c(11, 12, 12, 13, 14, 15, 16, 29, 35, 683))
-    
+
     # Reproduce example
     set.seed(12345)
-    db <- spectralClones(ExampleDb, method = "vj", 
-                         germline = "germline_alignment_d_mask",
-                         sequence = "sequence_alignment", 
-                         junction = "junction", v_call = "v_call", 
-                         j_call = "j_call", threshold=0.15,
-                         summarize_clones = FALSE)
+    db <- spectralClones(ExampleDb,
+        method = "vj",
+        germline = "germline_alignment_d_mask",
+        sequence = "sequence_alignment",
+        junction = "junction", v_call = "v_call",
+        j_call = "j_call", threshold = 0.15,
+        summarize_clones = FALSE
+    )
     clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
     expect_identical(clones, expects)
-    
+
     # Test parallel
     if (!pipeline_env) {
         set.seed(12345)
-        db <- spectralClones(ExampleDb, method = "vj",
-                             germline = "germline_alignment_d_mask",
-                             sequence = "sequence_alignment",
-                             junction = "junction", v_call = "v_call",
-                             j_call = "j_call", threshold=0.15,
-                             summarize_clones = FALSE,
-                             nproc=2)
+        db <- spectralClones(ExampleDb,
+            method = "vj",
+            germline = "germline_alignment_d_mask",
+            sequence = "sequence_alignment",
+            junction = "junction", v_call = "v_call",
+            j_call = "j_call", threshold = 0.15,
+            summarize_clones = FALSE,
+            nproc = 2
+        )
         clones <- as.integer(as.vector(tail(sort(table(db$clone_id)), 10)))
         expect_identical(clones, expects)
     }
 })
 
-#### Single cell 
+#### Single cell
 
 test_that("Test assigning clones works for heavy-only sc data", {
     # Issue https://bitbucket.org/kleinstein/scoper/issues/23
     db_sc$chain <- "light"
-    db_sc$chain[grepl("IGH",db_sc[['v_call']])] <- "heavy"
+    db_sc$chain[grepl("IGH", db_sc[["v_call"]])] <- "heavy"
     db_sc_heavy <- db_sc %>%
         filter(chain == "heavy")
-    expect_warning(cloned <- identicalClones(db_sc_heavy, method="aa",
-                               cell_id = "cell_id",
-                               locus = "locus", nproc=1),
-                   "Single cell mode requested, but `db` doesn't contain light chain data. Skipping.")
+    expect_warning(
+        cloned <- identicalClones(db_sc_heavy,
+            method = "aa",
+            cell_id = "cell_id",
+            locus = "locus", nproc = 1
+        ),
+        "Single cell mode requested, but `db` doesn't contain light chain data. Skipping."
+    )
 })
 
-#### Single cell 
+#### Single cell
 
 test_that("Test prepare_db", {
-    
     # Note:
-    # seq7 (cell4) has v_call IGHV3*01,IGHV1*01 and will be assigned G2 when first=F. 
+    # seq7 (cell4) has v_call IGHV3*01,IGHV1*01 and will be assigned G2 when first=F.
     #     The order is not what we would usually expect, because it is not sorted
     #     alpahbetically. It is not sorted on purpose just to test the first= T/F parameter.
     db <- data.frame(
-        sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6","seq7","seq8"),
-        cell_id=c("cell1","cell1","cell2","cell2","cell3","cell3","cell4","cell4"),
-        v_call=c("IGHV1*01","IGLV1*01","IGHV1*01","IGLV1*01","IGHV1*01","IGLV2*01", "IGHV3*01,IGHV1*01","IGLV1*01"),
-        d_call=c("IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA),
-        j_call=c("IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01*01","IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01"),
-        junction=c("TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTTTTC","TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTC")
+        sequence_id = c("seq1", "seq2", "seq3", "seq4", "seq5", "seq6", "seq7", "seq8"),
+        cell_id = c("cell1", "cell1", "cell2", "cell2", "cell3", "cell3", "cell4", "cell4"),
+        v_call = c("IGHV1*01", "IGLV1*01", "IGHV1*01", "IGLV1*01", "IGHV1*01", "IGLV2*01", "IGHV3*01,IGHV1*01", "IGLV1*01"),
+        d_call = c("IGHD1*01", NA, "IGHD1*01", NA, "IGHD1*01", NA, "IGHD1*01", NA),
+        j_call = c("IGHJ1*01", "IGLJ1*01", "IGHJ1*01", "IGLJ1*01*01", "IGHJ1*01", "IGLJ1*01", "IGHJ1*01", "IGLJ1*01"),
+        junction = c("TCGAAATTC", "TCGTTTTTC", "TCGAAATTC", "TCGTTTTTTTTC", "TCGAAATTC", "TCGTTTTTC", "TCGAAATTC", "TCGTTTTTC")
     )
     db$chain <- "light"
-    db$chain[grepl("IGH",db[['v_call']])] <- "heavy"
+    db$chain[grepl("IGH", db[["v_call"]])] <- "heavy"
     db$locus <- alakazam::getLocus(db$v_call)
-    db$junction_len <- stringi::stri_length(db[['junction']])
+    db$junction_len <- stringi::stri_length(db[["junction"]])
 
     # Case: heavy T, first F
     # prepare_db uses groupGenes to find vj gene groups, but
@@ -1053,10 +1114,11 @@ test_that("Test prepare_db", {
         db,
         only_heavy = T,
         cell_id = "cell_id",
-        locus="locus", 
-        first=F)$db
-    expect_true(all(db_only_heavy_T_locus_first_F$vj_group =="G1"))
-    
+        locus = "locus",
+        first = F
+    )$db
+    expect_true(all(db_only_heavy_T_locus_first_F$vj_group == "G1"))
+
     # Case: heavy T, first T
     # scoper:::prepare_db
 
@@ -1082,7 +1144,7 @@ test_that("Test prepare_db", {
     # Warning message:
     # In max(el[, 3]) : no non-missing arguments to max; returning -Inf
     #
-    # It seems to happen when mtx_adj is and identity matrix (only 1s in the 
+    # It seems to happen when mtx_adj is and identity matrix (only 1s in the
     # diagonal and no edges) and diag=FALSE (no self-links, the diagonal will
     # be zeroed out and max, used somewhere in the function, returns and error).
     # r$> mtx_adj
@@ -1096,7 +1158,7 @@ test_that("Test prepare_db", {
     # Warning message:
     # In max() : no non-missing arguments to max; returning -Inf
 
-    expect_equal(db_only_heavy_T_locus_first_T$vj_group, c("G1","G1","G1","G1","G1","G1","G2","G2"))
+    expect_equal(db_only_heavy_T_locus_first_T$vj_group, c("G1", "G1", "G1", "G1", "G1", "G1", "G2", "G2"))
 
 
     # Case: heavy F, first T
@@ -1113,25 +1175,25 @@ test_that("Test prepare_db", {
         "The only_heavy = FALSE parameter is deprecated. Will run as if only_heavy = TRUE"
     )
 
-    expect_equal(db_only_heavy_F_locus_first_T$vj_group, c("G1","G1","G1","G1","G1","G1","G2","G2"))
-    
+    expect_equal(db_only_heavy_F_locus_first_T$vj_group, c("G1", "G1", "G1", "G1", "G1", "G1", "G2", "G2"))
+
     # Case: heavy F, first F
     # these are also all G1.....
     expect_warning(
         db_only_heavy_F_locus_first_F <- scoper:::prepare_db(db,
-                                                       only_heavy = F, 
-                                                       cell_id="cell_id",
-                                                       locus="locus",
-                                                       first=F)$db,
+            only_heavy = F,
+            cell_id = "cell_id",
+            locus = "locus",
+            first = F
+        )$db,
         "The only_heavy = FALSE parameter is deprecated. Will run as if only_heavy = TRUE"
     )
 
-    expect_equal(db_only_heavy_F_locus_first_F$vj_group, c("G1","G1","G1","G1","G1","G1","G1","G1"))
-    
+    expect_equal(db_only_heavy_F_locus_first_F$vj_group, c("G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1"))
+
     # Results heavy T/F with same first setting should be the same, as heavy is ignored
     expect_equal(db_only_heavy_T_locus_first_T$vj_group, db_only_heavy_F_locus_first_T$vj_group)
     expect_equal(db_only_heavy_T_locus_first_F$vj_group, db_only_heavy_F_locus_first_F$vj_group)
-    
 })
 
 test_that("Test hierarchicalClones only_heavy and first", {
@@ -1141,30 +1203,33 @@ test_that("Test hierarchicalClones only_heavy and first", {
     local_edition(3)
 
     # Note:
-    # seq7 (cell4) has v_call IGHV3*01,IGHV1*01 and will be assigned G2 when first=F. 
+    # seq7 (cell4) has v_call IGHV3*01,IGHV1*01 and will be assigned G2 when first=F.
     #     The order is not what we would usually expect, because it is not sorted
     #     alpahbetically. It is not sorted on purpose just to test the first= T/F parameter.
     db <- data.frame(
-        sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6","seq7","seq8"),
-        cell_id=c("cell1","cell1","cell2","cell2","cell3","cell3","cell4","cell4"),
-        v_call=c("IGHV1*01","IGLV1*01","IGHV1*01","IGLV1*01","IGHV1*01","IGLV2*01", "IGHV3*01,IGHV1*01","IGLV1*01"),
-        d_call=c("IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA,"IGHD1*01",NA),
-        j_call=c("IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01*01","IGHJ1*01","IGLJ1*01","IGHJ1*01","IGLJ1*01"),
-        junction=c("TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTTTTC","TCGAAATTC","TCGTTTTTC","TCGAAATTC","TCGTTTTTC")
+        sequence_id = c("seq1", "seq2", "seq3", "seq4", "seq5", "seq6", "seq7", "seq8"),
+        cell_id = c("cell1", "cell1", "cell2", "cell2", "cell3", "cell3", "cell4", "cell4"),
+        v_call = c("IGHV1*01", "IGLV1*01", "IGHV1*01", "IGLV1*01", "IGHV1*01", "IGLV2*01", "IGHV3*01,IGHV1*01", "IGLV1*01"),
+        d_call = c("IGHD1*01", NA, "IGHD1*01", NA, "IGHD1*01", NA, "IGHD1*01", NA),
+        j_call = c("IGHJ1*01", "IGLJ1*01", "IGHJ1*01", "IGLJ1*01*01", "IGHJ1*01", "IGLJ1*01", "IGHJ1*01", "IGLJ1*01"),
+        junction = c("TCGAAATTC", "TCGTTTTTC", "TCGAAATTC", "TCGTTTTTTTTC", "TCGAAATTC", "TCGTTTTTC", "TCGAAATTC", "TCGTTTTTC"),
+        expected_clone_id_split_TRUE = c("1_G2", "1_G2", "1_G1", "1_G1", "1_G3", "1_G3", "1_G2", "1_G2"),
+        expected_clone_id_split_TRUE_first_T = c("1_G2", "1_G2", "1_G1", "1_G1", "1_G3", "1_G3", "2", "2")
     )
     db$chain <- "light"
-    db$chain[grepl("IGH",db[['v_call']])] <- "heavy"
+    db$chain[grepl("IGH", db[["v_call"]])] <- "heavy"
     db$locus <- alakazam::getLocus(db$v_call)
-    db$junction_len <- stringi::stri_length(db[['junction']])
+    db$junction_len <- stringi::stri_length(db[["junction"]])
+    db$sequence_alignment <- db$junction # Needs sequence alignment for groupLightGenes
 
     ## Test hierachicalClones
     # CGJ 1/29/25 updated case to remove split_light testing
     # split_light = FALSE is set to avoid the warning message
     ## case only_heavy   first
-    ## 1    T            F    
-    ## 2    T            T    
-    ## 3    F            F   
-    ## 4    F            T    
+    ## 1    T            F
+    ## 2    T            T
+    ## 3    F            F
+    ## 4    F            T
 
     # Case 1
     expect_message(
@@ -1182,7 +1247,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
         "Running defineClonesScoper in single cell mode",
         fixed = TRUE
     )
-    expect_true(all(clones@db[['clone_id']] == "1"))
+    expect_true(all(clones@db[["clone_id"]] == "1"))
 
     # Case 2
     expect_message(
@@ -1205,65 +1270,62 @@ test_that("Test hierarchicalClones only_heavy and first", {
     # Case 3
     expect_message(
         expect_warning(
-            expect_warning(
-                clones <- hierarchicalClones(
-                    db,
-                    threshold = 0,
-                    cell_id = "cell_id",
-                    locus = "locus",
-                    only_heavy = FALSE,
-                    split_light = TRUE,
-                    summarize_clones = TRUE,
-                    first = F, # default is first=F
-                    nproc = 1
-                ),
-                "split_light = TRUE is deprecated. Please use split_light = FALSE. After clonal identification, light chain groups can be found with dowser::resolveLightChains"
+            clones <- hierarchicalClones(
+                db,
+                threshold = 0,
+                cell_id = "cell_id",
+                locus = "locus",
+                only_heavy = FALSE,
+                split_light = TRUE,
+                summarize_clones = TRUE,
+                first = F, # default is first=F
+                nproc = 1
             ),
             "only_heavy = FALSE is deprecated. Running as if only_heavy = TRUE"
         ),
         "Running defineClonesScoper in single cell mode",
     )
 
-    expect_true(all(clones@db[["clone_id"]] == "1"))
-    
+    expect_true(all(clones@db[["clone_id"]] == clones@db[["expected_clone_id_split_TRUE"]]))
+
     # Case 4
     expect_warning(
-        expect_warning(
-            expect_message(
-                clones <- hierarchicalClones(
-                    db,
-                    threshold = 0,
-                    cell_id = "cell_id",
-                    locus = "locus",
-                    only_heavy = FALSE,
-                    split_light = TRUE,
-                    summarize_clones = TRUE,
-                    first = T, # default is first=F
-                    nproc = 1
-                ),
-                "Running defineClonesScoper in single cell mode",
-                fixed = TRUE
+        expect_message(
+            clones <- hierarchicalClones(
+                db,
+                threshold = 0,
+                cell_id = "cell_id",
+                locus = "locus",
+                only_heavy = FALSE,
+                split_light = TRUE,
+                summarize_clones = TRUE,
+                first = T, # default is first=F
+                nproc = 1
             ),
-            "only_heavy = FALSE is deprecated. Running as if only_heavy = TRUE"
+            "Running defineClonesScoper in single cell mode",
+            fixed = TRUE
         ),
-        "split_light = TRUE is deprecated. Please use split_light = FALSE. After clonal identification, light chain groups can be found with dowser::resolveLightChains"
+        "only_heavy = FALSE is deprecated. Running as if only_heavy = TRUE"
     )
 
-    expect_equal(clones@db[['clone_id']],c("1","1","1","1","1","1","2","2"))
-    
-    #TODO: check in dowser if comment is addressed.
+    expect_true(all(clones@db[["clone_id"]] == clones@db[["expected_clone_id_split_TRUE_first_T"]]))
+
+    # TODO: check in dowser if comment is addressed.
     ## What happens with the second groupGenes (inside the light chain split) when
     # first=false, but the "linker" ambiguous call was left out of the same cluster id
     # because of the distance threshold? This groupGenes could be splitting again by vj calls...
     # seq2 is the linker, and the juction is one nt different. Everything else is the same.
     db <- data.frame(
-        sequence_id=c("seq1","seq2","seq3","seq4","seq5","seq6"),
-        cell_id=c("1","2","3","1","2","3"),
-        v_call=c("IGHV1", "IGHV1,IGHV2","IGHV2","IGLV1","IGLV1","IGLV2"),
-        j_call=c("IGHJ1","IGHJ1","IGHJ1","IGHJ1","IGHJ1","IGHJ1"),
-        junction=c("TCGAAATTC","TCGAACTTC","TCGAAATTC","TCGAAATTC","TCGAAATTC","TCGAAATTC")
+        sequence_id = c("seq1", "seq2", "seq3", "seq4", "seq5", "seq6"),
+        cell_id = c("1", "2", "3", "1", "2", "3"),
+        v_call = c("IGHV1", "IGHV1,IGHV2", "IGHV2", "IGLV1", "IGLV1", "IGLV2"),
+        j_call = c("IGHJ1", "IGHJ1", "IGHJ1", "IGHJ1", "IGHJ1", "IGHJ1"),
+        junction = c("TCGAAATTC", "TCGAACTTC", "TCGAAATTC", "TCGAAATTC", "TCGAAATTC", "TCGAAATTC"),
+        # Cell 2 junction has different length
+        expected_clone_id_split_TRUE_first_F = c("1_G1", "2", "1_G2", "1_G1", "2", "1_G2")
     )
     db$locus <- alakazam::getLocus(db$v_call)
+    db$sequence_alignment <- db$junction
     db
 
     # If threshold = 0, seq1 (cell 1) and seq3 (cell 3) are in the same clone, seq2 is separate.
@@ -1280,7 +1342,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
             nproc = 1
         )
     )
-    
+
     # expect sequences from cells 1 and 3 in clone 1, and
     # sequences from cell 2 in clone 2
     clones_split_F_th0@db %>%
@@ -1307,28 +1369,24 @@ test_that("Test hierarchicalClones only_heavy and first", {
             nproc = 1
         )
     )
-    expect_true(all(clones_split_F_th012@db[['clone_id']] == "1"))
+    expect_true(all(clones_split_F_th012@db[["clone_id"]] == "1"))
 
     expect_message(
-        expect_warning(
-            clones_split_T_th0 <- hierarchicalClones(
-                db,
-                threshold = 0,
-                cell_id = "cell_id",
-                locus = "locus",
-                only_heavy = TRUE,
-                split_light = TRUE,
-                summarize_clones = TRUE,
-                first = F, # default is first=F
-                nproc = 1
-            ),
-            "split_light = TRUE is deprecated. Please use split_light = FALSE. After clonal identification, light chain groups can be found with dowser::resolveLightChains"
+        clones_split_T_th0 <- hierarchicalClones(
+            db,
+            threshold = 0,
+            cell_id = "cell_id",
+            locus = "locus",
+            only_heavy = TRUE,
+            split_light = TRUE,
+            summarize_clones = TRUE,
+            first = F, # default is first=F
+            nproc = 1
         ),
         "Running defineClonesScoper in single cell mode"
     )
-    # expecting same results because split_ligth not supported anymore.
-    expect_equal(clones_split_F_th0@db[['clone_id']], clones_split_T_th0@db[['clone_id']])
-    
+    expect_equal(clones_split_T_th0@db[["clone_id"]], clones_split_T_th0@db[["expected_clone_id_split_TRUE_first_F"]])
+
     ## TODO: multiple light chains?
     db2 <- bind_rows(
         db,
@@ -1338,11 +1396,11 @@ test_that("Test hierarchicalClones only_heavy and first", {
             v_call = c("IGLV1,IGLV2"),
             j_call = c("IGHJ1"),
             junction = c("TCGAAATTC"),
-            locus="IGL"
+            locus = "IGL"
         )
     )
 
-   # If threshold = 0, seq1 (cell 1) and seq3 (cell 3) are in the same clone, seq2 is separate.
+    # If threshold = 0, seq1 (cell 1) and seq3 (cell 3) are in the same clone, seq2 is separate.
     expect_message(
         clones_split_F_th0_2l <- hierarchicalClones(
             db2,
@@ -1356,7 +1414,7 @@ test_that("Test hierarchicalClones only_heavy and first", {
             nproc = 1
         )
     )
-    
+
     # expect sequences from cells 1 and 3 in clone 1, and
     # sequences from cell 2 in clone 2, regardless of
     # light chains
@@ -1380,7 +1438,7 @@ test_that("Test vjl_groups and inter_intra clone_id stay in sync with db in sing
     heavy_junctions <- c(
         "TCGAAATTA", "TCGAAATTC", "TCGAAATTG", "TCGAAATTT", # group A
         "TCGCCCTTA", "TCGCCCTTC", "TCGCCCTTG", "TCGCCCTTT", # group B
-        "TCGGGGTTA", "TCGGGGTTC", "TCGGGGTTG", "TCGGGGTTT"  # group C
+        "TCGGGGTTA", "TCGGGGTTC", "TCGGGGTTG", "TCGGGGTTT" # group C
     )
     heavy_v_call <- rep(c("IGHV1-2*02", "IGHV3-23*04", "IGHV4-34*01"), each = 4)
     heavy_j_call <- rep(c("IGHJ4*02", "IGHJ6*02", "IGHJ3*02"), each = 4)
@@ -1416,15 +1474,15 @@ test_that("Test vjl_groups and inter_intra clone_id stay in sync with db in sing
     expect_equal(length(unique(clones@db[["clone_id"]])), 12L)
 
     # For every vjl_groups row, the clone ids it lists must, when looked up
-    # in db, actually belong to that same V/J/junction-length group. In 
-    # issue #52 clone ids pointed at unrelated group's summary rows. 
-    # vjl_groups summarizes heavy chains only, so restrict 
+    # in db, actually belong to that same V/J/junction-length group. In
+    # issue #52 clone ids pointed at unrelated group's summary rows.
+    # vjl_groups summarizes heavy chains only, so restrict
     # the lookup to heavy chain rows.
     for (i in seq_len(nrow(clones@vjl_groups))) {
         row_clone_ids <- strsplit(clones@vjl_groups$clone_id[i], ",", fixed = TRUE)[[1]]
         db_rows <- clones@db[clones@db[["clone_id"]] %in% row_clone_ids &
-                                  !is.na(clones@db[["clone_id"]]) &
-                                  clones@db[["locus"]] == "IGH", ]
+            !is.na(clones@db[["clone_id"]]) &
+            clones@db[["locus"]] == "IGH", ]
         expect_true(all(row_clone_ids %in% clones@db[["clone_id"]]))
         expect_true(all(db_rows[["v_call"]] == clones@vjl_groups$v_call[i]))
         expect_true(all(db_rows[["j_call"]] == clones@vjl_groups$j_call[i]))
@@ -1439,79 +1497,93 @@ test_that("Test vjl_groups and inter_intra clone_id stay in sync with db in sing
 
 ## Add test for clones by light chain
 # CGJ 11/18/26 Add back in real tests
-test_that("Testing split_light warnings for all cloning mehtods", {
-  # Load test db with light chain ambiguity
-  db <- data.frame(
-    sequence_id = sprintf("seq%02d", setdiff(1:30, c(11, 19))),
-    subject_id = "S1",
-    v_call = c("IGHV1-1*01", "IGKV1-1*01", "IGHV1-1*01", "IGKV1-1*01", "IGHV1-1*01",
-               "IGKV2-1*01", "IGHV1-1*01", "IGKV1-1*01", "IGKV2-1*01", "IGHV1-1*01",
-               "IGHV1-1*01", "IGKV1-1*01,IGKV2-1*01", "IGHV1-1*01", "IGKV3-1*01", "IGHV2-1*01",
-               "IGKV1-1*01", "IGKV1-1*01", "IGHV1-1*01", "IGHV1-1*01", "IGHV1-1*01",
-               "IGKV4-1*01", "IGHV1-1*01", "IGKV4-1*01", "IGHV1-1*01", "IGHV1-1*01",
-               "IGKV1-1*01", "IGHV1-1*01", "IGKV1-1*01"),
-    j_call = c("IGHJ2*01", "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGHJ2*01",
-               "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGKJ1*01", "IGHJ2*01",
-               "IGHJ2*01", "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGHJ1*01",
-               "IGKJ1*01", "IGKJ1*01", "IGHJ2*01", "IGHJ2*01", "IGHJ2*01",
-               "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGHJ2*01", "IGHJ2*01",
-               "IGKJ1*01", "IGHJ2*01", "IGKJ1*01"),
-    junction = c("TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAAAAAATGT",
-                 "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTCCCCCCTGG", "TGTAAAAAATGG",
-                 "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAAAAAATCG", "TGTCCCCCCTGG", "TGTAAAACCTGG",
-                 "TGTCCCCCCTGG", "TGTCCCCCCTGG", "TGTAAAAAATGT", "TGTAAAAAATCG", "TGTAAAAAATGG",
-                 "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAGAAAATGG", "TGTAAAAAATGG",
-                 "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG"),
-    sequence_alignment = c("TCGA", "AGCT", "TCGA", "AGCT", "TCGA",
-                           "AGCT", "TCGA", "AGCT", "AGCT", "TCGA",
-                           "TCGA", "AGCT", "TCCA", "AGCT", "TCGA",
-                           "AGCT", "AGCT", "TCGA", "TCCA", "TCGA",
-                           "AGCT", "TCGA", "AGCT", "TCGA", "TCGA",
-                           "AGCT", "TCGA", "AGCT"),
-    locus = c("IGH", "IGK", "IGH", "IGK", "IGH", "IGK", "IGH", "IGK", "IGK", "IGH",
-              "IGH", "IGK", "IGH", "IGK", "IGH", "IGK", "IGK", "IGH",
-              "IGH", "IGH", "IGK", "IGH", "IGK", "IGH", "IGH", "IGK", "IGH", "IGK"),
-    cell_id = c(1, 1, 2, 2, 3, 3, 4, 4, 4, 6,
-                8, 8, 5, 5, 7, 7, 9, 10,
-                11, 12, 12, 13, 13, 14, 15, 15, 16, 16),
-    junction_length = 12,
-    expected_clone_id_split_light_F = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                        1, 1, 1, 1, 2, 2, NA, 1,
-                                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-    expected_clone_id_split_light_T = c("1_G1", "1_G1", "1_G1", "1_G1", "1_G1",
-                                        "1_G1", "1_G1", "1_G1", "1_G1", "1_G1",
-                                        "1_G1", "1_G1", "1_G2", "1_G2", "2", "2", NA, "1_G1",
-                                        "1_G2", "1_G3", "1_G3", "1_G3", "1_G3",
-                                        "1_G1", "1_G1", "1_G1", "1_G1", "1_G1"),
-    stringsAsFactors = FALSE
-  )
-  
-  # Run hierarchicalClones without and with splitting light chain
-  expect_warning(db_nsplit <- hierarchicalClones(
-      db,
-      threshold=0.1,
-      cell_id='cell_id',
-      locus='locus',
-      only_heavy=TRUE,
-      split_light=FALSE,
-      summarize_clones=TRUE,
-      first=F, # default is first=F
-      nproc=1))
-  expect_warning(db_split <- hierarchicalClones(
-     db,
-     threshold=0.1,
-     cell_id='cell_id',
-     locus='locus',
-     only_heavy=TRUE,
-     split_light=TRUE,
-     summarize_clones=TRUE,
-     first=F, # default is first=F
-     nproc=1))
-   # make sure they are the same 
-   expect_equal(db_nsplit@db[['clone_id']], db_nsplit@db[['expected_clone_id_split_light_F']])
-   expect_equal(db_split@db[['clone_id']], db_split@db[['expected_clone_id_split_light_T']])
+test_that("Testing split_light warnings for all cloning methods", {
+    # Load test db with light chain ambiguity
+    db <- data.frame(
+        sequence_id = sprintf("seq%02d", setdiff(1:30, c(11, 19))),
+        subject_id = "S1",
+        v_call = c(
+            "IGHV1-1*01", "IGKV1-1*01", "IGHV1-1*01", "IGKV1-1*01", "IGHV1-1*01",
+            "IGKV2-1*01", "IGHV1-1*01", "IGKV1-1*01", "IGKV2-1*01", "IGHV1-1*01",
+            "IGHV1-1*01", "IGKV1-1*01,IGKV2-1*01", "IGHV1-1*01", "IGKV3-1*01", "IGHV2-1*01",
+            "IGKV1-1*01", "IGKV1-1*01", "IGHV1-1*01", "IGHV1-1*01", "IGHV1-1*01",
+            "IGKV4-1*01", "IGHV1-1*01", "IGKV4-1*01", "IGHV1-1*01", "IGHV1-1*01",
+            "IGKV1-1*01", "IGHV1-1*01", "IGKV1-1*01"
+        ),
+        j_call = c(
+            "IGHJ2*01", "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGHJ2*01",
+            "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGKJ1*01", "IGHJ2*01",
+            "IGHJ2*01", "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGHJ1*01",
+            "IGKJ1*01", "IGKJ1*01", "IGHJ2*01", "IGHJ2*01", "IGHJ2*01",
+            "IGKJ1*01", "IGHJ2*01", "IGKJ1*01", "IGHJ2*01", "IGHJ2*01",
+            "IGKJ1*01", "IGHJ2*01", "IGKJ1*01"
+        ),
+        junction = c(
+            "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAAAAAATGT",
+            "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTCCCCCCTGG", "TGTAAAAAATGG",
+            "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAAAAAATCG", "TGTCCCCCCTGG", "TGTAAAACCTGG",
+            "TGTCCCCCCTGG", "TGTCCCCCCTGG", "TGTAAAAAATGT", "TGTAAAAAATCG", "TGTAAAAAATGG",
+            "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG", "TGTAGAAAATGG", "TGTAAAAAATGG",
+            "TGTCCCCCCTGG", "TGTAAAAAATGG", "TGTCCCCCCTGG"
+        ),
+        sequence_alignment = c(
+            "TCGA", "AGCT", "TCGA", "AGCT", "TCGA",
+            "AGCT", "TCGA", "AGCT", "AGCT", "TCGA",
+            "TCGA", "AGCT", "TCCA", "AGCT", "TCGA",
+            "AGCT", "AGCT", "TCGA", "TCCA", "TCGA",
+            "AGCT", "TCGA", "AGCT", "TCGA", "TCGA",
+            "AGCT", "TCGA", "AGCT"
+        ),
+        locus = c(
+            "IGH", "IGK", "IGH", "IGK", "IGH", "IGK", "IGH", "IGK", "IGK", "IGH",
+            "IGH", "IGK", "IGH", "IGK", "IGH", "IGK", "IGK", "IGH",
+            "IGH", "IGH", "IGK", "IGH", "IGK", "IGH", "IGH", "IGK", "IGH", "IGK"
+        ),
+        cell_id = c(
+            1, 1, 2, 2, 3, 3, 4, 4, 4, 6,
+            8, 8, 5, 5, 7, 7, 9, 10,
+            11, 12, 12, 13, 13, 14, 15, 15, 16, 16
+        ),
+        junction_length = 12,
+        expected_clone_id_split_light_F = c(
+            "1", "1", "1", "1", "1", "1", "1", "1", "1", "1",
+            "1", "1", "1", "1", "2", "2", NA, "1",
+            "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"
+        ),
+        expected_clone_id_split_light_T = c(
+            "1_G1", "1_G1", "1_G1", "1_G1", "1_G1",
+            "1_G1", "1_G1", "1_G1", "1_G1", "1_G1",
+            "1_G1", "1_G1", "1_G2", "1_G2", "2", "2", NA, "1_G1",
+            "1_G2", "1_G3", "1_G3", "1_G3", "1_G3",
+            "1_G1", "1_G1", "1_G1", "1_G1", "1_G1"
+        ),
+        stringsAsFactors = FALSE
+    )
+
+    # Run hierarchicalClones without and with splitting light chain
+    expect_warning(db_nsplit <- hierarchicalClones(
+        db,
+        threshold = 0.1,
+        cell_id = "cell_id",
+        locus = "locus",
+        only_heavy = TRUE,
+        split_light = FALSE,
+        summarize_clones = TRUE,
+        first = F, # default is first=F
+        nproc = 1
+    ))
+    expect_warning(db_split <- hierarchicalClones(
+        db,
+        threshold = 0.1,
+        cell_id = "cell_id",
+        locus = "locus",
+        only_heavy = TRUE,
+        split_light = TRUE,
+        summarize_clones = TRUE,
+        first = F, # default is first=F
+        nproc = 1
+    ))
+    # make sure they are the same
+    expect_equal(db_nsplit@db[["clone_id"]], db_nsplit@db[["expected_clone_id_split_light_F"]])
+    expect_equal(db_split@db[["clone_id"]], db_split@db[["expected_clone_id_split_light_T"]])
 })
-
-
-
-
