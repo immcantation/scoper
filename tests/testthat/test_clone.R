@@ -1630,3 +1630,9 @@ test_that("split_light=TRUE requires single-cell data", {
     expect_warning(identicalClones(db_heavy, cell_id = "cell_id", split_light = TRUE),
                    "split_light=TRUE has no effect")
 })
+
+test_that("split_light: clone ids are ordered by heavy chain clone, then numeric light chain subgroup", {
+    ids <- c("2", "1_G10", "1_G2", "10", "1_G1", NA, "3_G1")
+    expect_equal(ids[orderCloneIds(ids)],
+                 c("1_G1", "1_G2", "1_G10", "2", "3_G1", "10", NA))
+})

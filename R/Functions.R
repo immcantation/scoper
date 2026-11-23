@@ -922,11 +922,13 @@ plotCloneSummary <- function(data, xmin = NULL, xmax = NULL, breaks = NULL,
 #'                              Use only the IGH (BCR) or TRB/TRD (TCR) sequences
 #'                              for grouping. Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    split_light        If \code{TRUE}, group sequences within each clone defined according to the heavy
-#'                              chain will be split by light chain
-#'                              V gene, J gene, and junction length.
-#'                              Requires single-cell data: \code{cell_id} must be set and the
-#'                              column must exist in \code{db}, otherwise an error is raised.
+#' @param    split_light        if \code{TRUE}, each clone defined from the heavy chains is split
+#'                              into subgroups of cells whose light chains share V gene, J gene and
+#'                              junction length (see \link[alakazam]{groupLightGenes}). Clones that are
+#'                              split get identifiers of the form \code{"<clone>_G<subgroup>"}.
+#'                              Requires single-cell data: \code{cell_id} and \code{locus} must be set and
+#'                              the \code{cell_id} column must exist in \code{db}, otherwise an error is
+#'                              raised. See the Single-cell data section for details.
 #' @param    sequence           Character name of the column containing sequence alignments. This will be used in single-cell mode
 #'                              with split_light=TRUE to assign cells without light chains to a light chain group.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping.
@@ -987,6 +989,14 @@ plotCloneSummary <- function(data, xmin = NULL, xmax = NULL, breaks = NULL,
 #' and ignored with warnings.
 #' Consequently, \code{vjl_groups} summarizes heavy/long-chain V/J/junction-length
 #' partitions and does not define groups from light/short chains.
+#'
+#' With \code{split_light=TRUE}, each heavy/long-chain clone is then split by light/short chain
+#' V gene, J gene and junction length using \link[alakazam]{groupLightGenes}. Cells without a
+#' light/short chain are assigned to the subgroup of the most similar heavy/long chain, using the
+#' sequences in the \code{sequence} column. Light/short chains take the clone identifier of the
+#' heavy/long chain in the same cell. The split is done before the clonal summary, so with
+#' \code{summarize_clones=TRUE} the summary describes the split clones. If \code{db} contains no
+#' light/short chains, \code{split_light=TRUE} has no effect and a warning is raised.
 #'
 #' In single-cell mode, clonal clustering will not be performed on data where cells are
 #' assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation
@@ -1087,11 +1097,13 @@ identicalClones <- function(db, method = c("nt", "aa"), junction = "junction",
 #'                              Use only the IGH (BCR) or TRB/TRD (TCR) sequences
 #'                              for grouping. Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    split_light        If \code{TRUE}, group sequences within each clone defined according to the heavy
-#'                              chain will be split by light chain
-#'                              V gene, J gene, and junction length.
-#'                              Requires single-cell data: \code{cell_id} must be set and the
-#'                              column must exist in \code{db}, otherwise an error is raised.
+#' @param    split_light        if \code{TRUE}, each clone defined from the heavy chains is split
+#'                              into subgroups of cells whose light chains share V gene, J gene and
+#'                              junction length (see \link[alakazam]{groupLightGenes}). Clones that are
+#'                              split get identifiers of the form \code{"<clone>_G<subgroup>"}.
+#'                              Requires single-cell data: \code{cell_id} and \code{locus} must be set and
+#'                              the \code{cell_id} column must exist in \code{db}, otherwise an error is
+#'                              raised. See the Single-cell data section for details.
 #' @param    sequence           Character name of the column containing sequence alignments. This will be used in single-cell mode
 #'                              with split_light=TRUE to assign cells without light chains to a light chain group.
 #' @param    first              specifies how to handle multiple V(D)J assignments for initial grouping.
@@ -1219,6 +1231,14 @@ identicalClones <- function(db, method = c("nt", "aa"), junction = "junction",
 #' Consequently, \code{vjl_groups} summarizes heavy/long-chain V/J/junction-length
 #' partitions and does not define groups from light/short chains.
 #'
+#' With \code{split_light=TRUE}, each heavy/long-chain clone is then split by light/short chain
+#' V gene, J gene and junction length using \link[alakazam]{groupLightGenes}. Cells without a
+#' light/short chain are assigned to the subgroup of the most similar heavy/long chain, using the
+#' sequences in the \code{sequence} column. Light/short chains take the clone identifier of the
+#' heavy/long chain in the same cell. The split is done before the clonal summary, so with
+#' \code{summarize_clones=TRUE} the summary describes the split clones. If \code{db} contains no
+#' light/short chains, \code{split_light=TRUE} has no effect and a warning is raised.
+#'
 #' In single-cell mode, clonal clustering will not be performed on data where cells are
 #' assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation
 #' will exit and return an error message. Cells that lack a heavy/long chain sequence (i.e., cells with
@@ -1308,11 +1328,13 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
 #'                              Use only the IGH (BCR) or TRB/TRD (TCR) sequences
 #'                              for grouping. Only applicable to single-cell data.
 #'                              Ignored if \code{cell_id=NULL}.
-#' @param    split_light        If \code{TRUE}, group sequences within each clone defined according to the heavy
-#'                              chain will be split by light chain
-#'                              V gene, J gene, and junction length.
-#'                              Requires single-cell data: \code{cell_id} must be set and the
-#'                              column must exist in \code{db}, otherwise an error is raised.
+#' @param    split_light        if \code{TRUE}, each clone defined from the heavy chains is split
+#'                              into subgroups of cells whose light chains share V gene, J gene and
+#'                              junction length (see \link[alakazam]{groupLightGenes}). Clones that are
+#'                              split get identifiers of the form \code{"<clone>_G<subgroup>"}.
+#'                              Requires single-cell data: \code{cell_id} and \code{locus} must be set and
+#'                              the \code{cell_id} column must exist in \code{db}, otherwise an error is
+#'                              raised. See the Single-cell data section for details.
 #' @param    targeting_model    \link[shazam]{TargetingModel} object. Only applicable if
 #'                              \code{method="vj"}. See Details for description.
 #' @param    len_limit          \link[shazam]{IMGT_V} object defining the regions and boundaries of the Ig
@@ -1392,6 +1414,14 @@ hierarchicalClones <- function(db, threshold, method = c("nt", "aa"), linkage = 
 #' and ignored with warnings.
 #' Consequently, \code{vjl_groups} summarizes heavy/long-chain V/J/junction-length
 #' partitions and does not define groups from light/short chains.
+#'
+#' With \code{split_light=TRUE}, each heavy/long-chain clone is then split by light/short chain
+#' V gene, J gene and junction length using \link[alakazam]{groupLightGenes}. Cells without a
+#' light/short chain are assigned to the subgroup of the most similar heavy/long chain, using the
+#' sequences in the \code{sequence} column. Light/short chains take the clone identifier of the
+#' heavy/long chain in the same cell. The split is done before the clonal summary, so with
+#' \code{summarize_clones=TRUE} the summary describes the split clones. If \code{db} contains no
+#' light/short chains, \code{split_light=TRUE} has no effect and a warning is raised.
 #'
 #' In single-cell mode, clonal clustering will not be performed on data where cells are
 #' assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation
@@ -2096,8 +2126,7 @@ defineClonesScoper <- function(db,
             # existing numeric id so a clone's heavy and light chain rows sit
             # together. With split_light, ids look like "1_G2": sort by the
             # numeric heavy chain part, then by the light chain subgroup.
-            clone_heavy_num <- as.integer(sub("_.*$", "", db_cloned[[clone]]))
-            db_cloned <- db_cloned[order(clone_heavy_num, db_cloned[[clone]]), ]
+            db_cloned <- db_cloned[orderCloneIds(db_cloned[[clone]]), ]
             if (na.count > 0) {
                 db_cloned <- bind_rows(db_cloned, db_na)
             }
@@ -2160,6 +2189,20 @@ splitByLightChains <- function(db_h, db_l, v_call, j_call, junction, sequence,
         clone_ids = db_h[[clone]],
         light_groups = combined$vj_group_light[seq_len(nrow(h))]
     )
+}
+
+# Order clone ids numerically
+#
+# Clone ids are "<n>" or, after splitting by light chains, "<n>_G<m>". Orders
+# by the heavy chain clone number n, then by the light chain subgroup number m
+# (unsplit ids first), so "1_G2" comes before "1_G10". Ties keep their order.
+orderCloneIds <- function(clone_ids) {
+    clone_ids <- as.character(clone_ids)
+    heavy_num <- suppressWarnings(as.integer(sub("_.*$", "", clone_ids)))
+    light_num <- rep(0L, length(clone_ids))
+    is_split <- !is.na(clone_ids) & grepl("^[0-9]+_G[0-9]+$", clone_ids)
+    light_num[is_split] <- as.integer(sub("^[0-9]+_G", "", clone_ids[is_split]))
+    order(heavy_num, light_num)
 }
 
 # Append light chain subgroups to clone ids
