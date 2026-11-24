@@ -1495,6 +1495,49 @@ test_that("Test vjl_groups and inter_intra clone_id stay in sync with db in sing
     expect_true(all(inter_intra_ids %in% clones@db[["clone_id"]]))
 })
 
+test_that("Test inter_intra clone ids with split_light clone ids containing '_'", {
+    # One heavy chain clone (same V/J/length, 1 nt apart) whose cells pair with
+    # two different light chains, so split_light splits it into 1_G1 and 1_G2.
+    # calculateInterVsIntra used to parse clone ids back out of
+    # "<x>_<y>_<label>" keys, which broke ids containing "_".
+    hj <- c(
+        "TGTGCGAGAGATTACTACGGTATGGACGTCTGG",
+        "TGTGCGAGAGATTACTACGGTATGGACGTCTGG",
+        "TGTGCGAGAGATTACTACGGTATGGACATCTGG",
+        "TGTGCGAGAGATTACTACGGTATGGACATCTGG"
+    )
+    kj <- "TGTCAACAGAGTTACAGTACCCCTCGGACGTTC"
+    lj <- "TGCAGCTCATATACAAGCAGCAGCACTCTCGTGTTC"
+    db <- data.frame(
+        sequence_id = paste0("seq", 1:8),
+        cell_id = rep(paste0("cell", 1:4), 2),
+        locus = c(rep("IGH", 4), "IGK", "IGK", "IGL", "IGL"),
+        v_call = c(
+            rep("IGHV3-23*01", 4), "IGKV1-39*01", "IGKV1-39*01",
+            "IGLV2-14*01", "IGLV2-14*01"
+        ),
+        j_call = c(
+            rep("IGHJ6*02", 4), "IGKJ1*01", "IGKJ1*01",
+            "IGLJ2*01", "IGLJ2*01"
+        ),
+        junction = c(hj, kj, kj, lj, lj),
+        stringsAsFactors = FALSE
+    )
+    db$sequence_alignment <- db$junction
+
+    clones <- suppressMessages(hierarchicalClones(db,
+        threshold = 0.15, cell_id = "cell_id",
+        split_light = TRUE, summarize_clones = TRUE
+    ))
+
+    expect_equal(sort(unique(clones@db[["clone_id"]])), c("1_G1", "1_G2"))
+    ii <- clones@inter_intra
+    expect_equal(ii$clone_id_x, c("1_G1", "1_G1", "1_G2"))
+    expect_equal(ii$clone_id_y, c("NA", "1_G2", "NA"))
+    expect_equal(ii$label, c("intra", "inter", "intra"))
+    expect_equal(ii$distance, c(0, 1 / 33, 0))
+})
+
 ## Add test for clones by light chain
 # CGJ 11/18/26 Add back in real tests
 test_that("Testing split_light warnings for all cloning methods", {

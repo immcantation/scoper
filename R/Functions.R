@@ -405,9 +405,9 @@ calculateInterVsIntra <- function(db,
 
     k <- NULL
     # open dataframes
-    vec_ff <- foreach(
+    db_dff <- foreach(
         k = 1:n_groups,
-        .combine = "c",
+        .combine = "rbind",
         .errorhandling = "stop"
     ) %dopar% {
         # *********************************************************************************
@@ -420,32 +420,34 @@ calculateInterVsIntra <- function(db,
         seqs <- uniqueSeq(seqs)
         ### calculate distance matrix among all seqs
         dist_mtx <- pairwiseDist(seqs, dist_mat = DNAMatrix_gap0)
-        ### prealoocate a vector = no. of max-dist in each clone (intra) + no. of min-dist between clones (inter)
+        ### one row per clone (intra: max distance within the clone) and one row
+        ### per pair of clones (inter: min distance between the two clones).
+        ### Clone ids are kept in their own columns rather than pasted into a key,
+        ### because ids may contain "_" (e.g. "1_G2" after split_light).
+        ### clone_id_y is the string "NA" for intra rows.
         nrow_f <- n_clones + n_clones * (n_clones - 1) / 2
-        vec_f <- rep(NA, nrow_f)
-        ### calculate minimum and maximum distance in each clone
+        clone_x <- character(nrow_f)
+        clone_y <- character(nrow_f)
+        dist_f <- numeric(nrow_f)
+        label_f <- character(nrow_f)
         n <- 0
-        if (n_clones == 1) {
+        for (i in seq_len(n_clones)) {
+            xx <- dist_mtx[rownames(dist_mtx) == clones[i], colnames(dist_mtx) == clones[i]]
             n <- n + 1
-            vec_f[n] <- max(dist_mtx) / l
-            names(vec_f)[n] <- paste(clones[1], "NA", "intra", sep = "_")
-        } else {
-            for (i in 1:(n_clones - 1)) {
-                xx <- dist_mtx[rownames(dist_mtx) == clones[i], colnames(dist_mtx) == clones[i]]
-                n <- n + 1
-                vec_f[n] <- max(xx) / l
-                names(vec_f)[n] <- paste(clones[i], "NA", "intra", sep = "_")
+            clone_x[n] <- clones[i]
+            clone_y[n] <- "NA"
+            dist_f[n] <- max(xx) / l
+            label_f[n] <- "intra"
+            if (i < n_clones) {
                 for (j in (i + 1):n_clones) {
                     xy <- dist_mtx[rownames(dist_mtx) == clones[i], colnames(dist_mtx) == clones[j]]
                     n <- n + 1
-                    vec_f[n] <- min(xy) / l
-                    names(vec_f)[n] <- paste(clones[i], clones[j], "inter", sep = "_")
+                    clone_x[n] <- clones[i]
+                    clone_y[n] <- clones[j]
+                    dist_f[n] <- min(xy) / l
+                    label_f[n] <- "inter"
                 }
             }
-            yy <- dist_mtx[rownames(dist_mtx) == clones[j], colnames(dist_mtx) == clones[j]]
-            n <- n + 1
-            vec_f[n] <- max(yy) / l
-            names(vec_f)[n] <- paste(clones[j], "NA", "intra", sep = "_")
         }
 
         # update progress
@@ -453,7 +455,13 @@ calculateInterVsIntra <- function(db,
             pb$tick()
         }
 
-        return(vec_f)
+        return(data.frame(
+            clone_id_x = clone_x,
+            clone_id_y = clone_y,
+            distance = dist_f,
+            label = label_f,
+            stringsAsFactors = FALSE
+        ))
         # *********************************************************************************
     }
 
@@ -461,27 +469,7 @@ calculateInterVsIntra <- function(db,
     if (nproc > 1) {
         parallel::stopCluster(cluster)
     }
-
-    # convert to a data.frame
-    db_dff <- data.frame(
-        keyName = names(vec_ff),
-        distance = vec_ff,
-        row.names = NULL
-    )
-    db_dff$label <- "intra"
-    db_dff$label[grepl("inter", db_dff$keyName)] <- "inter"
-    clones_xy <- data.frame(
-        matrix(unlist(stringi::stri_split_fixed(db_dff$keyName, "_", n = 3)),
-            nrow = nrow(db_dff),
-            byrow = T
-        ),
-        stringsAsFactors = FALSE
-    )
-    db_dff <- cbind(clones_xy, db_dff)
-    db_dff$keyName <- NULL
-    colnames(db_dff)[colnames(db_dff) == "X1"] <- "clone_id_x"
-    colnames(db_dff)[colnames(db_dff) == "X2"] <- "clone_id_y"
-    db_dff$X3 <- NULL
+    rownames(db_dff) <- NULL
 
     # return results
     return(db_dff)
