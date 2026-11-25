@@ -46,20 +46,20 @@ Slots
 
 
 `db`
-:   `data.frame` of repertoire data including with clonal identifiers in 
+:   `data.frame` of repertoire data including with clonal identifiers in
 the column specified during processing.
 
 `vjl_groups`
-:   `data.frame` of clonal summary, including sequence count, V gene, 
-J gene, junction length, and clone counts. In single-cell mode, this 
+:   `data.frame` of clonal summary, including sequence count, V gene,
+J gene, junction length, and clone counts. In single-cell mode, this
 summary is defined from heavy/long-chain partitions (IGH or TRB/TRD).
 
 `inter_intra`
-:   `data.frame` containing minimum inter (between) and maximum intra 
+:   `data.frame` containing minimum inter (between) and maximum intra
 (within) clonal distances.
 
 `eff_threshold`
-:   effective cut-off separating the inter (between) and intra (within) clonal 
+:   effective cut-off separating the inter (between) and intra (within) clonal
 distances.
 
 

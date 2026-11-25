@@ -3,10 +3,10 @@
 Description
 --------------------
 
-`hierarchicalClones` provides a hierarchical agglomerative clustering 
-approach to infer clonal relationships in high-throughput Adaptive Immune Receptor 
-Repertoire sequencing (AIRR-seq) data. This approach clusters B or T cell receptor 
-sequences based on junction region sequence similarity within partitions that share the 
+`hierarchicalClones` provides a hierarchical agglomerative clustering
+approach to infer clonal relationships in high-throughput Adaptive Immune Receptor
+Repertoire sequencing (AIRR-seq) data. This approach clusters B or T cell receptor
+sequences based on junction region sequence similarity within partitions that share the
 same V gene, J gene, and junction length, allowing for ambiguous V or J gene annotations.
 
 
@@ -38,7 +38,8 @@ verbose = FALSE,
 log = NULL,
 summarize_clones = FALSE,
 seq_id = "sequence_id",
-junction_type = c("auto", "nt", "aa")
+junction_type = c("auto", "nt", "aa"),
+sequence = "sequence_alignment"
 )
 ```
 
@@ -52,26 +53,26 @@ threshold
 :   numeric scalar where the tree should be cut (the distance threshold for clonal grouping).
 
 method
-:   one of the `"nt"` for nucleotide based clustering or 
+:   one of the `"nt"` for nucleotide based clustering or
 `"aa"` for amino acid based clustering. Method `"aa"` accepts either amino acid or nucleotide sequences. Nucleotide sequences are automatically translated into amino acid sequences.
 
 linkage
 :   available linkage are `"single"`, `"average"`, and `"complete"`.
 
 normalize
-:   method of normalization. The default is `"len"`, which divides the distance by the length 
+:   method of normalization. The default is `"len"`, which divides the distance by the length
 of the sequence group. If `"none"` then no normalization if performed.
 
 IUPAC
-:   If `TRUE`, allows sequences with IUPAC codes to pass validation 
-and be used in clustering with IUPAC-aware distance calculation 
-(via `alakazam::pairwiseDist`). If `FALSE` (default), uses fast Hamming distance 
-(via `alakazam::fastDist`) and only allows standard bases (A, T, C, G), N, and ? 
-in nt sequences if `method="nt"` or uses fast Hamming distance 
-(via `alakazam::fastDistAA`) and only allows 20 standard amino acids, X, *, - and . in 
+:   If `TRUE`, allows sequences with IUPAC codes to pass validation
+and be used in clustering with IUPAC-aware distance calculation
+(via `alakazam::pairwiseDist`). If `FALSE` (default), uses fast Hamming distance
+(via `alakazam::fastDist`) and only allows standard bases (A, T, C, G), N, and ?
+in nt sequences if `method="nt"` or uses fast Hamming distance
+(via `alakazam::fastDistAA`) and only allows 20 standard amino acids, X, *, - and . in
 aa sequences if `method="aa"`. This parameter controls validation and distance
-calculation method, not sequence filtering. See `max_n` for 
-filtering sequences by character content. See the IUPAC and max_n 
+calculation method, not sequence filtering. See `max_n` for
+filtering sequences by character content. See the IUPAC and max_n
 parameters section for more details and examples. Note: This parameter applies only to
 `hierarchicalClones`.
 
@@ -89,36 +90,41 @@ clone
 :   output column name containing the clonal cluster identifiers.
 
 fields
-:   character vector of additional columns to use for grouping. 
-Sequences with disjoint values in the specified fields will be classified 
+:   character vector of additional columns to use for grouping.
+Sequences with disjoint values in the specified fields will be classified
 as separate clones.
 
 cell_id
-:   name of the column containing cell identifiers or barcodes. 
+:   name of the column containing cell identifiers or barcodes.
 If specified, grouping will be performed in single-cell mode
-with the behavior governed by the `locus` and 
-`only_heavy` arguments. If set to `NULL` then the 
+with the behavior governed by the `locus` and
+`only_heavy` arguments. If set to `NULL` then the
 bulk sequencing data is assumed.
 
 locus
-:   name of the column containing locus information. 
+:   name of the column containing locus information.
 Only applicable to single-cell data.
 Ignored if `cell_id=NULL`.
 
 only_heavy
 :   This is deprecated. Only heavy chains will be used in clustering.
-Use only the IGH (BCR) or TRB/TRD (TCR) sequences 
+Use only the IGH (BCR) or TRB/TRD (TCR) sequences
 for grouping. Only applicable to single-cell data.
 Ignored if `cell_id=NULL`.
 
 split_light
-:   This is deprecated. If you desire to split clones by light chains 
-use dowser::resolveLightChains.
+:   if `TRUE`, each clone defined from the heavy chains is split
+into subgroups of cells whose light chains share V gene, J gene and
+junction length (see [groupLightGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupLightGenes)). Clones that are
+split get identifiers of the form `"<clone>_G<subgroup>"`.
+Requires single-cell data: `cell_id` and `locus` must be set and
+the `cell_id` column must exist in `db`, otherwise an error is
+raised. See the Single-cell data section for details.
 
 first
-:   specifies how to handle multiple V(D)J assignments for initial grouping. 
-If `TRUE` only the first call of the gene assignments is used. 
-If `FALSE` the union of ambiguous gene assignments is used to 
+:   specifies how to handle multiple V(D)J assignments for initial grouping.
+If `TRUE` only the first call of the gene assignments is used.
+If `FALSE` the union of ambiguous gene assignments is used to
 group all sequences with any overlapping gene calls.
 
 cdr3
@@ -140,10 +146,10 @@ or the maximum number of non-standard amino acid characters permitted in the jun
 amino acid sequence, before excluding the record from clonal assignment.
 With the default value of 0, nucleotide sequences containing any non-ATCG characters
 (including IUPAC codes), or amino acid sequences containing any non-standard amino acid
-characters, are removed before clustering. Default is 0 (ATCG-only). 
+characters, are removed before clustering. Default is 0 (ATCG-only).
 Set to `NULL` to disable filtering.
-Note: `max_n` operates independently 
-from `IUPAC` - it controls filtering by character count, while 
+Note: `max_n` operates independently
+from `IUPAC` - it controls filtering by character count, while
 `IUPAC` controls validation and distance calculation method.
 
 nproc
@@ -154,14 +160,14 @@ verbose
 if `FALSE` (default) process cloning silently.
 
 log
-:   output path and filename to save the `verbose` log. 
+:   output path and filename to save the `verbose` log.
 The input file directory is used if path is not specified.
 The default is `NULL` for no action.
 
 summarize_clones
 :   if `TRUE` performs a series of analysis to assess the clonal landscape
 and returns a [ScoperClones](ScoperClones-class.md) object. If `FALSE` (default) then
-a modified input `db` is returned with clone identifiers in the specified 
+a modified input `db` is returned with clone identifiers in the specified
 `clone` column. In single-cell mode, `vjl_groups` summarizes
 heavy/long-chain partitions used for clustering. When grouping by `fields`,
 `summarize_clones` should be `FALSE`.
@@ -177,16 +183,20 @@ of amino-acid-only letters (E, F, I, L, P, Q, ...); short amino acid sequences m
 letters shared with the nucleotide alphabet (e.g. `"CARDST"`) cannot be told apart
 from nucleotides and will be mishandled. Set `"aa"` or `"nt"` to skip autodetection.
 
+sequence
+:   Character name of the column containing sequence alignments. This will be used in single-cell mode
+with split_light=TRUE to assign cells without light chains to a light chain group.
+
 
 
 
 Value
 -------------------
 
-If `summarize_clones=FALSE` (default) a modified `data.frame` is returned with clone identifiers in the 
+If `summarize_clones=FALSE` (default) a modified `data.frame` is returned with clone identifiers in the
 specified `clone` column.
-If `summarize_clones=TRUE` a [ScoperClones](ScoperClones-class.md) object is returned that includes the 
-clonal assignment summary information and a modified input `db` in the `db` slot that 
+If `summarize_clones=TRUE` a [ScoperClones](ScoperClones-class.md) object is returned that includes the
+clonal assignment summary information and a modified input `db` in the `db` slot that
 contains clonal identifiers in the specified `clone` column.
 
 
@@ -205,51 +215,51 @@ Note: The `IUPAC` and `max_n` parameters serve complementary but distinct purpos
 
 `max_n` controls:
 
-+  Sequence filtering by counting non-ATCG characters in the nt junction or by counting non-standard AA characters 
++  Sequence filtering by counting non-ATCG characters in the nt junction or by counting non-standard AA characters
 in the aa junction
 
 
 
 Example use cases for `prepare_db` with `method="nt"` or `method="aa"` but nt sequences in the junctions :
 
-+  `IUPAC=FALSE, max_n=0`: Strict ATCG-only mode with fast distance calculation. 
++  `IUPAC=FALSE, max_n=0`: Strict ATCG-only mode with fast distance calculation.
 Will throw an error and exit if sequences with characters not A, T, C, G, N, or ? are detected.
 max_n=0 will filter out sequences with N or ? characters. Fastest option for high-quality data.
 +  `IUPAC=FALSE, max_n>0`: Will throw an error and exit if sequences with characters
-not A, T, C, G, N, or ? are detected. Allows sequences 
-with limited N/? characters in distance calculation, using fast Hamming distance. 
-Note: IUPAC codes are rejected during validation (before max_n filtering), so max_n only 
-controls filtering of sequences with N or ? characters. Useful for data with low-quality 
+not A, T, C, G, N, or ? are detected. Allows sequences
+with limited N/? characters in distance calculation, using fast Hamming distance.
+Note: IUPAC codes are rejected during validation (before max_n filtering), so max_n only
+controls filtering of sequences with N or ? characters. Useful for data with low-quality
 or masked positions but no experimental ambiguity codes.
-+  `IUPAC=TRUE, max_n=0`: Uses IUPAC-aware distance but filters out all non-ATCG 
-characters anyway. Only standard bases remain after filtering. Slower than IUPAC=FALSE 
++  `IUPAC=TRUE, max_n=0`: Uses IUPAC-aware distance but filters out all non-ATCG
+characters anyway. Only standard bases remain after filtering. Slower than IUPAC=FALSE
 but handles any ambiguity codes in the input by filtering them out before clustering.
-+  `IUPAC=TRUE, max_n>0`: Allows sequences with limited ambiguity codes and uses 
-proper IUPAC-aware distance calculation. Slower but handles biological ambiguity correctly. 
-Set max_n to the maximum number of ambiguous positions per sequence you want to tolerate 
++  `IUPAC=TRUE, max_n>0`: Allows sequences with limited ambiguity codes and uses
+proper IUPAC-aware distance calculation. Slower but handles biological ambiguity correctly.
+Set max_n to the maximum number of ambiguous positions per sequence you want to tolerate
 (counts all non-ATCG: N, ?, and other IUPAC codes).
-+  `IUPAC=TRUE, max_n=NULL`: Process all sequences with IUPAC codes regardless of the 
-number of ambiguous positions. Uses IUPAC-aware distance calculation with no filtering. 
++  `IUPAC=TRUE, max_n=NULL`: Process all sequences with IUPAC codes regardless of the
+number of ambiguous positions. Uses IUPAC-aware distance calculation with no filtering.
 Most permissive option.
 
 
 Example use cases for `prepare_db` with `method="aa"` and amino acid sequences in the junction:
 
 +  `IUPAC=FALSE, max_n=0`, with amino acid sequences in the junction:
-Strict standard amino acid mode with fast distance calculation. 
-Will throw an error and exit if sequences with IUPAC ambiguous amino acid characters and 
+Strict standard amino acid mode with fast distance calculation.
+Will throw an error and exit if sequences with IUPAC ambiguous amino acid characters and
 max_n=0 will filter out sequences with non-standard amino acid characters. Fastest option for high-quality data.
-+  `IUPAC=FALSE, max_n>0`, with amino acid sequences in the junction: 
-Will throw an error and exit if sequences have IUPAC ambiguous amino acid characters. 
++  `IUPAC=FALSE, max_n>0`, with amino acid sequences in the junction:
+Will throw an error and exit if sequences have IUPAC ambiguous amino acid characters.
 Allows sequences with limited non-standard amino acid characters in distance calculation.
-Use fast Hamming distance. 
-+  `IUPAC=TRUE, max_n=2`, with amino acide sequences in the junction: 
+Use fast Hamming distance.
++  `IUPAC=TRUE, max_n=2`, with amino acide sequences in the junction:
 Uses IUPAC-aware distance but filters out sequences with more than `max_n` non-standard
 amino acid characters.
 Slower than IUPAC=FALSE, but handles any ambiguity codes in the input.
 
 
-Note: Validation occurs before filtering. When `IUPAC=FALSE`, junction nucleotide sequences containing IUPAC 
+Note: Validation occurs before filtering. When `IUPAC=FALSE`, junction nucleotide sequences containing IUPAC
 ambiguity codes (R, Y, W, S, M, K, etc.)  or junction amino acide sequences containing IUPAC ambiguity codes (B,Z,J)
 will fail validation and be rejected before the `max_n` filtering step.
 
@@ -258,23 +268,31 @@ Single-cell data
 -------------------
 
 
-To invoke single-cell mode the `cell_id` argument must be specified and the `locus` 
-column must be correct. Otherwise, clustering will be performed with bulk sequencing assumptions, 
+To invoke single-cell mode the `cell_id` argument must be specified and the `locus`
+column must be correct. Otherwise, clustering will be performed with bulk sequencing assumptions,
 using all input sequences regardless of the values in the `locus` column.
 
-Values in the `locus` column must be one of `c("IGH", "IGI", "IGK", "IGL")` for BCR 
-or `c("TRA", "TRB", "TRD", "TRG")` for TCR sequences. Otherwise, the operation will exit and 
+Values in the `locus` column must be one of `c("IGH", "IGI", "IGK", "IGL")` for BCR
+or `c("TRA", "TRB", "TRD", "TRG")` for TCR sequences. Otherwise, the operation will exit and
 return an error message.
 
 In single-cell mode, clonal clustering is performed using heavy/long chains only
-(IGH for BCR or TRB/TRD for TCR). The `only_heavy=FALSE` and
-`split_light=TRUE` options are deprecated and ignored with warnings.
+(IGH for BCR or TRB/TRD for TCR). The `only_heavy=FALSE` is deprecated
+and ignored with warnings.
 Consequently, `vjl_groups` summarizes heavy/long-chain V/J/junction-length
 partitions and does not define groups from light/short chains.
 
-In single-cell mode, clonal clustering will not be performed on data where cells are 
-assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation 
-will exit and return an error message. Cells that lack a heavy/long chain sequence (i.e., cells with 
+With `split_light=TRUE`, each heavy/long-chain clone is then split by light/short chain
+V gene, J gene and junction length using [groupLightGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupLightGenes). Cells without a
+light/short chain are assigned to the subgroup of the most similar heavy/long chain, using the
+sequences in the `sequence` column. Light/short chains take the clone identifier of the
+heavy/long chain in the same cell. The split is done before the clonal summary, so with
+`summarize_clones=TRUE` the summary describes the split clones. If `db` contains no
+light/short chains, `split_light=TRUE` has no effect and a warning is raised.
+
+In single-cell mode, clonal clustering will not be performed on data where cells are
+assigned multiple heavy/long chain sequences (IGH, TRB, TRD). If observed, the operation
+will exit and return an error message. Cells that lack a heavy/long chain sequence (i.e., cells with
 light/short chains only) will be assigned a `clone_id` of `NA`.
 
 
@@ -284,7 +302,7 @@ Examples
 
 ```R
 # Find clonal groups
-results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
+results <- hierarchicalClones(ExampleDb, threshold = 0.15, summarize_clones = TRUE)
 
 ```
 
@@ -295,7 +313,7 @@ results <- hierarchicalClones(ExampleDb, threshold=0.15, summarize_clones=TRUE)
 df <- as.data.frame(results)
 
 # Plot clonal summaries
-plot(results, binwidth=0.02)
+plot(results, binwidth = 0.02)
 
 ```
 
@@ -305,7 +323,7 @@ plot(results, binwidth=0.02)
 See also
 -------------------
 
-See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupGenes) for 
+See [plotCloneSummary](plotCloneSummary.md) for plotting summary results. See [groupGenes](http://www.rdocumentation.org/packages/alakazam/topics/groupGenes) for
 more details about grouping requirements.
 
 

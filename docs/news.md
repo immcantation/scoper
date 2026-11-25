@@ -1,5 +1,26 @@
 # Release Notes
 
+Version 1.6.0.999: In development
+-------------------------------------------------------------------------------
+Clonal analysis:
+
++ Reimplemented `split_light` in `identicalClones`, `hierarchicalClones`, and
+  `spectralClones`, which was deprecated in version 1.4.0. In single-cell mode, each
+  clone defined from the heavy chains is now split into subgroups of cells whose light
+  chains share V gene, J gene, and junction length, using `alakazam::groupLightGenes`.
+  Split clones get identifiers of the form `"<clone>_G<subgroup>"`. Cells without a
+  light chain are assigned to the subgroup of the most similar heavy chain sequence.
++ `split_light=TRUE` now raises an error if `cell_id` or `locus` is not set, or if the
+  `cell_id` column is not found in `db`, and a warning if `db` contains no light chains.
++ Added a `sequence` argument to `identicalClones` and `hierarchicalClones`, naming the
+  sequence alignment column required by `split_light=TRUE`.
+
+Bug fixes:
+
++ Fixed `identicalClones`, `hierarchicalClones`, and `spectralClones` failing on
+  single-cell data without light chains, instead of warning that the light chain data
+  is missing.
+
 Version 1.6.0: September 30, 2026
 -------------------------------------------------------------------------------
 General:
